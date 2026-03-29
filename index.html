@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>William MacLean</title>
+  <meta name="description" content="William MacLean personal website, resume, tools, apps, and contact information." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --bg-soft: #121821;
+      --panel: rgba(255,255,255,0.05);
+      --panel-strong: rgba(255,255,255,0.08);
+      --line: rgba(255,255,255,0.1);
+      --text: #eef2f7;
+      --muted: #a7b1c2;
+      --accent: #6ea8fe;
+      --accent-2: #8ef0da;
+      --shadow: 0 20px 60px rgba(0,0,0,0.35);
+      --radius: 22px;
+      --max: 1120px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(110,168,254,0.18), transparent 30%),
+        radial-gradient(circle at top right, rgba(142,240,218,0.10), transparent 25%),
+        linear-gradient(180deg, #091018 0%, #0b0f14 100%);
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .container {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .nav-wrap {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(14px);
+      background: rgba(11, 15, 20, 0.72);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 0;
+    }
+
+    .brand {
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      font-size: 1.05rem;
+    }
+
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .nav-links a {
+      padding: 10px 14px;
+      border-radius: 999px;
+      color: var(--muted);
+      border: 1px solid transparent;
+      transition: 0.2s ease;
+      font-size: 0.95rem;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+      border-color: var(--line);
+      background: rgba(255,255,255,0.04);
+    }
+
+    header {
+      padding: 72px 0 28px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.3fr 0.9fr;
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    .hero-card,
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-card {
+      padding: 34px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(110,168,254,0.10);
+      color: #cfe0ff;
+      border: 1px solid rgba(110,168,254,0.18);
+      font-size: 0.88rem;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      font-size: clamp(2.2rem, 4vw, 4.6rem);
+      line-height: 0.96;
+      margin: 0 0 18px;
+      letter-spacing: -0.05em;
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: 1.05rem;
+      max-width: 62ch;
+      line-height: 1.7;
+      margin-bottom: 24px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 13px 18px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      font-weight: 600;
+      transition: 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.07);
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, rgba(110,168,254,0.25), rgba(142,240,218,0.18));
+      border-color: rgba(110,168,254,0.32);
+    }
+
+    .hero-side {
+      padding: 24px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .stat {
+      padding: 18px;
+      border-radius: 18px;
+      background: var(--panel-strong);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 0.84rem;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .stat-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    section {
+      padding: 18px 0 0;
+      margin-bottom: 28px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 18px 0 16px;
+    }
+
+    .section-head h2 {
+      font-size: 1.6rem;
+      margin: 0;
+      letter-spacing: -0.04em;
+    }
+
+    .section-head p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .two-col {
+      grid-template-columns: 1.1fr 0.9fr;
+    }
+
+    .cards-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .cards-2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .panel {
+      padding: 24px;
+    }
+
+    .panel h3 {
+      margin: 0 0 10px;
+      font-size: 1.05rem;
+      letter-spacing: -0.02em;
+    }
+
+    .panel p,
+    .panel li {
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 14px;
+    }
+
+    .timeline-item {
+      padding: 20px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.035);
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .timeline-top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .timeline-top strong {
+      font-size: 1.02rem;
+    }
+
+    .pill {
+      display: inline-flex;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      color: #d8dfeb;
+      font-size: 0.82rem;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .tag {
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #dfe7f3;
+      font-size: 0.94rem;
+    }
+
+    .placeholder {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .placeholder::after {
+      content: "Coming soon";
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      font-size: 0.78rem;
+      color: #d7e3ff;
+      background: rgba(110,168,254,0.16);
+      border: 1px solid rgba(110,168,254,0.24);
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+
+    .contact-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .contact-row {
+      padding: 16px 18px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .contact-row span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+    }
+
+    footer {
+      padding: 18px 0 48px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 920px) {
+      .hero,
+      .two-col,
+      .cards-3,
+      .cards-2 {
+        grid-template-columns: 1fr;
+      }
+
+      header {
+        padding-top: 44px;
+      }
+
+      .hero-card,
+      .hero-side,
+      .panel {
+        padding: 22px;
+      }
+
+      nav {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="nav-wrap">
+    <div class="container">
+      <nav>
+        <a class="brand" href="#top">William MacLean</a>
+        <div class="nav-links">
+          <a href="#about">About</a>
+          <a href="#resume">Resume</a>
+          <a href="#tools">Tools</a>
+          <a href="#apps">Apps</a>
+          <a href="#contact">Contact</a>
+        </div>
+      </nav>
+    </div>
+  </div>
+
+  <header id="top">
+    <div class="container hero">
+      <div class="hero-card">
+        <div class="eyebrow">Personal site · Resume · Projects</div>
+        <h1>William MacLean</h1>
+        <p class="lead">
+          Honours BSc student in Financial Mathematics and Economics with hands-on experience in stage production,
+          logistics, labour support, and technology. This site gives a simple overview of my background,
+          contact information, tools, and apps.
+        </p>
+        <div class="hero-actions">
+          <a class="btn primary" href="#contact">Get in touch</a>
+          <a class="btn" href="#resume">View resume</a>
+          <a class="btn" href="WilliamsResume.pdf" download>Download PDF resume</a>
+        </div>
+      </div>
+
+      <div class="hero-side panel">
+        <div class="stat">
+          <div class="stat-label">Based in</div>
+          <div class="stat-value">Ottawa, ON · Cambridge, ON</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Phone</div>
+          <div class="stat-value">519-807-8017</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Email</div>
+          <div class="stat-value">work@williammaclean.ca</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section id="about">
+      <div class="section-head">
+        <h2>About</h2>
+        <p>A clean summary of who I am and what I do.</p>
+      </div>
+      <div class="grid two-col">
+        <div class="panel">
+          <h3>Profile</h3>
+          <p>
+            I am a university student with a strong interest in mathematics, economics, and practical problem solving.
+            Alongside school, I have built experience working in live events and operations-focused roles where reliability,
+            coordination, and quick thinking matter.
+          </p>
+        </div>
+        <div class="panel">
+          <h3>Core strengths</h3>
+          <div class="tag-list">
+            <div class="tag">Critical Thinking</div>
+            <div class="tag">Logistics & Coordination</div>
+            <div class="tag">Mathematics</div>
+            <div class="tag">Problem Solving</div>
+            <div class="tag">Technology</div>
+            <div class="tag">French</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="resume">
+      <div class="section-head">
+        <h2>Resume</h2>
+        <p>Experience, education, and background.</p>
+      </div>
+      <div class="grid two-col">
+        <div class="panel">
+          <h3>Professional experience</h3>
+          <div class="timeline">
+            <div class="timeline-item">
+              <div class="timeline-top">
+                <strong>IATSE Local 471</strong>
+                <span class="pill">2025 – Present</span>
+              </div>
+              <p>Stagehand supporting carpentry, lighting, audio, and truck loading in the Ottawa region.</p>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-top">
+                <strong>IATSE Local 357</strong>
+                <span class="pill">2022 – Present</span>
+              </div>
+              <p>Stagehand supporting carpentry, lighting, audio, pyrotechnics, camera operations, and truck loading in the Kitchener–Waterloo region.</p>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-top">
+                <strong>Gypsy Wind Custom Coach</strong>
+                <span class="pill">2018 – Present</span>
+              </div>
+              <p>Runner and general labourer supporting transportation and on-site operations.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Education</h3>
+          <div class="timeline">
+            <div class="timeline-item">
+              <div class="timeline-top">
+                <strong>University of Ottawa</strong>
+                <span class="pill">2024 – Present</span>
+              </div>
+              <p>Honours BSc in Financial Mathematics and Economics.</p>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-top">
+                <strong>Grand River Collegiate Institute</strong>
+                <span class="pill">2020 – 2024</span>
+              </div>
+              <p>High School Diploma.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tools">
+      <div class="section-head">
+        <h2>Tools</h2>
+        <p>A place to highlight useful things I build or use.</p>
+      </div>
+      <div class="grid cards-3">
+        <div class="panel placeholder">
+          <h3>Tool 01</h3>
+          <p>Replace this card with a calculator, utility, script, dashboard, or other resource you want visitors to access.</p>
+        </div>
+        <div class="panel placeholder">
+          <h3>Tool 02</h3>
+          <p>Good for things like finance tools, productivity helpers, or anything practical you want grouped together.</p>
+        </div>
+        <div class="panel placeholder">
+          <h3>Tool 03</h3>
+          <p>Ready for future additions without changing the overall layout of the site.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="apps">
+      <div class="section-head">
+        <h2>Apps</h2>
+        <p>A section for larger projects or products.</p>
+      </div>
+      <div class="grid cards-2">
+        <div class="panel placeholder">
+          <h3>App 01</h3>
+          <p>Use this for a more complete project with its own description, status, and link.</p>
+        </div>
+        <div class="panel placeholder">
+          <h3>App 02</h3>
+          <p>Another project slot for something more polished than a simple tool.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact">
+      <div class="section-head">
+        <h2>Contact</h2>
+        <p>The fastest ways to reach me.</p>
+      </div>
+      <div class="grid two-col">
+        <div class="panel">
+          <h3>Contact details</h3>
+          <div class="contact-list">
+            <div class="contact-row">
+              <span>Phone</span>
+              <a href="tel:15198078017">519-807-8017</a>
+            </div>
+            <div class="contact-row">
+              <span>Work email</span>
+              <a href="mailto:work@williammaclean.ca">work@williammaclean.ca</a>
+            </div>
+            <div class="contact-row">
+              <span>General email</span>
+              <a href="mailto:contact@williammaclean.ca">contact@williammaclean.ca</a>
+            </div>
+            <div class="contact-row">
+              <span>Locations</span>
+              <div>Ottawa, ON</div>
+              <div>Cambridge, ON</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Notes</h3>
+          <p>
+            This version is intentionally simple and clean. It is set up so you can easily add real tools,
+            real apps, and a sign-in area later for gated content.
+          </p>
+          <p>
+            The next step can be a separate sign in / sign up page plus role-based sections so certain visitors can only see selected pages or cards.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    © 2026 William MacLean. All rights reserved.
+  </footer>
+</body>
+</html>
