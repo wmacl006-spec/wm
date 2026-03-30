@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Tools • William MacLean</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tools | William MacLean</title>
 <link rel="icon" href="logo.png" />
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
 :root {
@@ -18,34 +16,15 @@
   --line: rgba(255,255,255,0.08);
   --accent: #b00b55;
   --header-h: 64px;
-  --footer-h: 64px;
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html, body {
-  min-height: 100%;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
   font-family: "Comfortaa", sans-serif;
   background: var(--bg);
   color: var(--text);
   overflow-x: hidden;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-img {
-  display: block;
-  max-width: 100%;
 }
 
 header {
@@ -62,62 +41,26 @@ header {
   z-index: 100;
 }
 
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo img { width: 28px; height: 28px; }
+.logo span { font-size: 0.95rem; font-weight: 700; }
 
-.logo img {
-  width: 28px;
-  height: 28px;
-  flex: 0 0 auto;
-}
-
-.logo span {
-  font-size: 0.95rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-nav {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-nav a {
-  font-size: 0.84rem;
-  color: #cfcfcf;
-  transition: color 0.2s ease;
-}
-
-nav a:hover,
-nav a.active {
-  color: #fff;
-}
+nav { display: flex; gap: 14px; }
+nav a { font-size: 0.84rem; color: #cfcfcf; text-decoration: none; transition: 0.2s; }
+nav a:hover { color: #fff; }
 
 .page {
   min-height: 100vh;
   padding-top: var(--header-h);
-  display: flex;
-  flex-direction: column;
-}
-
-.layout {
   display: grid;
   grid-template-columns: 1fr;
-  flex: 1;
 }
 
 .left {
   position: relative;
-  min-height: 46svh;
+  min-height: 40vh;
   display: flex;
   align-items: flex-end;
-  overflow: hidden;
-  background: #111;
 }
 
 .left img {
@@ -126,250 +69,89 @@ nav a.active {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 16%;
-  filter: brightness(0.62) contrast(1.04);
-}
-
-.left::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.86) 0%, rgba(0,0,0,0.32) 42%, rgba(0,0,0,0.08) 100%);
-  z-index: 1;
+  filter: brightness(0.6);
 }
 
 .overlay {
   position: relative;
   z-index: 2;
-  width: 100%;
-  padding: 26px 18px 28px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.eyebrow {
-  font-size: 0.76rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.68);
+  padding: 30px 20px;
 }
 
 .overlay h1 {
-  font-size: clamp(2.5rem, 8vw, 4.6rem);
+  font-size: clamp(2.5rem, 8vw, 4rem);
   line-height: 0.9;
-  letter-spacing: -0.05em;
-  text-shadow: 0 10px 28px rgba(0,0,0,0.55);
-}
-
-.overlay p {
-  max-width: 560px;
-  font-size: 0.94rem;
-  line-height: 1.6;
-  color: rgba(255,255,255,0.82);
+  letter-spacing: -0.04em;
 }
 
 .right {
   background: var(--panel);
-  padding: 22px 16px 26px;
+  padding: 40px 20px;
 }
 
-.content {
-  width: 100%;
-}
-
-.section {
-  margin-bottom: 34px;
-}
-
-.section-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-
-.section h2 {
-  font-size: 0.78rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.section-note {
-  font-size: 0.76rem;
-  color: var(--muted);
-}
-
-.tool-grid {
+.grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
-}
-
-.card {
-  display: block;
-  padding: 16px;
-  border: 1px solid var(--line);
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
-  transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
-}
-
-.card:hover {
-  border-color: rgba(176,11,85,0.45);
-  transform: translateY(-2px);
-  background: linear-gradient(180deg, rgba(176,11,85,0.08), rgba(255,255,255,0));
-}
-
-.card-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
   gap: 16px;
-  margin-bottom: 10px;
-}
-
-.card strong {
-  display: block;
-  font-size: 1rem;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.badge {
-  flex: 0 0 auto;
-  border: 1px solid rgba(255,255,255,0.1);
-  color: var(--muted);
-  font-size: 0.68rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  padding: 7px 8px 6px;
-}
-
-.card p {
-  font-size: 0.9rem;
-  line-height: 1.55;
-  color: #cfcfcf;
-  margin-bottom: 12px;
-}
-
-.meta {
-  font-size: 0.78rem;
-  color: var(--accent);
-}
-
-.quick-links {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.quick-link {
-  display: block;
-  padding: 14px 12px;
-  border: 1px solid var(--line);
-  text-align: center;
-  font-size: 0.86rem;
-  color: #d8d8d8;
-  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
-}
-
-.quick-link:hover {
-  border-color: rgba(176,11,85,0.45);
-  color: #fff;
-  background: rgba(176,11,85,0.08);
-}
-
-.site-footer {
+  max-width: 800px;
   width: 100%;
-  min-height: var(--footer-h);
+}
+
+.tool-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--line);
+  padding: 24px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.3s ease;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 18px 24px;
-  border-top: 1px solid var(--line);
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tool-card:hover {
+  border-color: var(--accent);
+  background: rgba(176, 11, 85, 0.05);
+  transform: translateY(-2px);
+}
+
+.tool-card h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.tool-card p {
+  font-size: 0.85rem;
   color: var(--muted);
-  font-size: 0.8rem;
-  background: #050505;
-  text-align: center;
+  line-height: 1.4;
 }
 
-@media (min-width: 900px) {
-  .layout {
-    grid-template-columns: minmax(420px, 48vw) minmax(420px, 1fr);
-    min-height: calc(100vh - var(--header-h) - var(--footer-h));
-  }
-
-  .left,
-  .right {
-    min-height: calc(100vh - var(--header-h) - var(--footer-h));
-  }
-
-  .overlay {
-    padding: 34px;
-  }
-
-  .overlay h1 {
-    font-size: clamp(3.2rem, 5vw, 5.1rem);
-    max-width: 540px;
-  }
-
-  .right {
-    padding: 34px 40px 24px;
-    overflow-y: auto;
-  }
-
-  .tool-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+.tag {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 4px;
 }
 
-@media (max-width: 640px) {
-  header {
-    padding: 0 14px;
+@media(min-width:900px){
+  .page { grid-template-columns: 1fr 1.2fr; }
+  .left, .right { height: calc(100vh - var(--header-h)); }
+  .right { 
+    overflow-y: auto; 
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
   }
-
-  .logo span {
-    font-size: 0.88rem;
-  }
-
-  nav {
-    gap: 10px;
-  }
-
-  nav a {
-    font-size: 0.78rem;
-  }
-
-  .overlay {
-    padding: 22px 16px 22px;
-  }
-
-  .overlay h1 {
-    font-size: clamp(2.3rem, 11vw, 3.2rem);
-  }
-
-  .overlay p {
-    font-size: 0.88rem;
-  }
-
-  .right {
-    padding: 20px 14px 24px;
-  }
-
-  .quick-links {
-    grid-template-columns: 1fr;
-  }
-
-  .site-footer {
-    min-height: auto;
-    padding: 16px 14px;
-  }
+  .grid { grid-template-columns: 1fr 1fr; }
+  .overlay { padding: 40px; }
 }
 </style>
 </head>
 <body>
+
 <header>
   <div class="logo">
     <img src="logo.png" alt="Logo">
@@ -378,107 +160,49 @@ nav a.active {
 
   <nav>
     <a href="index.html">Home</a>
-    <a href="tools.html" class="active">Tools</a>
     <a href="apps.html">Apps</a>
     <a href="login.html">Login</a>
   </nav>
 </header>
 
 <div class="page">
-  <div class="layout">
-    <section class="left">
-      <img src="me.png" alt="William MacLean">
-      <div class="overlay">
-        <div class="eyebrow">Tool Hub</div>
-        <h1>Tools &amp;<br>Utilities</h1>
-        <p>A clean hub for your builders, generators, calculators, and quick-use pages. Swap any links below with your real pages.</p>
-      </div>
-    </section>
+  <section class="left">
+    <img src="me.png" alt="William MacLean">
+    <div class="overlay">
+      <h1><br>Tools</h1>
+    </div>
+  </section>
 
-    <section class="right">
-      <div class="content">
-        <div class="section">
-          <div class="section-head">
-            <h2>Main Tools</h2>
-            <div class="section-note">organized + easy to scan</div>
-          </div>
+  <section class="right">
+    <div class="grid">
+      
+      <a href="qrcode.html" class="tool-card">
+        <span class="tag">Utility</span>
+        <h2>QR Code Maker</h2>
+        <p>Generate custom high-resolution QR codes for URLs, text, or contact info.</p>
+      </a>
 
-          <div class="tool-grid">
-            <a class="card" href="qr.html">
-              <div class="card-top">
-                <strong>QR Code Maker</strong>
-                <span class="badge">Tool</span>
-              </div>
-              <p>Create QR codes for links, text, Wi-Fi, or contact info.</p>
-              <div class="meta">Open tool →</div>
-            </a>
+      <a href="#" class="tool-card">
+        <span class="tag">Finance</span>
+        <h2>Budget Tracker</h2>
+        <p>Simple interface to manage daily expenses and financial goals.</p>
+      </a>
 
-            <a class="card" href="calculator.html">
-              <div class="card-top">
-                <strong>Calculator</strong>
-                <span class="badge">Tool</span>
-              </div>
-              <p>Quick calculations, estimates, percentages, and totals.</p>
-              <div class="meta">Open tool →</div>
-            </a>
+      <a href="#" class="tool-card">
+        <span class="tag">Dev</span>
+        <h2>JSON Formatter</h2>
+        <p>Clean up and validate your JSON data structures instantly.</p>
+      </a>
 
-            <a class="card" href="converter.html">
-              <div class="card-top">
-                <strong>Unit Converter</strong>
-                <span class="badge">Tool</span>
-              </div>
-              <p>Convert measurements, values, and everyday units fast.</p>
-              <div class="meta">Open tool →</div>
-            </a>
+      <a href="#" class="tool-card">
+        <span class="tag">System</span>
+        <h2>File Converter</h2>
+        <p>Convert images and documents between various formats locally.</p>
+      </a>
 
-            <a class="card" href="notes.html">
-              <div class="card-top">
-                <strong>Quick Notes</strong>
-                <span class="badge">Tool</span>
-              </div>
-              <p>Simple space for short notes, reminders, or copied info.</p>
-              <div class="meta">Open tool →</div>
-            </a>
-
-            <a class="card" href="generator.html">
-              <div class="card-top">
-                <strong>Generator</strong>
-                <span class="badge">Tool</span>
-              </div>
-              <p>Use this spot for any randomizer, text tool, or helper page.</p>
-              <div class="meta">Open tool →</div>
-            </a>
-
-            <a class="card" href="coming-soon.html">
-              <div class="card-top">
-                <strong>More Tools</strong>
-                <span class="badge">Soon</span>
-              </div>
-              <p>Keep this card for future tools so the page stays consistent.</p>
-              <div class="meta">Add next page →</div>
-            </a>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-head">
-            <h2>Quick Links</h2>
-          </div>
-
-          <div class="quick-links">
-            <a class="quick-link" href="index.html">Home</a>
-            <a class="quick-link" href="apps.html">Apps</a>
-            <a class="quick-link" href="login.html">Login</a>
-            <a class="quick-link" href="contact.html">Contact</a>
-          </div>
-        </div>
-      </div>
-    </section>
-  </div>
-
-  <footer class="site-footer">
-    © 2026 William MacLean
-  </footer>
+    </div>
+  </section>
 </div>
+
 </body>
 </html>
