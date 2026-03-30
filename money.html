@@ -2052,23 +2052,36 @@
     }
 
     onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        statusPill.textContent = 'Status: default';
-        redirectToApps();
-        return;
-      }
+  try {
+    if (!user) {
+      console.log('No user logged in');
+      statusPill.textContent = 'Status: default';
+      redirectToApps();
+      return;
+    }
 
-      const userStatus = await getUserStatus(user.uid);
-      statusPill.textContent = `Status: ${userStatus}`;
+    console.log('UID:', user.uid);
 
-      if ((statusRank[userStatus] ?? 0) < statusRank.me) {
-        redirectToApps();
-        return;
-      }
+    const userStatus = await getUserStatus(user.uid);
+    console.log('Firestore status:', userStatus);
 
-      authGate.classList.add('hidden');
-      await startDashboard();
-    });
+    statusPill.textContent = `Status: ${userStatus}`;
+
+    if ((statusRank[userStatus] ?? 0) < statusRank['me']) {
+      console.log('Redirecting (not me)');
+      redirectToApps();
+      return;
+    }
+
+    console.log('Access granted');
+    authGate.classList.add('hidden');
+    await startDashboard();
+
+  } catch (err) {
+    console.error('Auth check failed:', err);
+    redirectToApps();
+  }
+});
   </script>
 </body>
 </html>
