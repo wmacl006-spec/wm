@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Code Maker | William MacLean</title>
+<link rel="icon" href="logo.png" />
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+
+<style>
+:root {
+  --bg: #000;
+  --panel: #050505;
+  --text: #fff;
+  --muted: #8d8d8d;
+  --line: rgba(255,255,255,0.08);
+  --accent: #b00b55;
+  --header-h: 64px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: "Comfortaa", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+header {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  background: rgba(0,0,0,0.72);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  z-index: 100;
+}
+
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo img { width: 28px; height: 28px; }
+.logo span { font-size: 0.95rem; font-weight: 700; }
+
+nav { display: flex; gap: 14px; }
+nav a { font-size: 0.84rem; color: #cfcfcf; text-decoration: none; transition: 0.2s; }
+nav a:hover { color: #fff; }
+
+.page {
+  min-height: 100vh;
+  padding-top: var(--header-h);
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.left {
+  position: relative;
+  min-height: 30vh;
+  display: flex;
+  align-items: flex-end;
+  background: linear-gradient(45deg, #1a1a1a, var(--accent));
+  overflow: hidden;
+}
+
+/* Subtle pattern for the background since we aren't using me.png */
+.left::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.2;
+    background-image: radial-gradient(var(--accent) 0.5px, transparent 0.5px);
+    background-size: 20px 20px;
+}
+
+.overlay {
+  position: relative;
+  z-index: 2;
+  padding: 30px 20px;
+}
+
+.overlay h1 {
+  font-size: clamp(2.5rem, 8vw, 4rem);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+}
+
+.right {
+  background: var(--panel);
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.container {
+  max-width: 500px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+}
+
+input[type="text"], select {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--line);
+    padding: 12px;
+    color: #fff;
+    font-family: inherit;
+    border-radius: 4px;
+}
+
+.color-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.color-picker-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--line);
+    padding: 8px;
+}
+
+input[type="color"] {
+    border: none;
+    width: 30px;
+    height: 30px;
+    background: none;
+    cursor: pointer;
+}
+
+.preview-box {
+    margin-top: 20px;
+    background: #111;
+    padding: 20px;
+    border: 1px solid var(--line);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 250px;
+    position: relative;
+}
+
+#qr-output canvas {
+    max-width: 100%;
+    height: auto;
+}
+
+.btn-primary {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 14px;
+    font-family: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.btn-primary:hover {
+    filter: brightness(1.2);
+    transform: translateY(-2px);
+}
+
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+}
+
+@media(min-width:900px){
+  .page { grid-template-columns: 1fr 1.2fr; }
+  .left, .right { height: calc(100vh - var(--header-h)); }
+  .right { overflow-y: auto; }
+  .overlay { padding: 40px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <img src="logo.png" alt="Logo">
+    <span>William MacLean</span>
+  </div>
+
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="tools.html">Tools</a>
+    <a href="apps.html">Apps</a>
+  </nav>
+</header>
+
+<div class="page">
+  <section class="left">
+    <div class="overlay">
+      <h1>QR<br>Maker</h1>
+    </div>
+  </section>
+
+  <section class="right">
+    <div class="container">
+      
+      <div class="control-group">
+        <label>URL or Text</label>
+        <input type="text" id="qr-input" placeholder="https://..." value="https://williammaclean.com">
+      </div>
+
+      <div class="color-row">
+        <div class="control-group">
+            <label>Foreground</label>
+            <div class="color-picker-wrapper">
+                <input type="color" id="fg-color" value="#b00b55">
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Background</label>
+            <div class="color-picker-wrapper">
+                <input type="color" id="bg-color" value="#000000">
+                <div class="checkbox-row">
+                    <input type="checkbox" id="transparent-bg">
+                    <span style="font-size: 10px;">Trans.</span>
+                </div>
+            </div>
+        </div>
+      </div>
+
+      <div class="color-row">
+          <div class="control-group">
+            <label>Corner Style</label>
+            <select id="corner-style">
+                <option value="square">Square</option>
+                <option value="rounded">Rounded</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label>Dot Pattern</label>
+            <select id="dot-style">
+                <option value="square">Block</option>
+                <option value="dots">Dots</option>
+            </select>
+          </div>
+      </div>
+
+      <div class="preview-box" id="qr-output">
+          </div>
+
+      <button class="btn-primary" id="download-btn">Download PNG</button>
+
+    </div>
+  </section>
+</div>
+
+<script>
+const input = document.getElementById('qr-input');
+const fgColor = document.getElementById('fg-color');
+const bgColor = document.getElementById('bg-color');
+const transCheck = document.getElementById('transparent-bg');
+const cornerStyle = document.getElementById('corner-style');
+const dotStyle = document.getElementById('dot-style');
+const output = document.getElementById('qr-output');
+const downloadBtn = document.getElementById('download-btn');
+
+function generateQR() {
+    const text = input.value || " ";
+    const qr = qrcode(0, 'H');
+    qr.addData(text);
+    qr.make();
+
+    const moduleCount = qr.getModuleCount();
+    const cellSize = 10;
+    const margin = 20;
+    const canvasSize = moduleCount * cellSize + margin * 2;
+
+    output.innerHTML = '';
+    const canvas = document.createElement('canvas');
+    canvas.width = canvasSize;
+    canvas.height = canvasSize;
+    const ctx = canvas.getContext('2d');
+
+    // Background
+    if (!transCheck.checked) {
+        ctx.fillStyle = bgColor.value;
+        ctx.fillRect(0, 0, canvasSize, canvasSize);
+    }
+
+    ctx.fillStyle = fgColor.value;
+
+    for (let row = 0; row < moduleCount; row++) {
+        for (let col = 0; col < moduleCount; col++) {
+            if (qr.isDark(row, col)) {
+                const x = col * cellSize + margin;
+                const y = row * cellSize + margin;
+                
+                // Determine if it's part of the three large position squares
+                const isPositionSquare = (row < 7 && col < 7) || (row < 7 && col >= moduleCount - 7) || (row >= moduleCount - 7 && col < 7);
+
+                if (isPositionSquare && cornerStyle.value === 'rounded') {
+                    // Draw rounded corner blocks
+                    ctx.beginPath();
+                    ctx.roundRect(x, y, cellSize, cellSize, 2);
+                    ctx.fill();
+                } else if (dotStyle.value === 'dots' && !isPositionSquare) {
+                    // Draw circular dots
+                    ctx.beginPath();
+                    ctx.arc(x + cellSize/2, y + cellSize/2, cellSize/3, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    // Standard blocks
+                    ctx.fillRect(x, y, cellSize, cellSize);
+                }
+            }
+        }
+    }
+    output.appendChild(canvas);
+}
+
+downloadBtn.onclick = () => {
+    const canvas = output.querySelector('canvas');
+    const link = document.createElement('a');
+    link.download = 'qrcode.png';
+    link.href = canvas.toDataURL();
+    link.click();
+};
+
+[input, fgColor, bgColor, transCheck, cornerStyle, dotStyle].forEach(el => {
+    el.oninput = generateQR;
+});
+
+// Initial run
+generateQR();
+</script>
+
+</body>
+</html>
