@@ -172,12 +172,6 @@ select:focus{
   gap:10px;
 }
 
-.row-3{
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr;
-  gap:10px;
-}
-
 .color-picker-wrapper,
 .range-wrap,
 .preview-box{
@@ -272,6 +266,7 @@ input[type="range"]{
   max-width:100%;
   height:auto;
   image-rendering:pixelated;
+  image-rendering:crisp-edges;
 }
 
 .actions{
@@ -337,7 +332,6 @@ button:hover{
   }
 
   .row-2,
-  .row-3,
   .actions{
     grid-template-columns:1fr;
   }
@@ -558,22 +552,13 @@ function shouldSkipForEyeBall(row, col, count) {
 }
 
 function drawModule(ctx, style, x, y, size) {
-  const overdraw = 0.35;
-
   switch (style) {
     case 'dots':
       drawCircle(ctx, x + size * 0.14, y + size * 0.14, size * 0.72);
       break;
 
     case 'rounded':
-      roundedRect(
-        ctx,
-        x - overdraw / 2,
-        y - overdraw / 2,
-        size + overdraw,
-        size + overdraw,
-        size * 0.24
-      );
+      roundedRect(ctx, x, y, size, size, size * 0.24);
       ctx.fill();
       break;
 
@@ -582,9 +567,9 @@ function drawModule(ctx, style, x, y, size) {
       break;
 
     case 'spark':
-      roundedRect(ctx, x + size * 0.16, y - 0.1, size * 0.68, size + 0.2, size * 0.16);
+      roundedRect(ctx, x + size * 0.16, y, size * 0.68, size, size * 0.16);
       ctx.fill();
-      roundedRect(ctx, x - 0.1, y + size * 0.16, size + 0.2, size * 0.68, size * 0.16);
+      roundedRect(ctx, x, y + size * 0.16, size, size * 0.68, size * 0.16);
       ctx.fill();
       break;
 
@@ -594,28 +579,30 @@ function drawModule(ctx, style, x, y, size) {
       break;
 
     default:
-      ctx.fillRect(
-        x - overdraw / 2,
-        y - overdraw / 2,
-        size + overdraw,
-        size + overdraw
-      );
+      ctx.fillRect(x, y, size, size);
   }
 }
 
-function fillEyeHole(ctx, x, y, size, outerStyle, fillColor) {
-  ctx.fillStyle = fillColor;
-  drawShape(ctx, outerStyle === 'circle' ? 'circle' : outerStyle, x, y, size);
+function fillEyeHole(ctx, x, y, size, outerStyle, fillColor, isTransparent) {
+  if (isTransparent) {
+    ctx.save();
+    ctx.globalCompositeOperation = 'destination-out';
+    drawShape(ctx, outerStyle === 'circle' ? 'circle' : outerStyle, x, y, size);
+    ctx.restore();
+  } else {
+    ctx.fillStyle = fillColor;
+    drawShape(ctx, outerStyle === 'circle' ? 'circle' : outerStyle, x, y, size);
+  }
 }
 
-function drawEye(ctx, startCol, startRow, cellSize, margin, outerStyle, innerStyle, fg, eyeGapColor) {
+function drawEye(ctx, startCol, startRow, cellSize, margin, outerStyle, innerStyle, fg, eyeGapColor, isTransparent) {
   const x = margin + startCol * cellSize;
   const y = margin + startRow * cellSize;
 
   ctx.fillStyle = fg;
   drawShape(ctx, outerStyle, x, y, cellSize * 7);
 
-  fillEyeHole(ctx, x + cellSize, y + cellSize, cellSize * 5, outerStyle, eyeGapColor);
+  fillEyeHole(ctx, x + cellSize, y + cellSize, cellSize * 5, outerStyle, eyeGapColor, isTransparent);
 
   ctx.fillStyle = fg;
   drawShape(ctx, innerStyle, x + cellSize * 2, y + cellSize * 2, cellSize * 3);
@@ -629,9 +616,9 @@ function updateColorLabels() {
 function generateQR() {
   const text = input.value.trim() || ' ';
   const level = qrLevel.value;
-  const exportSize = Number(sizeRange.value);
+  const requestedSize = Number(sizeRange.value);
 
-  sizeValue.textContent = exportSize;
+  sizeValue.textContent = requestedSize;
   updateColorLabels();
 
   previewBox.classList.toggle('transparent-preview', transCheck.checked);
@@ -643,14 +630,18 @@ function generateQR() {
   const count = qr.getModuleCount();
   const quietZone = 4;
   const totalCells = count + quietZone * 2;
-  const cellSize = exportSize / totalCells;
+
+  const cellSize = Math.max(1, Math.floor(requestedSize / totalCells));
+  const actualSize = cellSize * totalCells;
   const margin = quietZone * cellSize;
 
   output.innerHTML = '';
 
   const canvas = document.createElement('canvas');
-  canvas.width = exportSize;
-  canvas.height = exportSize;
+  canvas.width = actualSize;
+  canvas.height = actualSize;
+  canvas.style.width = requestedSize + 'px';
+  canvas.style.height = requestedSize + 'px';
 
   const ctx = canvas.getContext('2d', { alpha: true });
   ctx.imageSmoothingEnabled = false;
@@ -658,7 +649,7 @@ function generateQR() {
 
   if (!transCheck.checked) {
     ctx.fillStyle = bgColor.value;
-    ctx.fillRect(0, 0, exportSize, exportSize);
+    ctx.fillRect(0, 0, actualSize, actualSize);
   }
 
   ctx.fillStyle = fgColor.value;
@@ -677,9 +668,9 @@ function generateQR() {
 
   const eyeGapColor = bgColor.value;
 
-  drawEye(ctx, 0, 0, cellSize, margin, eyeStyle.value, eyeBallStyle.value, fgColor.value, eyeGapColor);
-  drawEye(ctx, count - 7, 0, cellSize, margin, eyeStyle.value, eyeBallStyle.value, fgColor.value, eyeGapColor);
-  drawEye(ctx, 0, count - 7, cellSize, margin, eyeStyle.value, eyeBallStyle.value, fgColor.value, eyeGapColor);
+  drawEye(ctx, 0, 0, cellSize, margin, eyeStyle.value, eyeBallStyle.value, fgColor.value, eyeGapColor, transCheck.checked);
+  drawEye(ctx, count - 7, 0, cellSize, margin, eyeStyle.value, eyeBallStyle.value, fgColor.value, eyeGapColor, transCheck.checked);
+  drawEye(ctx, 0, count - 7, cellSize, margin, eyeStyle.value, eyeBallStyle.value, fgColor.value, eyeGapColor, transCheck.checked);
 
   output.appendChild(canvas);
 }
@@ -688,9 +679,17 @@ function downloadPNG() {
   const canvas = output.querySelector('canvas');
   if (!canvas) return;
 
+  const exportCanvas = document.createElement('canvas');
+  exportCanvas.width = canvas.width;
+  exportCanvas.height = canvas.height;
+
+  const exportCtx = exportCanvas.getContext('2d', { alpha: true });
+  exportCtx.imageSmoothingEnabled = false;
+  exportCtx.drawImage(canvas, 0, 0);
+
   const link = document.createElement('a');
   link.download = 'qrcode.png';
-  link.href = canvas.toDataURL('image/png');
+  link.href = exportCanvas.toDataURL('image/png');
   link.click();
 }
 
