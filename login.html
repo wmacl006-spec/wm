@@ -4,15 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login</title>
+<link rel="icon" href="logo.png" />
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600&display=swap" rel="stylesheet">
 
 <style>
 :root{
   --bg:#000;
-  --panel:#0a0a0a;
+  --panel:#050505;
   --text:#fff;
+  --muted:#8d8d8d;
+  --line:rgba(255,255,255,0.08);
   --accent:#b00b55;
-  --line:rgba(255,255,255,0.1);
+  --header-h:64px;
 }
 
 *{margin:0;padding:0;box-sizing:border-box}
@@ -21,33 +24,85 @@ body{
   font-family:"Comfortaa",sans-serif;
   background:var(--bg);
   color:var(--text);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  height:100vh;
 }
 
-.wrapper{
+header{
+  position:fixed;
+  inset:0 0 auto 0;
+  height:var(--header-h);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 18px;
+  background:rgba(0,0,0,0.72);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid rgba(255,255,255,0.05);
+}
+
+.logo{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.logo img{width:28px;height:28px}
+
+.logo span{font-size:0.95rem;font-weight:700}
+
+nav{display:flex;gap:14px}
+
+nav a{
+  font-size:0.84rem;
+  color:#cfcfcf;
+}
+
+nav a:hover{color:#fff}
+
+.page{
+  min-height:100vh;
+  padding-top:var(--header-h);
+  display:grid;
+  grid-template-columns:1fr;
+}
+
+.left{
+  position:relative;
+  min-height:50vh;
+}
+
+.left img{
+  position:absolute;
+  inset:0;
   width:100%;
-  max-width:380px;
-  padding:20px;
+  height:100%;
+  object-fit:cover;
+  filter:brightness(0.7);
+}
+
+.overlay{
+  position:relative;
+  z-index:2;
+  padding:24px;
+}
+
+.overlay h1{
+  font-size:2.6rem;
+  line-height:0.9;
+}
+
+.right{
+  background:var(--panel);
+  padding:22px 16px;
 }
 
 .box{
-  border:1px solid var(--line);
-  padding:20px;
-}
-
-h1{
-  font-size:1.2rem;
-  margin-bottom:16px;
-  font-weight:600;
+  max-width:340px;
 }
 
 input{
   width:100%;
   height:46px;
-  margin-bottom:12px;
+  margin-bottom:10px;
   background:transparent;
   border:1px solid var(--line);
   color:#fff;
@@ -68,89 +123,119 @@ button{
   color:#fff;
   font-family:inherit;
   cursor:pointer;
-  margin-bottom:10px;
+  margin-bottom:8px;
 }
 
 .row{
   display:flex;
-  justify-content:space-between;
-  gap:10px;
+  gap:8px;
 }
 
 .row button{
-  flex:1;
   background:transparent;
   border:1px solid var(--line);
 }
 
 .status{
-  margin-top:14px;
+  margin-top:10px;
   font-size:0.8rem;
-  color:#aaa;
+  color:var(--muted);
 }
 
 .plus{
-  margin-top:16px;
-  padding-top:12px;
+  margin-top:12px;
   border-top:1px solid var(--line);
+  padding-top:10px;
   font-size:0.85rem;
 }
 
 .hidden{display:none}
 
+@media(min-width:900px){
+  .page{
+    grid-template-columns:1fr 1fr;
+    min-height:calc(100vh - var(--header-h));
+  }
+
+  .left, .right{
+    min-height:calc(100vh - var(--header-h));
+  }
+
+  .overlay{
+    padding:34px;
+  }
+
+  .overlay h1{
+    font-size:4rem;
+  }
+
+  .right{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:40px;
+  }
+}
 </style>
 </head>
 <body>
 
-<div class="wrapper">
-  <div class="box">
-    <h1 id="title">Login</h1>
-
-    <form id="form">
-      <input id="email" type="email" placeholder="email" required>
-      <input id="password" type="password" placeholder="password" required>
-      <button type="submit" id="submit">login</button>
-    </form>
-
-    <div class="row">
-      <button id="toggle">create</button>
-      <button id="logout">logout</button>
-    </div>
-
-    <div class="status" id="status">not signed in</div>
-
-    <div class="plus hidden" id="plus">
-      plus content unlocked
-    </div>
+<header>
+  <div class="logo">
+    <img src="logo.png">
+    <span>William MacLean</span>
   </div>
+
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="tools.html">Tools</a>
+    <a href="apps.html">Apps</a>
+    <a href="login.html">Login</a>
+  </nav>
+</header>
+
+<div class="page">
+  <section class="left">
+    <img src="me.png">
+    <div class="overlay">
+      <h1>Login</h1>
+    </div>
+  </section>
+
+  <section class="right">
+    <div class="box">
+      <form id="form">
+        <input id="email" type="email" placeholder="email" required>
+        <input id="password" type="password" placeholder="password" required>
+        <button type="submit" id="submit">login</button>
+      </form>
+
+      <div class="row">
+        <button id="toggle">create</button>
+        <button id="logout">logout</button>
+      </div>
+
+      <div class="status" id="status">not signed in</div>
+
+      <div class="plus hidden" id="plus">plus content</div>
+    </div>
+  </section>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import {
-  getFirestore,
-  doc,
-  getDoc,
-  setDoc
-} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-const firebaseConfig = {
+const app = initializeApp({
   apiKey: "AIzaSyBLQmCVdVkz_sxxdfvXshDmoe3PeYIUMAY",
   authDomain: "site-78972.firebaseapp.com",
   projectId: "site-78972",
   storageBucket: "site-78972.firebasestorage.app",
   messagingSenderId: "519857042562",
   appId: "1:519857042562:web:64ff26e5f795208081f09b"
-};
+});
 
-const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
@@ -162,43 +247,29 @@ const toggle = document.getElementById("toggle");
 const logoutBtn = document.getElementById("logout");
 const statusEl = document.getElementById("status");
 const plusEl = document.getElementById("plus");
-const title = document.getElementById("title");
 
 let mode = "login";
 
-function switchMode(){
-  if(mode === "login"){
-    mode = "signup";
-    submit.textContent = "create";
-    title.textContent = "Create";
-    toggle.textContent = "login";
-  }else{
-    mode = "login";
-    submit.textContent = "login";
-    title.textContent = "Login";
-    toggle.textContent = "create";
-  }
-}
+toggle.onclick = ()=>{
+  mode = mode === "login" ? "signup" : "login";
+  submit.textContent = mode === "login" ? "login" : "create";
+  toggle.textContent = mode === "login" ? "create" : "login";
+};
 
-toggle.onclick = switchMode;
-
-form.onsubmit = async (e)=>{
+form.onsubmit = async e=>{
   e.preventDefault();
 
   if(mode === "login"){
     await signInWithEmailAndPassword(auth, email.value, password.value);
   }else{
     const cred = await createUserWithEmailAndPassword(auth, email.value, password.value);
-
-    await setDoc(doc(db, "users", cred.user.uid), {
-      status: "default"
-    });
+    await setDoc(doc(db, "users", cred.user.uid), { status:"default" });
   }
 };
 
 logoutBtn.onclick = ()=> signOut(auth);
 
-onAuthStateChanged(auth, async (user)=>{
+onAuthStateChanged(auth, async user=>{
   if(!user){
     statusEl.textContent = "not signed in";
     plusEl.classList.add("hidden");
@@ -208,9 +279,7 @@ onAuthStateChanged(auth, async (user)=>{
   statusEl.textContent = user.email;
 
   const snap = await getDoc(doc(db, "users", user.uid));
-  const data = snap.data();
-
-  if(data?.status === "plus"){
+  if(snap.data()?.status === "plus"){
     plusEl.classList.remove("hidden");
   }else{
     plusEl.classList.add("hidden");
