@@ -1,212 +1,335 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>QR Code Maker | William MacLean</title>
 <link rel="icon" href="logo.png" />
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 
 <style>
-:root {
-  --bg: #000;
-  --panel: #050505;
-  --text: #fff;
-  --muted: #8d8d8d;
-  --line: rgba(255,255,255,0.08);
-  --accent: #b00b55;
-  --header-h: 64px;
+:root{
+  --bg:#000;
+  --panel:#050505;
+  --panel-2:#0d0d0d;
+  --text:#fff;
+  --muted:#8d8d8d;
+  --line:rgba(255,255,255,0.08);
+  --line-strong:rgba(255,255,255,0.14);
+  --accent:#b00b55;
+  --header-h:64px;
+  --radius:18px;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+*{margin:0;padding:0;box-sizing:border-box}
 
-body {
-  font-family: "Comfortaa", sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  overflow-x: hidden;
+body{
+  font-family:"Comfortaa",sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  overflow-x:hidden;
 }
 
-header {
-  position: fixed;
-  inset: 0 0 auto 0;
-  height: var(--header-h);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 18px;
-  background: rgba(0,0,0,0.72);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-  z-index: 100;
+header{
+  position:fixed;
+  inset:0 0 auto 0;
+  height:var(--header-h);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 18px;
+  background:rgba(0,0,0,0.78);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  z-index:100;
 }
 
-.logo { display: flex; align-items: center; gap: 10px; }
-.logo img { width: 28px; height: 28px; }
-.logo span { font-size: 0.95rem; font-weight: 700; }
+.logo{display:flex;align-items:center;gap:10px}
+.logo img{width:28px;height:28px}
+.logo span{font-size:.95rem;font-weight:700}
 
-nav { display: flex; gap: 14px; }
-nav a { font-size: 0.84rem; color: #cfcfcf; text-decoration: none; transition: 0.2s; }
-nav a:hover { color: #fff; }
+nav{display:flex;gap:14px}
+nav a{
+  font-size:.84rem;
+  color:#cfcfcf;
+  text-decoration:none;
+  transition:.2s;
+}
+nav a:hover{color:#fff}
 
-.page {
-  min-height: 100vh;
-  padding-top: var(--header-h);
-  display: grid;
-  grid-template-columns: 1fr;
+.page{
+  min-height:100vh;
+  padding-top:var(--header-h);
+  display:grid;
+  grid-template-columns:1fr;
 }
 
-.left {
-  position: relative;
-  min-height: 30vh;
-  display: flex;
-  align-items: flex-end;
-  background: linear-gradient(45deg, #1a1a1a, var(--accent));
-  overflow: hidden;
+.left{
+  position:relative;
+  min-height:28vh;
+  display:flex;
+  align-items:flex-end;
+  background:
+    radial-gradient(circle at top right, rgba(176,11,85,.38), transparent 34%),
+    linear-gradient(135deg, #121212 0%, #050505 48%, #190912 100%);
+  overflow:hidden;
 }
 
-/* Subtle pattern for the background since we aren't using me.png */
-.left::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    opacity: 0.2;
-    background-image: radial-gradient(var(--accent) 0.5px, transparent 0.5px);
-    background-size: 20px 20px;
+.left::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  opacity:.22;
+  background-image:
+    radial-gradient(var(--accent) .8px, transparent .8px),
+    linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+  background-size:22px 22px, 22px 22px, 22px 22px;
 }
 
-.overlay {
-  position: relative;
-  z-index: 2;
-  padding: 30px 20px;
+.overlay{
+  position:relative;
+  z-index:2;
+  padding:30px 20px;
 }
 
-.overlay h1 {
-  font-size: clamp(2.5rem, 8vw, 4rem);
-  line-height: 0.9;
-  letter-spacing: -0.04em;
+.overlay h1{
+  font-size:clamp(2.5rem, 8vw, 4.3rem);
+  line-height:.9;
+  letter-spacing:-.05em;
+}
+.overlay p{
+  margin-top:12px;
+  color:#d0d0d0;
+  font-size:.9rem;
+  max-width:320px;
+  line-height:1.5;
 }
 
-.right {
-  background: var(--panel);
-  padding: 40px 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.right{
+  background:var(--panel);
+  padding:22px;
+  display:flex;
+  justify-content:center;
 }
 
-.container {
-  max-width: 500px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+.container{
+  width:100%;
+  max-width:1080px;
+  display:grid;
+  gap:20px;
 }
 
-.control-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+.controls,
+.preview-wrap{
+  background:linear-gradient(180deg, rgba(255,255,255,.018), rgba(255,255,255,.008));
+  border:1px solid var(--line);
+  border-radius:24px;
+  box-shadow:0 18px 40px rgba(0,0,0,.26);
 }
 
-label {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    color: var(--muted);
-    letter-spacing: 0.1em;
+.controls{
+  padding:18px;
+  display:grid;
+  gap:16px;
 }
 
-input[type="text"], select {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid var(--line);
-    padding: 12px;
-    color: #fff;
-    font-family: inherit;
-    border-radius: 4px;
+.group{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
 }
 
-.color-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+label{
+  font-size:.72rem;
+  text-transform:uppercase;
+  letter-spacing:.14em;
+  color:var(--muted);
 }
 
-.color-picker-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid var(--line);
-    padding: 8px;
+input[type="text"], select{
+  width:100%;
+  background:var(--panel-2);
+  border:1px solid var(--line);
+  color:#fff;
+  border-radius:14px;
+  padding:13px 14px;
+  font-family:inherit;
+  outline:none;
 }
 
-input[type="color"] {
-    border: none;
-    width: 30px;
-    height: 30px;
-    background: none;
-    cursor: pointer;
+input[type="text"]:focus, select:focus{
+  border-color:rgba(176,11,85,.55);
+  box-shadow:0 0 0 3px rgba(176,11,85,.14);
 }
 
-.preview-box {
-    margin-top: 20px;
-    background: #111;
-    padding: 20px;
-    border: 1px solid var(--line);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 250px;
-    position: relative;
+.grid-2,.grid-3{
+  display:grid;
+  gap:12px;
+}
+.grid-2{grid-template-columns:1fr 1fr}
+.grid-3{grid-template-columns:1fr 1fr 1fr}
+
+.color-box{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-height:50px;
+  border-radius:14px;
+  padding:8px 10px;
+  background:var(--panel-2);
+  border:1px solid var(--line);
 }
 
-#qr-output canvas {
-    max-width: 100%;
-    height: auto;
+input[type="color"]{
+  width:34px;
+  height:34px;
+  border:none;
+  background:none;
+  cursor:pointer;
+  flex:0 0 auto;
 }
 
-.btn-primary {
-    background: var(--accent);
-    color: white;
-    border: none;
-    padding: 14px;
-    font-family: inherit;
-    font-weight: 700;
-    cursor: pointer;
-    transition: 0.3s;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+.small-toggle{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:.82rem;
+  color:#d7d7d7;
 }
 
-.btn-primary:hover {
-    filter: brightness(1.2);
-    transform: translateY(-2px);
+.range-box{
+  background:var(--panel-2);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:12px 14px;
 }
 
-.checkbox-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.85rem;
+input[type="range"]{
+  width:100%;
+  accent-color:var(--accent);
 }
 
-@media(min-width:900px){
-  .page { grid-template-columns: 1fr 1.2fr; }
-  .left, .right { height: calc(100vh - var(--header-h)); }
-  .right { overflow-y: auto; }
-  .overlay { padding: 40px; }
+.value-note{
+  margin-top:6px;
+  font-size:.82rem;
+  color:#d0d0d0;
+}
+
+.preview-wrap{
+  padding:18px;
+}
+
+.preview-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
+  flex-wrap:wrap;
+}
+
+.preview-header h2{
+  font-size:1rem;
+}
+
+.preview-header p{
+  font-size:.8rem;
+  color:var(--muted);
+}
+
+.preview-box{
+  min-height:300px;
+  border-radius:22px;
+  background:
+    radial-gradient(circle at top left, rgba(176,11,85,.09), transparent 24%),
+    #0a0a0a;
+  border:1px solid var(--line);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  overflow:hidden;
+}
+
+#qr-output{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+}
+
+#qr-output canvas{
+  display:block;
+  max-width:100%;
+  height:auto;
+  image-rendering:auto;
+  filter:drop-shadow(0 12px 28px rgba(0,0,0,.38));
+}
+
+.actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:14px;
+}
+
+button{
+  border:none;
+  border-radius:16px;
+  padding:14px 16px;
+  font-family:inherit;
+  font-weight:700;
+  cursor:pointer;
+  transition:.2s ease;
+}
+
+.btn-primary{
+  background:var(--accent);
+  color:#fff;
+}
+
+.btn-secondary{
+  background:#121212;
+  color:#fff;
+  border:1px solid var(--line-strong);
+}
+
+button:hover{
+  transform:translateY(-1px);
+  filter:brightness(1.05);
+}
+
+.tip{
+  color:#a9a9a9;
+  font-size:.82rem;
+  line-height:1.5;
+}
+
+@media (min-width: 920px){
+  .page{grid-template-columns:1fr 1.2fr}
+  .left,.right{min-height:calc(100vh - var(--header-h))}
+  .right{padding:26px}
+  .container{grid-template-columns:minmax(320px, 420px) 1fr;align-items:start}
+  .preview-wrap{position:sticky;top:90px}
+  .overlay{padding:42px}
+}
+
+@media (max-width: 640px){
+  nav{gap:10px}
+  nav a{font-size:.76rem}
+  .grid-2,.grid-3,.actions{grid-template-columns:1fr}
+  .preview-box{min-height:250px}
 }
 </style>
 </head>
 <body>
-
 <header>
   <div class="logo">
     <img src="logo.png" alt="Logo">
     <span>William MacLean</span>
   </div>
-
   <nav>
     <a href="index.html">Home</a>
     <a href="tools.html">Tools</a>
@@ -218,58 +341,113 @@ input[type="color"] {
   <section class="left">
     <div class="overlay">
       <h1>QR<br>Maker</h1>
+      <p>Smaller default code, cleaner preview, and a lot more styles to play with.</p>
     </div>
   </section>
 
   <section class="right">
     <div class="container">
-      
-      <div class="control-group">
-        <label>URL or Text</label>
-        <input type="text" id="qr-input" placeholder="https://..." value="https://williammaclean.com">
-      </div>
+      <div class="controls">
+        <div class="group">
+          <label>URL or Text</label>
+          <input type="text" id="qr-input" placeholder="https://..." value="https://williammaclean.com">
+        </div>
 
-      <div class="color-row">
-        <div class="control-group">
+        <div class="grid-2">
+          <div class="group">
             <label>Foreground</label>
-            <div class="color-picker-wrapper">
-                <input type="color" id="fg-color" value="#b00b55">
+            <div class="color-box">
+              <input type="color" id="fg-color" value="#b00b55">
+              <span>#b00b55</span>
             </div>
-        </div>
-        <div class="control-group">
+          </div>
+          <div class="group">
             <label>Background</label>
-            <div class="color-picker-wrapper">
-                <input type="color" id="bg-color" value="#000000">
-                <div class="checkbox-row">
-                    <input type="checkbox" id="transparent-bg">
-                    <span style="font-size: 10px;">Trans.</span>
-                </div>
+            <div class="color-box">
+              <input type="color" id="bg-color" value="#ffffff">
+              <span>#ffffff</span>
             </div>
+          </div>
+        </div>
+
+        <div class="small-toggle">
+          <input type="checkbox" id="transparent-bg">
+          <span>Transparent background</span>
+        </div>
+
+        <div class="grid-2">
+          <div class="group">
+            <label>Pattern</label>
+            <select id="dot-style">
+              <option value="square">Block</option>
+              <option value="rounded">Rounded</option>
+              <option value="dots">Dots</option>
+              <option value="diamond">Diamond</option>
+              <option value="spark">Spark</option>
+              <option value="thin">Thin</option>
+            </select>
+          </div>
+          <div class="group">
+            <label>Corner Eye Style</label>
+            <select id="eye-style">
+              <option value="square">Square</option>
+              <option value="rounded">Rounded</option>
+              <option value="extra-rounded">Soft Rounded</option>
+              <option value="circle">Circle</option>
+              <option value="diamond">Diamond</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="group">
+            <label>Inner Eye</label>
+            <select id="eye-ball-style">
+              <option value="square">Square</option>
+              <option value="rounded">Rounded</option>
+              <option value="circle">Circle</option>
+              <option value="diamond">Diamond</option>
+            </select>
+          </div>
+          <div class="group">
+            <label>Error Correction</label>
+            <select id="qr-level">
+              <option value="L">Low</option>
+              <option value="M">Medium</option>
+              <option value="Q">High</option>
+              <option value="H" selected>Very High</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="group">
+          <label>Size</label>
+          <div class="range-box">
+            <input type="range" id="size-range" min="180" max="420" step="10" value="240">
+            <div class="value-note">Preview / export size: <span id="size-value">240</span>px</div>
+          </div>
+        </div>
+
+        <p class="tip">Default size is smaller now so it feels closer to your old generator, but you can still bump it up any time.</p>
+      </div>
+
+      <div class="preview-wrap">
+        <div class="preview-header">
+          <div>
+            <h2>Preview</h2>
+            <p>Live update while you change style options.</p>
+          </div>
+        </div>
+
+        <div class="preview-box">
+          <div id="qr-output"></div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-primary" id="download-btn">Download PNG</button>
+          <button class="btn-secondary" id="reset-btn">Reset Style</button>
         </div>
       </div>
-
-      <div class="color-row">
-          <div class="control-group">
-            <label>Corner Style</label>
-            <select id="corner-style">
-                <option value="square">Square</option>
-                <option value="rounded">Rounded</option>
-            </select>
-          </div>
-          <div class="control-group">
-            <label>Dot Pattern</label>
-            <select id="dot-style">
-                <option value="square">Block</option>
-                <option value="dots">Dots</option>
-            </select>
-          </div>
-      </div>
-
-      <div class="preview-box" id="qr-output">
-          </div>
-
-      <button class="btn-primary" id="download-btn">Download PNG</button>
-
     </div>
   </section>
 </div>
@@ -279,80 +457,232 @@ const input = document.getElementById('qr-input');
 const fgColor = document.getElementById('fg-color');
 const bgColor = document.getElementById('bg-color');
 const transCheck = document.getElementById('transparent-bg');
-const cornerStyle = document.getElementById('corner-style');
 const dotStyle = document.getElementById('dot-style');
+const eyeStyle = document.getElementById('eye-style');
+const eyeBallStyle = document.getElementById('eye-ball-style');
+const qrLevel = document.getElementById('qr-level');
+const sizeRange = document.getElementById('size-range');
+const sizeValue = document.getElementById('size-value');
 const output = document.getElementById('qr-output');
 const downloadBtn = document.getElementById('download-btn');
+const resetBtn = document.getElementById('reset-btn');
 
-function generateQR() {
-    const text = input.value || " ";
-    const qr = qrcode(0, 'H');
-    qr.addData(text);
-    qr.make();
-
-    const moduleCount = qr.getModuleCount();
-    const cellSize = 10;
-    const margin = 20;
-    const canvasSize = moduleCount * cellSize + margin * 2;
-
-    output.innerHTML = '';
-    const canvas = document.createElement('canvas');
-    canvas.width = canvasSize;
-    canvas.height = canvasSize;
-    const ctx = canvas.getContext('2d');
-
-    // Background
-    if (!transCheck.checked) {
-        ctx.fillStyle = bgColor.value;
-        ctx.fillRect(0, 0, canvasSize, canvasSize);
-    }
-
-    ctx.fillStyle = fgColor.value;
-
-    for (let row = 0; row < moduleCount; row++) {
-        for (let col = 0; col < moduleCount; col++) {
-            if (qr.isDark(row, col)) {
-                const x = col * cellSize + margin;
-                const y = row * cellSize + margin;
-                
-                // Determine if it's part of the three large position squares
-                const isPositionSquare = (row < 7 && col < 7) || (row < 7 && col >= moduleCount - 7) || (row >= moduleCount - 7 && col < 7);
-
-                if (isPositionSquare && cornerStyle.value === 'rounded') {
-                    // Draw rounded corner blocks
-                    ctx.beginPath();
-                    ctx.roundRect(x, y, cellSize, cellSize, 2);
-                    ctx.fill();
-                } else if (dotStyle.value === 'dots' && !isPositionSquare) {
-                    // Draw circular dots
-                    ctx.beginPath();
-                    ctx.arc(x + cellSize/2, y + cellSize/2, cellSize/3, 0, Math.PI * 2);
-                    ctx.fill();
-                } else {
-                    // Standard blocks
-                    ctx.fillRect(x, y, cellSize, cellSize);
-                }
-            }
-        }
-    }
-    output.appendChild(canvas);
+function roundedRect(ctx, x, y, w, h, r) {
+  const radius = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.arcTo(x + w, y, x + w, y + h, radius);
+  ctx.arcTo(x + w, y + h, x, y + h, radius);
+  ctx.arcTo(x, y + h, x, y, radius);
+  ctx.arcTo(x, y, x + w, y, radius);
+  ctx.closePath();
 }
 
-downloadBtn.onclick = () => {
-    const canvas = output.querySelector('canvas');
-    const link = document.createElement('a');
-    link.download = 'qrcode.png';
-    link.href = canvas.toDataURL();
-    link.click();
-};
+function drawDiamond(ctx, x, y, size) {
+  const half = size / 2;
+  ctx.beginPath();
+  ctx.moveTo(x + half, y);
+  ctx.lineTo(x + size, y + half);
+  ctx.lineTo(x + half, y + size);
+  ctx.lineTo(x, y + half);
+  ctx.closePath();
+  ctx.fill();
+}
 
-[input, fgColor, bgColor, transCheck, cornerStyle, dotStyle].forEach(el => {
-    el.oninput = generateQR;
+function drawCircle(ctx, x, y, size) {
+  ctx.beginPath();
+  ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawShape(ctx, style, x, y, size) {
+  switch (style) {
+    case 'rounded':
+      roundedRect(ctx, x, y, size, size, size * 0.28);
+      ctx.fill();
+      break;
+    case 'extra-rounded':
+      roundedRect(ctx, x, y, size, size, size * 0.42);
+      ctx.fill();
+      break;
+    case 'circle':
+      drawCircle(ctx, x, y, size);
+      break;
+    case 'diamond':
+      drawDiamond(ctx, x, y, size);
+      break;
+    default:
+      ctx.fillRect(x, y, size, size);
+  }
+}
+
+function inFinder(row, col, count) {
+  return (
+    (row < 7 && col < 7) ||
+    (row < 7 && col >= count - 7) ||
+    (row >= count - 7 && col < 7)
+  );
+}
+
+function inFinderOuter(row, col, count) {
+  return (
+    (row <= 6 && col <= 6) ||
+    (row <= 6 && col >= count - 7) ||
+    (row >= count - 7 && col <= 6)
+  );
+}
+
+function inFinderInner(row, col, count) {
+  return (
+    (row >= 2 && row <= 4 && col >= 2 && col <= 4) ||
+    (row >= 2 && row <= 4 && col >= count - 5 && col <= count - 3) ||
+    (row >= count - 5 && row <= count - 3 && col >= 2 && col <= 4)
+  );
+}
+
+function shouldSkipForEyeRing(row, col, count) {
+  if (!inFinder(row, col, count)) return false;
+
+  const inTopLeftRing = row <= 6 && col <= 6 && !(row >= 1 && row <= 5 && col >= 1 && col <= 5);
+  const inTopRightRing = row <= 6 && col >= count - 7 && !(row >= 1 && row <= 5 && col >= count - 6 && col <= count - 2);
+  const inBottomLeftRing = row >= count - 7 && col <= 6 && !(row >= count - 6 && row <= count - 2 && col >= 1 && col <= 5);
+
+  return inTopLeftRing || inTopRightRing || inBottomLeftRing;
+}
+
+function shouldSkipForEyeBall(row, col, count) {
+  return inFinderInner(row, col, count);
+}
+
+function drawModule(ctx, style, x, y, size) {
+  switch (style) {
+    case 'dots':
+      drawCircle(ctx, x + size * 0.18, y + size * 0.18, size * 0.64);
+      break;
+    case 'rounded':
+      roundedRect(ctx, x + size * 0.04, y + size * 0.04, size * 0.92, size * 0.92, size * 0.28);
+      ctx.fill();
+      break;
+    case 'diamond':
+      drawDiamond(ctx, x + size * 0.08, y + size * 0.08, size * 0.84);
+      break;
+    case 'spark':
+      roundedRect(ctx, x + size * 0.22, y + size * 0.06, size * 0.56, size * 0.88, size * 0.2);
+      ctx.fill();
+      roundedRect(ctx, x + size * 0.06, y + size * 0.22, size * 0.88, size * 0.56, size * 0.2);
+      ctx.fill();
+      break;
+    case 'thin':
+      roundedRect(ctx, x + size * 0.2, y + size * 0.2, size * 0.6, size * 0.6, size * 0.12);
+      ctx.fill();
+      break;
+    default:
+      ctx.fillRect(x, y, size, size);
+  }
+}
+
+function drawEye(ctx, startCol, startRow, cellSize, margin, outerStyle, innerStyle, color) {
+  const x = margin + startCol * cellSize;
+  const y = margin + startRow * cellSize;
+
+  ctx.fillStyle = color;
+
+  // outer 7x7
+  drawShape(ctx, outerStyle, x, y, cellSize * 7);
+
+  // hole 5x5
+  ctx.save();
+  ctx.globalCompositeOperation = 'destination-out';
+  drawShape(ctx, outerStyle === 'circle' ? 'circle' : outerStyle, x + cellSize, y + cellSize, cellSize * 5);
+  ctx.restore();
+
+  // inner 3x3
+  ctx.fillStyle = color;
+  drawShape(ctx, innerStyle, x + cellSize * 2, y + cellSize * 2, cellSize * 3);
+}
+
+function generateQR() {
+  const text = input.value.trim() || " ";
+  const level = qrLevel.value;
+  const exportSize = Number(sizeRange.value);
+  sizeValue.textContent = exportSize;
+
+  const qr = qrcode(0, level);
+  qr.addData(text);
+  qr.make();
+
+  const count = qr.getModuleCount();
+  const quietZone = 4;
+  const canvasSize = exportSize;
+  const cellSize = canvasSize / (count + quietZone * 2);
+  const margin = quietZone * cellSize;
+
+  output.innerHTML = '';
+  const canvas = document.createElement('canvas');
+  canvas.width = canvasSize;
+  canvas.height = canvasSize;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (!transCheck.checked) {
+    ctx.fillStyle = bgColor.value;
+    ctx.fillRect(0, 0, canvasSize, canvasSize);
+  }
+
+  ctx.fillStyle = fgColor.value;
+
+  for (let row = 0; row < count; row++) {
+    for (let col = 0; col < count; col++) {
+      if (!qr.isDark(row, col)) continue;
+      if (shouldSkipForEyeRing(row, col, count)) continue;
+      if (shouldSkipForEyeBall(row, col, count)) continue;
+
+      const x = margin + col * cellSize;
+      const y = margin + row * cellSize;
+      drawModule(ctx, dotStyle.value, x, y, cellSize);
+    }
+  }
+
+  drawEye(ctx, 0, 0, cellSize, margin, eyeStyle.value, eyeBallStyle.value, fgColor.value);
+  drawEye(ctx, count - 7, 0, cellSize, margin, eyeStyle.value, eyeBallStyle.value, fgColor.value);
+  drawEye(ctx, 0, count - 7, cellSize, margin, eyeStyle.value, eyeBallStyle.value, fgColor.value);
+
+  output.appendChild(canvas);
+}
+
+function downloadPNG() {
+  const canvas = output.querySelector('canvas');
+  if (!canvas) return;
+  const link = document.createElement('a');
+  link.download = 'qrcode.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function resetStyle() {
+  fgColor.value = '#b00b55';
+  bgColor.value = '#ffffff';
+  transCheck.checked = false;
+  dotStyle.value = 'square';
+  eyeStyle.value = 'square';
+  eyeBallStyle.value = 'square';
+  qrLevel.value = 'H';
+  sizeRange.value = 240;
+  generateQR();
+}
+
+[
+  input, fgColor, bgColor, transCheck, dotStyle,
+  eyeStyle, eyeBallStyle, qrLevel, sizeRange
+].forEach(el => {
+  el.addEventListener('input', generateQR);
+  el.addEventListener('change', generateQR);
 });
 
-// Initial run
+downloadBtn.addEventListener('click', downloadPNG);
+resetBtn.addEventListener('click', resetStyle);
+
 generateQR();
 </script>
-
 </body>
 </html>
