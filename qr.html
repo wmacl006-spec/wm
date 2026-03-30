@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>QR Code Maker | William MacLean</title>
 <link rel="icon" href="logo.png" />
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet">
@@ -12,17 +12,24 @@
 :root{
   --bg:#000;
   --panel:#050505;
-  --panel-2:#0d0d0d;
+  --panel-2:#0a0a0a;
   --text:#fff;
   --muted:#8d8d8d;
   --line:rgba(255,255,255,0.08);
   --line-strong:rgba(255,255,255,0.14);
   --accent:#b00b55;
   --header-h:64px;
-  --radius:18px;
 }
 
-*{margin:0;padding:0;box-sizing:border-box}
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+html, body{
+  min-height:100%;
+}
 
 body{
   font-family:"Comfortaa",sans-serif;
@@ -39,24 +46,43 @@ header{
   align-items:center;
   justify-content:space-between;
   padding:0 18px;
-  background:rgba(0,0,0,0.78);
-  backdrop-filter:blur(12px);
-  border-bottom:1px solid rgba(255,255,255,0.06);
+  background:rgba(0,0,0,0.72);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid rgba(255,255,255,0.05);
   z-index:100;
 }
 
-.logo{display:flex;align-items:center;gap:10px}
-.logo img{width:28px;height:28px}
-.logo span{font-size:.95rem;font-weight:700}
+.logo{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
 
-nav{display:flex;gap:14px}
+.logo img{
+  width:28px;
+  height:28px;
+}
+
+.logo span{
+  font-size:0.95rem;
+  font-weight:700;
+}
+
+nav{
+  display:flex;
+  gap:14px;
+}
+
 nav a{
-  font-size:.84rem;
+  font-size:0.84rem;
   color:#cfcfcf;
   text-decoration:none;
-  transition:.2s;
+  transition:0.2s;
 }
-nav a:hover{color:#fff}
+
+nav a:hover{
+  color:#fff;
+}
 
 .page{
   min-height:100vh;
@@ -70,22 +96,17 @@ nav a:hover{color:#fff}
   min-height:28vh;
   display:flex;
   align-items:flex-end;
-  background:
-    radial-gradient(circle at top right, rgba(176,11,85,.38), transparent 34%),
-    linear-gradient(135deg, #121212 0%, #050505 48%, #190912 100%);
+  background:linear-gradient(45deg, #171717, #2b0c1a 55%, var(--accent));
   overflow:hidden;
 }
 
-.left::before{
+.left::after{
   content:"";
   position:absolute;
   inset:0;
-  opacity:.22;
-  background-image:
-    radial-gradient(var(--accent) .8px, transparent .8px),
-    linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
-  background-size:22px 22px, 22px 22px, 22px 22px;
+  opacity:0.16;
+  background-image:radial-gradient(var(--accent) 0.6px, transparent 0.6px);
+  background-size:20px 20px;
 }
 
 .overlay{
@@ -95,113 +116,114 @@ nav a:hover{color:#fff}
 }
 
 .overlay h1{
-  font-size:clamp(2.5rem, 8vw, 4.3rem);
-  line-height:.9;
-  letter-spacing:-.05em;
+  font-size:clamp(2.5rem, 8vw, 4rem);
+  line-height:0.9;
+  letter-spacing:-0.04em;
 }
 
 .right{
   background:var(--panel);
-  padding:22px;
+  padding:26px 18px 32px;
   display:flex;
   justify-content:center;
 }
 
 .container{
   width:100%;
-  max-width:1080px;
-  display:grid;
-  gap:20px;
+  max-width:560px;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
 }
 
-.controls,
-.preview-wrap{
-  background:linear-gradient(180deg, rgba(255,255,255,.018), rgba(255,255,255,.008));
-  border:1px solid var(--line);
-  border-radius:24px;
-  box-shadow:0 18px 40px rgba(0,0,0,.26);
-}
-
-.controls{
-  padding:18px;
-  display:grid;
-  gap:16px;
-}
-
-.group{
+.control-group{
   display:flex;
   flex-direction:column;
   gap:8px;
 }
 
 label{
-  font-size:.72rem;
+  font-size:0.74rem;
   text-transform:uppercase;
-  letter-spacing:.14em;
   color:var(--muted);
+  letter-spacing:0.1em;
 }
 
-input[type="text"], select{
+input[type="text"],
+select{
   width:100%;
   background:var(--panel-2);
   border:1px solid var(--line);
+  padding:12px 13px;
   color:#fff;
-  border-radius:14px;
-  padding:13px 14px;
   font-family:inherit;
+  border-radius:4px;
   outline:none;
 }
 
-input[type="text"]:focus, select:focus{
-  border-color:rgba(176,11,85,.55);
-  box-shadow:0 0 0 3px rgba(176,11,85,.14);
+input[type="text"]:focus,
+select:focus{
+  border-color:rgba(176,11,85,0.5);
 }
 
-.grid-2,.grid-3{
+.row-2{
   display:grid;
-  gap:12px;
-}
-.grid-2{grid-template-columns:1fr 1fr}
-.grid-3{grid-template-columns:1fr 1fr 1fr}
-
-.color-box{
-  display:flex;
-  align-items:center;
+  grid-template-columns:1fr 1fr;
   gap:10px;
-  min-height:50px;
-  border-radius:14px;
-  padding:8px 10px;
+}
+
+.row-3{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:10px;
+}
+
+.color-picker-wrapper,
+.range-wrap,
+.preview-box{
   background:var(--panel-2);
   border:1px solid var(--line);
 }
 
-.color-box span{
-  font-size:.86rem;
-  color:#e2e2e2;
+.color-picker-wrapper{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:8px 10px;
+  min-height:48px;
+  border-radius:4px;
 }
 
 input[type="color"]{
-  width:34px;
-  height:34px;
   border:none;
+  width:30px;
+  height:30px;
   background:none;
   cursor:pointer;
   flex:0 0 auto;
 }
 
-.small-toggle{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  font-size:.82rem;
-  color:#d7d7d7;
+.color-value{
+  font-size:0.85rem;
+  color:#ddd;
 }
 
-.range-box{
-  background:var(--panel-2);
-  border:1px solid var(--line);
-  border-radius:14px;
-  padding:12px 14px;
+.checkbox-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:0.85rem;
+  color:#ddd;
+  margin-top:2px;
+}
+
+.checkbox-row input{
+  accent-color:var(--accent);
+}
+
+.range-wrap{
+  padding:12px;
+  border-radius:4px;
 }
 
 input[type="range"]{
@@ -209,48 +231,40 @@ input[type="range"]{
   accent-color:var(--accent);
 }
 
-.value-note{
-  margin-top:6px;
-  font-size:.82rem;
-  color:#d0d0d0;
-}
-
-.preview-wrap{
-  padding:18px;
-}
-
-.preview-header{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  margin-bottom:14px;
-  flex-wrap:wrap;
-}
-
-.preview-header h2{
-  font-size:1rem;
+.range-value{
+  margin-top:8px;
+  font-size:0.82rem;
+  color:#d6d6d6;
 }
 
 .preview-box{
-  min-height:300px;
-  border-radius:22px;
-  background:
-    radial-gradient(circle at top left, rgba(176,11,85,.09), transparent 24%),
-    #0a0a0a;
-  border:1px solid var(--line);
+  margin-top:2px;
+  padding:18px;
+  min-height:290px;
   display:flex;
-  align-items:center;
   justify-content:center;
-  padding:20px;
+  align-items:center;
+  position:relative;
+  border-radius:4px;
   overflow:hidden;
 }
 
+.preview-box.transparent-preview{
+  background-color:#0f0f0f;
+  background-image:
+    linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255,255,255,0.05) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.05) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.05) 75%);
+  background-size:20px 20px;
+  background-position:0 0, 0 10px, 10px -10px, -10px 0;
+}
+
 #qr-output{
-  display:flex;
-  align-items:center;
-  justify-content:center;
   width:100%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
 }
 
 #qr-output canvas{
@@ -258,24 +272,24 @@ input[type="range"]{
   max-width:100%;
   height:auto;
   image-rendering:pixelated;
-  filter:drop-shadow(0 12px 28px rgba(0,0,0,.38));
 }
 
 .actions{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:12px;
-  margin-top:14px;
+  gap:10px;
 }
 
 button{
   border:none;
-  border-radius:16px;
-  padding:14px 16px;
+  padding:14px;
   font-family:inherit;
   font-weight:700;
   cursor:pointer;
-  transition:.2s ease;
+  transition:0.2s;
+  text-transform:uppercase;
+  letter-spacing:0.05em;
+  border-radius:4px;
 }
 
 .btn-primary{
@@ -284,39 +298,60 @@ button{
 }
 
 .btn-secondary{
-  background:#121212;
+  background:#111;
   color:#fff;
   border:1px solid var(--line-strong);
 }
 
 button:hover{
+  filter:brightness(1.1);
   transform:translateY(-1px);
-  filter:brightness(1.05);
 }
 
-@media (min-width: 920px){
-  .page{grid-template-columns:1fr 1.2fr}
-  .left,.right{min-height:calc(100vh - var(--header-h))}
-  .right{padding:26px}
-  .container{grid-template-columns:minmax(320px, 420px) 1fr;align-items:start}
-  .preview-wrap{position:sticky;top:90px}
-  .overlay{padding:42px}
+@media (min-width:900px){
+  .page{
+    grid-template-columns:1fr 1.15fr;
+  }
+
+  .left,
+  .right{
+    min-height:calc(100vh - var(--header-h));
+  }
+
+  .right{
+    padding:34px 24px;
+  }
+
+  .overlay{
+    padding:40px;
+  }
 }
 
-@media (max-width: 640px){
-  nav{gap:10px}
-  nav a{font-size:.76rem}
-  .grid-2,.grid-3,.actions{grid-template-columns:1fr}
-  .preview-box{min-height:250px}
+@media (max-width:680px){
+  nav{
+    gap:10px;
+  }
+
+  nav a{
+    font-size:0.76rem;
+  }
+
+  .row-2,
+  .row-3,
+  .actions{
+    grid-template-columns:1fr;
+  }
 }
 </style>
 </head>
 <body>
+
 <header>
   <div class="logo">
     <img src="logo.png" alt="Logo">
     <span>William MacLean</span>
   </div>
+
   <nav>
     <a href="index.html">Home</a>
     <a href="tools.html">Tools</a>
@@ -333,104 +368,98 @@ button:hover{
 
   <section class="right">
     <div class="container">
-      <div class="controls">
-        <div class="group">
-          <label>URL or Text</label>
-          <input type="text" id="qr-input" placeholder="https://..." value="https://williammaclean.ca">
-        </div>
 
-        <div class="grid-2">
-          <div class="group">
-            <label>Foreground</label>
-            <div class="color-box">
-              <input type="color" id="fg-color" value="#b00b55">
-              <span id="fg-label">#b00b55</span>
-            </div>
-          </div>
-          <div class="group">
-            <label>Background</label>
-            <div class="color-box">
-              <input type="color" id="bg-color" value="#ffffff">
-              <span id="bg-label">#ffffff</span>
-            </div>
+      <div class="control-group">
+        <label>URL or Text</label>
+        <input type="text" id="qr-input" placeholder="https://..." value="https://williammaclean.ca">
+      </div>
+
+      <div class="row-2">
+        <div class="control-group">
+          <label>Foreground</label>
+          <div class="color-picker-wrapper">
+            <input type="color" id="fg-color" value="#b00b55">
+            <span class="color-value" id="fg-label">#b00b55</span>
           </div>
         </div>
 
-        <div class="small-toggle">
-          <input type="checkbox" id="transparent-bg">
-          <span>Transparent Background</span>
-        </div>
-
-        <div class="grid-2">
-          <div class="group">
-            <label>Pattern</label>
-            <select id="dot-style">
-              <option value="square">Block</option>
-              <option value="rounded">Rounded</option>
-              <option value="dots">Dots</option>
-              <option value="diamond">Diamond</option>
-              <option value="spark">Spark</option>
-              <option value="thin">Thin</option>
-            </select>
+        <div class="control-group">
+          <label>Background</label>
+          <div class="color-picker-wrapper">
+            <input type="color" id="bg-color" value="#ffffff">
+            <span class="color-value" id="bg-label">#ffffff</span>
           </div>
-          <div class="group">
-            <label>Corner Eye</label>
-            <select id="eye-style">
-              <option value="square">Square</option>
-              <option value="rounded">Rounded</option>
-              <option value="extra-rounded">Soft Rounded</option>
-              <option value="circle">Circle</option>
-              <option value="diamond">Diamond</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="grid-2">
-          <div class="group">
-            <label>Inner Eye</label>
-            <select id="eye-ball-style">
-              <option value="square">Square</option>
-              <option value="rounded">Rounded</option>
-              <option value="circle">Circle</option>
-              <option value="diamond">Diamond</option>
-            </select>
-          </div>
-          <div class="group">
-            <label>Error Correction</label>
-            <select id="qr-level">
-              <option value="L">Low</option>
-              <option value="M">Medium</option>
-              <option value="Q">High</option>
-              <option value="H" selected>Very High</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="group">
-          <label>Size</label>
-          <div class="range-box">
-            <input type="range" id="size-range" min="180" max="420" step="10" value="240">
-            <div class="value-note"><span id="size-value">240</span>px</div>
+          <div class="checkbox-row">
+            <input type="checkbox" id="transparent-bg">
+            <span>Transparent background</span>
           </div>
         </div>
       </div>
 
-      <div class="preview-wrap">
-        <div class="preview-header">
-          <div>
-            <h2>Preview</h2>
-          </div>
+      <div class="row-2">
+        <div class="control-group">
+          <label>Pattern</label>
+          <select id="dot-style">
+            <option value="square">Block</option>
+            <option value="rounded">Rounded</option>
+            <option value="dots">Dots</option>
+            <option value="diamond">Diamond</option>
+            <option value="spark">Spark</option>
+            <option value="thin">Thin</option>
+          </select>
         </div>
 
-        <div class="preview-box">
-          <div id="qr-output"></div>
-        </div>
-
-        <div class="actions">
-          <button class="btn-primary" id="download-btn">Download PNG</button>
-          <button class="btn-secondary" id="reset-btn">Reset Style</button>
+        <div class="control-group">
+          <label>Corner Eye</label>
+          <select id="eye-style">
+            <option value="square">Square</option>
+            <option value="rounded">Rounded</option>
+            <option value="extra-rounded">Soft Rounded</option>
+            <option value="circle">Circle</option>
+            <option value="diamond">Diamond</option>
+          </select>
         </div>
       </div>
+
+      <div class="row-2">
+        <div class="control-group">
+          <label>Inner Eye</label>
+          <select id="eye-ball-style">
+            <option value="square">Square</option>
+            <option value="rounded">Rounded</option>
+            <option value="circle">Circle</option>
+            <option value="diamond">Diamond</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label>Error Correction</label>
+          <select id="qr-level">
+            <option value="L">Low</option>
+            <option value="M">Medium</option>
+            <option value="Q">High</option>
+            <option value="H" selected>Very High</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>Size</label>
+        <div class="range-wrap">
+          <input type="range" id="size-range" min="180" max="420" step="10" value="240">
+          <div class="range-value"><span id="size-value">240</span>px</div>
+        </div>
+      </div>
+
+      <div class="preview-box" id="preview-box">
+        <div id="qr-output"></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-primary" id="download-btn">Download PNG</button>
+        <button class="btn-secondary" id="reset-btn">Reset Style</button>
+      </div>
+
     </div>
   </section>
 </div>
@@ -449,6 +478,7 @@ const qrLevel = document.getElementById('qr-level');
 const sizeRange = document.getElementById('size-range');
 const sizeValue = document.getElementById('size-value');
 const output = document.getElementById('qr-output');
+const previewBox = document.getElementById('preview-box');
 const downloadBtn = document.getElementById('download-btn');
 const resetBtn = document.getElementById('reset-btn');
 
@@ -528,30 +558,48 @@ function shouldSkipForEyeBall(row, col, count) {
 }
 
 function drawModule(ctx, style, x, y, size) {
-  const full = size + 0.6;
+  const overdraw = 0.35;
+
   switch (style) {
     case 'dots':
-      drawCircle(ctx, x + size * 0.12, y + size * 0.12, size * 0.76);
+      drawCircle(ctx, x + size * 0.14, y + size * 0.14, size * 0.72);
       break;
+
     case 'rounded':
-      roundedRect(ctx, x - 0.3, y - 0.3, full, full, size * 0.26);
+      roundedRect(
+        ctx,
+        x - overdraw / 2,
+        y - overdraw / 2,
+        size + overdraw,
+        size + overdraw,
+        size * 0.24
+      );
       ctx.fill();
       break;
+
     case 'diamond':
-      drawDiamond(ctx, x + size * 0.02, y + size * 0.02, size * 0.96);
+      drawDiamond(ctx, x + size * 0.04, y + size * 0.04, size * 0.92);
       break;
+
     case 'spark':
-      roundedRect(ctx, x + size * 0.18, y - 0.2, size * 0.64, full, size * 0.18);
+      roundedRect(ctx, x + size * 0.16, y - 0.1, size * 0.68, size + 0.2, size * 0.16);
       ctx.fill();
-      roundedRect(ctx, x - 0.2, y + size * 0.18, full, size * 0.64, size * 0.18);
+      roundedRect(ctx, x - 0.1, y + size * 0.16, size + 0.2, size * 0.68, size * 0.16);
       ctx.fill();
       break;
+
     case 'thin':
-      roundedRect(ctx, x + size * 0.14, y + size * 0.14, size * 0.72, size * 0.72, size * 0.12);
+      roundedRect(ctx, x + size * 0.16, y + size * 0.16, size * 0.68, size * 0.68, size * 0.1);
       ctx.fill();
       break;
+
     default:
-      ctx.fillRect(x - 0.3, y - 0.3, full, full);
+      ctx.fillRect(
+        x - overdraw / 2,
+        y - overdraw / 2,
+        size + overdraw,
+        size + overdraw
+      );
   }
 }
 
@@ -560,14 +608,14 @@ function fillEyeHole(ctx, x, y, size, outerStyle, fillColor) {
   drawShape(ctx, outerStyle === 'circle' ? 'circle' : outerStyle, x, y, size);
 }
 
-function drawEye(ctx, startCol, startRow, cellSize, margin, outerStyle, innerStyle, fg, bgFill) {
+function drawEye(ctx, startCol, startRow, cellSize, margin, outerStyle, innerStyle, fg, eyeGapColor) {
   const x = margin + startCol * cellSize;
   const y = margin + startRow * cellSize;
 
   ctx.fillStyle = fg;
   drawShape(ctx, outerStyle, x, y, cellSize * 7);
 
-  fillEyeHole(ctx, x + cellSize, y + cellSize, cellSize * 5, outerStyle, bgFill);
+  fillEyeHole(ctx, x + cellSize, y + cellSize, cellSize * 5, outerStyle, eyeGapColor);
 
   ctx.fillStyle = fg;
   drawShape(ctx, innerStyle, x + cellSize * 2, y + cellSize * 2, cellSize * 3);
@@ -582,8 +630,11 @@ function generateQR() {
   const text = input.value.trim() || ' ';
   const level = qrLevel.value;
   const exportSize = Number(sizeRange.value);
+
   sizeValue.textContent = exportSize;
   updateColorLabels();
+
+  previewBox.classList.toggle('transparent-preview', transCheck.checked);
 
   const qr = qrcode(0, level);
   qr.addData(text);
@@ -594,12 +645,13 @@ function generateQR() {
   const totalCells = count + quietZone * 2;
   const cellSize = exportSize / totalCells;
   const margin = quietZone * cellSize;
-  const bgFill = transCheck.checked ? 'rgba(0,0,0,0)' : bgColor.value;
 
   output.innerHTML = '';
+
   const canvas = document.createElement('canvas');
   canvas.width = exportSize;
   canvas.height = exportSize;
+
   const ctx = canvas.getContext('2d', { alpha: true });
   ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -623,9 +675,11 @@ function generateQR() {
     }
   }
 
-  drawEye(ctx, 0, 0, cellSize, margin, eyeStyle.value, eyeBallStyle.value, fgColor.value, bgFill);
-  drawEye(ctx, count - 7, 0, cellSize, margin, eyeStyle.value, eyeBallStyle.value, fgColor.value, bgFill);
-  drawEye(ctx, 0, count - 7, cellSize, margin, eyeStyle.value, eyeBallStyle.value, fgColor.value, bgFill);
+  const eyeGapColor = bgColor.value;
+
+  drawEye(ctx, 0, 0, cellSize, margin, eyeStyle.value, eyeBallStyle.value, fgColor.value, eyeGapColor);
+  drawEye(ctx, count - 7, 0, cellSize, margin, eyeStyle.value, eyeBallStyle.value, fgColor.value, eyeGapColor);
+  drawEye(ctx, 0, count - 7, cellSize, margin, eyeStyle.value, eyeBallStyle.value, fgColor.value, eyeGapColor);
 
   output.appendChild(canvas);
 }
@@ -633,6 +687,7 @@ function generateQR() {
 function downloadPNG() {
   const canvas = output.querySelector('canvas');
   if (!canvas) return;
+
   const link = document.createElement('a');
   link.download = 'qrcode.png';
   link.href = canvas.toDataURL('image/png');
@@ -653,8 +708,15 @@ function resetStyle() {
 }
 
 [
-  input, fgColor, bgColor, transCheck, dotStyle,
-  eyeStyle, eyeBallStyle, qrLevel, sizeRange
+  input,
+  fgColor,
+  bgColor,
+  transCheck,
+  dotStyle,
+  eyeStyle,
+  eyeBallStyle,
+  qrLevel,
+  sizeRange
 ].forEach(el => {
   el.addEventListener('input', generateQR);
   el.addEventListener('change', generateQR);
@@ -665,5 +727,6 @@ resetBtn.addEventListener('click', resetStyle);
 
 generateQR();
 </script>
+
 </body>
 </html>
