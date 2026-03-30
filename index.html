@@ -5,534 +5,262 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>William MacLean</title>
   <link rel="icon" type="image/png" href="logo.png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=+Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
   <style>
     :root {
-      --bg: #050505;
-      --panel: #0d0d0d;
-      --panel-2: #121212;
-      --text: #f4f4f4;
-      --muted: #9d9d9d;
-      --line: rgba(255,255,255,0.09);
+      --bg: #000;
+      --text: #fff;
+      --muted: #888;
+      --line: rgba(255,255,255,0.08);
       --accent: #b00b55;
-      --accent-soft: rgba(176, 11, 85, 0.18);
-      --max: 1400px;
-      --radius: 24px;
     }
 
-    * { box-sizing: border-box; }
-
-    html { scroll-behavior: smooth; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      margin: 0;
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: Inter, sans-serif;
       background: var(--bg);
       color: var(--text);
-      min-height: 100vh;
-      -webkit-font-smoothing: antialiased;
-      text-rendering: optimizeLegibility;
     }
 
     a { color: inherit; text-decoration: none; }
-    img { max-width: 100%; display: block; }
 
-    .page {
-      width: min(100%, var(--max));
-      margin: 0 auto;
-      padding: 14px;
-    }
-
-    .shell {
-      min-height: calc(100vh - 28px);
-      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      border: 1px solid var(--line);
-      border-radius: 28px;
-      overflow: hidden;
-      box-shadow: 0 30px 80px rgba(0,0,0,0.4);
-    }
-
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--line);
-      background: rgba(0,0,0,0.45);
-      backdrop-filter: blur(12px);
-      position: sticky;
+    /* HEADER */
+    header {
+      position: fixed;
       top: 0;
-      z-index: 20;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      z-index: 10;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(6px);
     }
 
-    .brand {
+    .logo {
       display: flex;
       align-items: center;
-      gap: 12px;
-      min-width: 0;
+      gap: 10px;
     }
 
-    .brand img {
-      width: 34px;
-      height: 34px;
-      object-fit: contain;
-      border-radius: 10px;
-      background: rgba(255,255,255,0.03);
-      padding: 5px;
+    .logo img {
+      width: 26px;
+      height: 26px;
     }
 
-    .brand-text {
-      min-width: 0;
+    .logo span {
+      font-size: 0.9rem;
+      color: #ddd;
     }
 
-    .brand-text strong {
-      display: block;
-      font-size: 0.95rem;
-      letter-spacing: 0.02em;
+    nav a {
+      margin-left: 14px;
+      font-size: 0.85rem;
+      color: #ccc;
     }
 
-    .brand-text span {
-      display: block;
-      font-size: 0.75rem;
-      color: var(--muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    nav a:hover { color: white; }
 
-    .nav {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    .nav a {
-      padding: 10px 14px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      color: #e8e8e8;
-      font-size: 0.86rem;
-      transition: 0.2s ease;
-      background: rgba(255,255,255,0.02);
-    }
-
-    .nav a:hover,
-    .nav a:focus-visible {
-      border-color: rgba(176, 11, 85, 0.55);
-      background: var(--accent-soft);
-      outline: none;
-      transform: translateY(-1px);
-    }
-
+    /* LAYOUT */
     .layout {
       display: grid;
       grid-template-columns: 1fr;
+      min-height: 100vh;
+      padding-top: 60px;
     }
 
-    .visual {
+    /* LEFT IMAGE */
+    .left {
       position: relative;
-      min-height: 42vh;
-      background:
-        linear-gradient(180deg, rgba(0,0,0,0.0) 40%, rgba(0,0,0,0.6) 100%),
-        linear-gradient(135deg, rgba(176,11,85,0.12), rgba(255,255,255,0) 45%);
-      border-bottom: 1px solid var(--line);
+      height: 55vh;
+      overflow: hidden;
     }
 
-    .visual img {
+    .left img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      object-position: center top;
-      min-height: 42vh;
       filter: grayscale(100%);
     }
 
-    .visual-overlay {
+    .overlay {
       position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      padding: 20px;
-      pointer-events: none;
-      background: linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.6));
+      bottom: 20px;
+      left: 16px;
     }
 
-    .kicker {
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.18em;
-      color: rgba(255,255,255,0.68);
-      margin-bottom: 8px;
+    .overlay h1 {
+      font-size: 2.4rem;
+      line-height: 1;
     }
 
-    .hero-name {
-      font-size: clamp(2rem, 8vw, 4.8rem);
-      line-height: 0.95;
-      margin: 0;
-      max-width: 8ch;
-    }
-
-    .hero-sub {
-      margin-top: 10px;
-      font-size: 0.95rem;
-      color: rgba(255,255,255,0.72);
-      max-width: 28ch;
-    }
-
-    .content {
-      background: #060606;
-      padding: 20px 16px 24px;
-    }
-
-    .section-label {
-      color: rgba(255,255,255,0.58);
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      font-size: 0.72rem;
-      margin-bottom: 16px;
-    }
-
-    .intro {
-      padding-bottom: 18px;
-      margin-bottom: 22px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .intro p {
-      font-size: 1rem;
-      line-height: 1.7;
-      color: #d5d5d5;
-      max-width: 56ch;
-      margin: 0;
-    }
-
-    .grid {
-      display: grid;
-      gap: 26px;
-    }
-
-    .panel {
-      padding: 0;
-    }
-
-    .panel h2 {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin: 0 0 18px;
-    }
-
-    .list {
-      border-top: 1px solid var(--line);
-    }
-
-    .row {
-      display: grid;
-      grid-template-columns: 72px 1fr;
-      gap: 14px;
-      padding: 16px 0;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .year,
-    .label {
-      font-size: 0.78rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted);
-      padding-top: 2px;
-    }
-
-    .item-title {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
-
-    .item-sub {
-      font-size: 0.92rem;
-      color: #d2d2d2;
-      line-height: 1.65;
-      margin-bottom: 8px;
-    }
-
-    .item-meta {
-      font-size: 0.86rem;
-      color: var(--muted);
-      line-height: 1.55;
-    }
-
-    .contact-list,
-    .strengths {
-      display: grid;
-      gap: 10px;
-    }
-
-    .contact-card,
-    .strength-pill {
-      border: 1px solid var(--line);
-      background: var(--panel-2);
-      border-radius: 18px;
-    }
-
-    .contact-card {
-      padding: 14px 16px;
-    }
-
-    .contact-card small {
-      display: block;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-size: 0.68rem;
-      margin-bottom: 6px;
-    }
-
-    .contact-card span,
-    .contact-card a {
-      font-size: 0.95rem;
-      color: #f3f3f3;
-      word-break: break-word;
-    }
-
-    .strengths {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .strength-pill {
-      padding: 12px 14px;
+    .overlay p {
       font-size: 0.9rem;
-      color: #e9e9e9;
+      color: #bbb;
+      margin-top: 6px;
+    }
+
+    /* RIGHT CONTENT */
+    .right {
+      padding: 22px 16px 40px;
+    }
+
+    .section {
+      margin-bottom: 36px;
+    }
+
+    .section h2 {
+      font-size: 0.8rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .item {
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .item strong {
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+
+    .item span {
+      font-size: 0.9rem;
+      color: #bbb;
+    }
+
+    .year {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .contacts div {
+      margin-bottom: 8px;
+      font-size: 0.9rem;
     }
 
     .download {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 18px;
-      padding: 12px 16px;
-      border-radius: 999px;
-      border: 1px solid rgba(176, 11, 85, 0.4);
-      background: var(--accent-soft);
-      color: #fff;
-      font-weight: 600;
-      transition: 0.2s ease;
+      display: inline-block;
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: var(--accent);
     }
 
-    .download:hover,
-    .download:focus-visible {
-      transform: translateY(-1px);
-      background: rgba(176, 11, 85, 0.26);
-      outline: none;
-    }
-
-    .footer {
-      padding-top: 24px;
-      margin-top: 24px;
-      border-top: 1px solid var(--line);
-      color: var(--muted);
-      font-size: 0.82rem;
-    }
-
+    /* DESKTOP */
     @media (min-width: 900px) {
       .layout {
-        grid-template-columns: minmax(420px, 0.92fr) minmax(520px, 1.08fr);
-        min-height: calc(100vh - 63px);
+        grid-template-columns: 1fr 1fr;
       }
 
-      .visual {
-        min-height: 100%;
-        border-bottom: 0;
-        border-right: 1px solid var(--line);
+      .left {
+        height: 100vh;
       }
 
-      .visual img {
-        min-height: 100%;
-        height: 100%;
+      .right {
+        padding: 60px 50px;
       }
 
-      .visual-overlay {
-        padding: 28px;
-      }
-
-      .content {
-        padding: 34px 30px 30px;
-      }
-
-      .grid {
-        grid-template-columns: 1.15fr 0.85fr;
-        align-items: start;
+      .overlay h1 {
+        font-size: 3.5rem;
       }
     }
 
-    @media (max-width: 640px) {
-      .topbar {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      .nav {
-        width: 100%;
-        justify-content: flex-start;
-      }
-
-      .nav a {
-        flex: 1 1 auto;
-        text-align: center;
-      }
-
-      .strengths {
-        grid-template-columns: 1fr;
-      }
-
-      .row {
-        grid-template-columns: 1fr;
-        gap: 8px;
-      }
-    }
   </style>
 </head>
+
 <body>
-  <div class="page">
-    <div class="shell">
-      <header class="topbar">
-        <a class="brand" href="index.html" aria-label="Home">
-          <img src="logo.png" alt="William MacLean logo" />
-          <div class="brand-text">
-            <strong>William MacLean</strong>
-            <span>Financial Mathematics & Economics</span>
-          </div>
-        </a>
 
-        <nav class="nav" aria-label="Main navigation">
-          <a href="login.html">Login</a>
-          <a href="apps.html">Apps</a>
-          <a href="tools.html">Tools</a>
-        </nav>
-      </header>
+<header>
+  <div class="logo">
+    <img src="logo.png">
+    <span>William MacLean</span>
+  </div>
 
-      <main class="layout">
-        <section class="visual" aria-label="Portrait">
-          <img src="me.png" alt="Portrait of William MacLean" />
-          <div class="visual-overlay">
-            <div class="kicker">Portfolio / Resume</div>
-            <h1 class="hero-name">William MacLean</h1>
-            <div class="hero-sub">Stagehand, student, and problem solver with experience across live production, logistics, and technical work.</div>
-          </div>
-        </section>
+  <nav>
+    <a href="login.html">Login</a>
+    <a href="apps.html">Apps</a>
+    <a href="tools.html">Tools</a>
+  </nav>
+</header>
 
-        <section class="content">
-          <div class="intro">
-            <div class="section-label">Overview</div>
-            <p>I’m based in Ottawa and currently studying Financial Mathematics and Economics at uOttawa, while continuing hands-on work in live events, labour support, and operations.</p>
-            <a class="download" href="WilliamsResume.pdf" download>Download CV</a>
-          </div>
+<div class="layout">
 
-          <div class="grid">
-            <div class="panel">
-              <div class="section-label">Experience</div>
-              <div class="list">
-                <article class="row">
-                  <div class="year">2025 — Now</div>
-                  <div>
-                    <div class="item-title">IATSE Local 471</div>
-                    <div class="item-sub">Stagehand supporting carpentry, lighting, audio, and truck loading in the Ottawa region.</div>
-                    <div class="item-meta">Reference: Jeff Manning · Call Steward</div>
-                  </div>
-                </article>
-
-                <article class="row">
-                  <div class="year">2022 — Now</div>
-                  <div>
-                    <div class="item-title">IATSE Local 357</div>
-                    <div class="item-sub">Stagehand supporting carpentry, lighting, audio, pyrotechnics, camera operations, and truck loading in the Kitchener–Waterloo region.</div>
-                    <div class="item-meta">References: Kathleen Orlando · Mark Card</div>
-                  </div>
-                </article>
-
-                <article class="row">
-                  <div class="year">2018 — Now</div>
-                  <div>
-                    <div class="item-title">Gypsy Wind Custom Coach</div>
-                    <div class="item-sub">Runner and general labourer supporting transportation and on-site operations.</div>
-                    <div class="item-meta">Reference: Heidi MacLean · CEO</div>
-                  </div>
-                </article>
-              </div>
-
-              <div class="section-label" style="margin-top: 28px;">Education</div>
-              <div class="list">
-                <article class="row">
-                  <div class="label">2024 — Now</div>
-                  <div>
-                    <div class="item-title">uOttawa</div>
-                    <div class="item-sub">Honours BSc in Financial Mathematics and Economics</div>
-                  </div>
-                </article>
-
-                <article class="row">
-                  <div class="label">2020 — 2024</div>
-                  <div>
-                    <div class="item-title">Grand River Collegiate Institute</div>
-                    <div class="item-sub">High School Diploma</div>
-                  </div>
-                </article>
-              </div>
-            </div>
-
-            <aside class="panel">
-              <div class="section-label">Contact</div>
-              <div class="contact-list">
-                <div class="contact-card">
-                  <small>Phone</small>
-                  <a href="tel:15198078017">519-807-8017</a>
-                </div>
-                <div class="contact-card">
-                  <small>Work Email</small>
-                  <a href="mailto:work@williammaclean.ca">work@williammaclean.ca</a>
-                </div>
-                <div class="contact-card">
-                  <small>Contact Email</small>
-                  <a href="mailto:contact@williammaclean.ca">contact@williammaclean.ca</a>
-                </div>
-                <div class="contact-card">
-                  <small>Instagram</small>
-                  <a href="https://www.instagram.com/william_maclean_06" target="_blank" rel="noopener">@william_maclean_06</a>
-                </div>
-                <div class="contact-card">
-                  <small>Discord</small>
-                  <span>tabearus</span>
-                </div>
-                <div class="contact-card">
-                  <small>Steam</small>
-                  <a href="https://steamcommunity.com/id/Tabearus" target="_blank" rel="noopener">Tabearus</a>
-                </div>
-                <div class="contact-card">
-                  <small>Location</small>
-                  <span>Ottawa, ON</span>
-                </div>
-              </div>
-
-              <div class="section-label" style="margin-top: 28px;">Core Strengths</div>
-              <div class="strengths">
-                <div class="strength-pill">Critical Thinking</div>
-                <div class="strength-pill">Logistics & Coordination</div>
-                <div class="strength-pill">Mathematics</div>
-                <div class="strength-pill">Problem Solving</div>
-                <div class="strength-pill">Technology</div>
-                <div class="strength-pill">French</div>
-              </div>
-            </aside>
-          </div>
-
-          <div class="footer">Built to feel clean, editorial, and mobile-first.</div>
-        </section>
-      </main>
+  <!-- LEFT -->
+  <div class="left">
+    <img src="me.png">
+    <div class="overlay">
+      <h1>William<br>MacLean</h1>
+      <p>Financial Mathematics & Economics</p>
     </div>
   </div>
+
+  <!-- RIGHT -->
+  <div class="right">
+
+    <div class="section">
+      <h2>Experience</h2>
+
+      <div class="item">
+        <div class="year">2025 – Present</div>
+        <strong>IATSE Local 471</strong>
+        <span>Stagehand (Ottawa)</span>
+      </div>
+
+      <div class="item">
+        <div class="year">2022 – Present</div>
+        <strong>IATSE Local 357</strong>
+        <span>Stagehand (Kitchener–Waterloo)</span>
+      </div>
+
+      <div class="item">
+        <div class="year">2018 – Present</div>
+        <strong>Gypsy Wind Custom Coach</strong>
+        <span>Runner / Labourer</span>
+      </div>
+
+    </div>
+
+    <div class="section">
+      <h2>Education</h2>
+
+      <div class="item">
+        <div class="year">2024 – Present</div>
+        <strong>University of Ottawa</strong>
+        <span>Financial Mathematics & Economics</span>
+      </div>
+
+      <div class="item">
+        <div class="year">2020 – 2024</div>
+        <strong>Grand River Collegiate Institute</strong>
+        <span>High School Diploma</span>
+      </div>
+
+    </div>
+
+    <div class="section">
+      <h2>Contact</h2>
+      <div class="contacts">
+        <div>519-807-8017</div>
+        <div>work@williammaclean.ca</div>
+        <div>contact@williammaclean.ca</div>
+        <div>@william_maclean_06</div>
+        <div>Discord: tabearus</div>
+      </div>
+      <a class="download" href="WilliamsResume.pdf" download>Download CV</a>
+    </div>
+
+  </div>
+
+</div>
+
 </body>
 </html>
