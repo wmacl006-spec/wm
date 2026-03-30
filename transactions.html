@@ -1006,28 +1006,69 @@
       return ['default', 'plus', 'me'].includes(clean) ? clean : 'default';
     }
 
-   async function getUserStatus(uid) {
-  try {
-    const userRef = doc(siteDb, 'users', uid);
-    const userSnap = await getDoc(userRef);
+    const gateCard = document.querySelector('.gate-card');
+    let redirectTimer = null;
 
-    console.log('Checking Firestore path:', `users/${uid}`);
-    console.log('Doc exists:', userSnap.exists());
+    function setGateMessage(message) {
+      if (gateCard) gateCard.textContent = message;
+    }
 
-    if (!userSnap.exists()) return 'default';
+    function cancelPendingRedirect() {
+      if (redirectTimer) {
+        clearTimeout(redirectTimer);
+        redirectTimer = null;
+      }
+    }
 
-    const data = userSnap.data();
-    console.log('Doc data:', data);
+    async function getUserStatusDetails(uid) {
+      try {
+        const userRef = doc(siteDb, 'users', uid);
+        const userSnap = await getDoc(userRef);
 
-    return normalizeStatus(data.status);
-  } catch (error) {
-    console.error('Error getting user status:', error);
-    return 'default';
-  }
-}
+        console.log('Checking Firestore project:', siteDb.app.options.projectId);
+        console.log('Checking Firestore path:', `users/${uid}`);
+        console.log('Doc exists:', userSnap.exists());
 
-    function redirectToApps() {
-      window.location.replace('https://williammaclean.ca/apps');
+        if (!userSnap.exists()) {
+          return {
+            status: 'default',
+            exists: false,
+            rawStatus: null,
+            reason: `No Firestore doc found at users/${uid}`
+          };
+        }
+
+        const data = userSnap.data() || {};
+        const rawStatus = data.status;
+        const normalizedStatus = normalizeStatus(rawStatus);
+
+        console.log('Doc data:', data);
+        console.log('Raw status:', rawStatus);
+        console.log('Normalized status:', normalizedStatus);
+
+        return {
+          status: normalizedStatus,
+          exists: true,
+          rawStatus,
+          reason: `Firestore status is ${JSON.stringify(rawStatus)}`
+        };
+      } catch (error) {
+        console.error('Error getting user status:', error);
+        return {
+          status: 'default',
+          exists: false,
+          rawStatus: null,
+          reason: `Firestore read failed: ${error.message}`
+        };
+      }
+    }
+
+    function redirectToApps(delayMs = 2200) {
+      cancelPendingRedirect();
+      setGateMessage(`No access. Redirecting to Apps in ${Math.ceil(delayMs / 1000)}s...`);
+      redirectTimer = setTimeout(() => {
+        window.location.replace('https://williammaclean.ca/apps');
+      }, delayMs);
     }
 
     let chart;
@@ -2058,38 +2099,53 @@
       }
     }
 
- onAuthStateChanged(auth, async (user) => {
-  try {
-    if (!user) {
-      console.log('No user logged in');
-      statusPill.textContent = 'Status: default';
-      redirectToApps();
-      return;
-    }
+    onAuthStateChanged(auth, async (user) => {
+      try {
+        cancelPendingRedirect();
 
-    console.log('Signed in UID:', user.uid);
-    console.log('Auth project:', auth.app.options.projectId);
-    console.log('Firestore project:', siteDb.app.options.projectId);
+        if (!user) {
+          console.log('No user logged in');
+          statusPill.textContent = 'Status: not signed in';
+          authGate.classList.remove('hidden');
+          setGateMessage('Not signed in on the site-78972 account.');
+          redirectToApps();
+          return;
+        }
 
-    const userStatus = await getUserStatus(user.uid);
-    console.log('Resolved status:', userStatus);
+        console.log('Signed in UID:', user.uid);
+        console.log('Signed in email:', user.email || '(no email)');
+        console.log('Auth project:', auth.app.options.projectId);
+        console.log('Firestore project:', siteDb.app.options.projectId);
 
-    statusPill.textContent = `Status: ${userStatus}`;
+        authGate.classList.remove('hidden');
+        setGateMessage(`Checking users/${user.uid}...`);
 
-    if ((statusRank[userStatus] ?? 0) < statusRank.me) {
-      console.log('Redirecting because status is below me');
-      redirectToApps();
-      return;
-    }
+        const userStatusDetails = await getUserStatusDetails(user.uid);
+        const userStatus = userStatusDetails.status;
 
-    console.log('Access granted');
-    authGate.classList.add('hidden');
-    await startDashboard();
-  } catch (err) {
-    console.error('Auth check failed:', err);
-    redirectToApps();
-  }
-});
+        console.log('Resolved status details:', userStatusDetails);
+
+        statusPill.textContent = `Status: ${userStatus}`;
+
+        if ((statusRank[userStatus] ?? 0) < statusRank.me) {
+          const raw = userStatusDetails.rawStatus === null ? 'missing' : JSON.stringify(userStatusDetails.rawStatus);
+          setGateMessage(`UID: ${user.uid} | Raw status: ${raw} | ${userStatusDetails.reason}`);
+          console.log('Redirecting because status is below me');
+          redirectToApps();
+          return;
+        }
+
+        console.log('Access granted');
+        setGateMessage(`Access granted for ${user.uid}`);
+        authGate.classList.add('hidden');
+        await startDashboard();
+      } catch (err) {
+        console.error('Auth check failed:', err);
+        statusPill.textContent = 'Status: error';
+        authGate.classList.remove('hidden');
+        setGateMessage(`Auth check failed: ${err.message}`);
+      }
+    });
   </script>
 </body>
 </html>
