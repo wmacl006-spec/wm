@@ -1006,18 +1006,25 @@
       return ['default', 'plus', 'me'].includes(clean) ? clean : 'default';
     }
 
-    async function getUserStatus(uid) {
-      try {
-        const userRef = doc(siteDb, 'users', uid);
-        const userSnap = await getDoc(userRef);
-        if (!userSnap.exists()) return 'default';
-        const data = userSnap.data();
-        return normalizeStatus(data.status);
-      } catch (error) {
-        console.error('Error getting user status:', error);
-        return 'default';
-      }
-    }
+   async function getUserStatus(uid) {
+  try {
+    const userRef = doc(siteDb, 'users', uid);
+    const userSnap = await getDoc(userRef);
+
+    console.log('Checking Firestore path:', `users/${uid}`);
+    console.log('Doc exists:', userSnap.exists());
+
+    if (!userSnap.exists()) return 'default';
+
+    const data = userSnap.data();
+    console.log('Doc data:', data);
+
+    return normalizeStatus(data.status);
+  } catch (error) {
+    console.error('Error getting user status:', error);
+    return 'default';
+  }
+}
 
     function redirectToApps() {
       window.location.replace('https://williammaclean.ca/apps');
@@ -2051,7 +2058,7 @@
       }
     }
 
-    onAuthStateChanged(auth, async (user) => {
+ onAuthStateChanged(auth, async (user) => {
   try {
     if (!user) {
       console.log('No user logged in');
@@ -2060,15 +2067,17 @@
       return;
     }
 
-    console.log('UID:', user.uid);
+    console.log('Signed in UID:', user.uid);
+    console.log('Auth project:', auth.app.options.projectId);
+    console.log('Firestore project:', siteDb.app.options.projectId);
 
     const userStatus = await getUserStatus(user.uid);
-    console.log('Firestore status:', userStatus);
+    console.log('Resolved status:', userStatus);
 
     statusPill.textContent = `Status: ${userStatus}`;
 
-    if ((statusRank[userStatus] ?? 0) < statusRank['me']) {
-      console.log('Redirecting (not me)');
+    if ((statusRank[userStatus] ?? 0) < statusRank.me) {
+      console.log('Redirecting because status is below me');
       redirectToApps();
       return;
     }
@@ -2076,7 +2085,6 @@
     console.log('Access granted');
     authGate.classList.add('hidden');
     await startDashboard();
-
   } catch (err) {
     console.error('Auth check failed:', err);
     redirectToApps();
