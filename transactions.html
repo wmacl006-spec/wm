@@ -845,9 +845,9 @@
   </div>
 
   <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js';
-    import { getAnalytics, isSupported as analyticsSupported } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-analytics.js';
-    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js';
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js';
+    import { getAnalytics, isSupported as analyticsSupported } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-analytics.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
     import {
       getFirestore,
       collection,
@@ -860,7 +860,7 @@
       getDoc,
       updateDoc,
       deleteDoc
-    } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js';
+    } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
 
     const firebaseConfig = {
       apiKey: 'AIzaSyBH4LeGmjVEg61b-59Tp9nWo8iw7hfwivM',
@@ -882,14 +882,16 @@
       measurementId: 'G-TSQ1FNH5W1'
     };
 
-    const app = initializeApp(firebaseConfig);
-    const siteApp = initializeApp(siteFirebaseConfig, 'site-app');
+    const siteApp = initializeApp(siteFirebaseConfig);
+    const moneyApp = initializeApp(firebaseConfig, 'money-app');
+
     if (await analyticsSupported()) {
       getAnalytics(siteApp);
     }
-    const db = getFirestore(app);
-    const siteDb = getFirestore(siteApp);
+
     const auth = getAuth(siteApp);
+    const siteDb = getFirestore(siteApp);
+    const db = getFirestore(moneyApp);
 
     const TRANSACTIONS_COLLECTION = 'transactions';
     const EDIT_PASSWORD = 'mmed2025';
@@ -1063,9 +1065,10 @@
       }
     }
 
-    function redirectToApps(delayMs = 2200) {
+    function redirectToApps(delayMs = 2200, message = '') {
       cancelPendingRedirect();
-      setGateMessage(`No access. Redirecting to Apps in ${Math.ceil(delayMs / 1000)}s...`);
+      const prefix = message ? `${message} ` : '';
+      setGateMessage(`${prefix}Redirecting to Apps in ${Math.ceil(delayMs / 1000)}s...`);
       redirectTimer = setTimeout(() => {
         window.location.replace('https://williammaclean.ca/apps');
       }, delayMs);
@@ -2107,8 +2110,9 @@
           console.log('No user logged in');
           statusPill.textContent = 'Status: not signed in';
           authGate.classList.remove('hidden');
-          setGateMessage('Not signed in on the site-78972 account.');
-          redirectToApps();
+          const msg = 'Not signed in on site-78972. This usually means this page is not seeing the same Firebase auth session as login.html.';
+          setGateMessage(msg);
+          redirectToApps(2200, msg);
           return;
         }
 
@@ -2129,9 +2133,10 @@
 
         if ((statusRank[userStatus] ?? 0) < statusRank.me) {
           const raw = userStatusDetails.rawStatus === null ? 'missing' : JSON.stringify(userStatusDetails.rawStatus);
-          setGateMessage(`UID: ${user.uid} | Raw status: ${raw} | ${userStatusDetails.reason}`);
+          const denyMessage = `UID: ${user.uid} | Raw status: ${raw} | ${userStatusDetails.reason}`;
+          setGateMessage(denyMessage);
           console.log('Redirecting because status is below me');
-          redirectToApps();
+          redirectToApps(2200, denyMessage);
           return;
         }
 
