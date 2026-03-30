@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Tools | William MacLean</title>
 <link rel="icon" href="logo.png" />
-<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet" />
 
 <style>
 :root {
@@ -45,9 +45,30 @@ header {
 .logo img { width: 28px; height: 28px; }
 .logo span { font-size: 0.95rem; font-weight: 700; }
 
-nav { display: flex; gap: 14px; }
-nav a { font-size: 0.84rem; color: #cfcfcf; text-decoration: none; transition: 0.2s; }
+nav {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+nav a {
+  font-size: 0.84rem;
+  color: #cfcfcf;
+  text-decoration: none;
+  transition: 0.2s;
+}
+
 nav a:hover { color: #fff; }
+
+.status-pill {
+  font-size: 0.72rem;
+  padding: 7px 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(255,255,255,0.04);
+}
 
 .page {
   min-height: 100vh;
@@ -136,11 +157,29 @@ nav a:hover { color: #fff; }
   margin-bottom: 4px;
 }
 
-@media(min-width:900px){
+.hidden {
+  display: none !important;
+}
+
+.empty-state {
+  display: none;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.03);
+  padding: 24px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.loading {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+@media (min-width: 900px) {
   .page { grid-template-columns: 1fr 1.2fr; }
   .left, .right { height: calc(100vh - var(--header-h)); }
-  .right { 
-    overflow-y: auto; 
+  .right {
+    overflow-y: auto;
     display: flex;
     justify-content: center;
     align-items: flex-start;
@@ -154,7 +193,7 @@ nav a:hover { color: #fff; }
 
 <header>
   <div class="logo">
-    <img src="logo.png" alt="Logo">
+    <img src="logo.png" alt="Logo" />
     <span>William MacLean</span>
   </div>
 
@@ -162,29 +201,138 @@ nav a:hover { color: #fff; }
     <a href="index.html">Home</a>
     <a href="apps.html">Apps</a>
     <a href="login.html">Login</a>
+    <span class="status-pill" id="statusPill">Status: loading</span>
   </nav>
 </header>
 
 <div class="page">
   <section class="left">
-    <img src="me.png" alt="William MacLean">
+    <img src="me.png" alt="William MacLean" />
     <div class="overlay">
-      <h1><br>Tools</h1>
+      <h1><br />Tools</h1>
     </div>
   </section>
 
   <section class="right">
-    <div class="grid">
-      
-      <a href="qr.html" class="tool-card">
+    <div class="grid" id="toolsGrid">
+      <div class="loading" id="loadingText">Loading tools...</div>
+
+      <!-- DEFAULT -->
+      <a href="qr.html" class="tool-card hidden" data-min-status="default">
         <span class="tag">QR CODE MAKER</span>
         <h2>Generate Custom QR Codes</h2>
         <p>Generate custom high-resolution QR codes for URLs, text, or contact info.</p>
       </a>
 
+      <!-- PLUS -->
+      <a href="premium-tool.html" class="tool-card hidden" data-min-status="plus">
+        <span class="tag">PLUS</span>
+        <h2>Premium Tool</h2>
+        <p>Only visible to plus and me users.</p>
+      </a>
+
+      <!-- ME -->
+      <a href="admin-tool.html" class="tool-card hidden" data-min-status="me">
+        <span class="tag">ADMIN</span>
+        <h2>Owner Tool</h2>
+        <p>Only visible to me.</p>
+      </a>
+    </div>
+
+    <div class="empty-state" id="emptyState">
+      No tools available for this account.
     </div>
   </section>
 </div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+  import { getAnalytics, isSupported as analyticsSupported } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-analytics.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBLQmCVdVkz_sxxdfvXshDmoe3PeYIUMAY",
+    authDomain: "site-78972.firebaseapp.com",
+    projectId: "site-78972",
+    storageBucket: "site-78972.firebasestorage.app",
+    messagingSenderId: "519857042562",
+    appId: "1:519857042562:web:64ff26e5f795208081f09b",
+    measurementId: "G-TSQ1FNH5W1"
+  };
+
+  const app = initializeApp(firebaseConfig);
+
+  if (await analyticsSupported()) {
+    getAnalytics(app);
+  }
+
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const statusPill = document.getElementById("statusPill");
+  const loadingText = document.getElementById("loadingText");
+  const emptyState = document.getElementById("emptyState");
+  const toolCards = Array.from(document.querySelectorAll(".tool-card"));
+
+  const statusRank = {
+    default: 0,
+    plus: 1,
+    me: 2
+  };
+
+  function normalizeStatus(status) {
+    if (!status) return "default";
+    const clean = String(status).trim().toLowerCase();
+    return ["default", "plus", "me"].includes(clean) ? clean : "default";
+  }
+
+  function renderTools(userStatus) {
+    const userRank = statusRank[userStatus] ?? 0;
+    let visibleCount = 0;
+
+    toolCards.forEach(card => {
+      const neededStatus = normalizeStatus(card.dataset.minStatus);
+      const neededRank = statusRank[neededStatus] ?? 0;
+
+      if (userRank >= neededRank) {
+        card.classList.remove("hidden");
+        visibleCount++;
+      } else {
+        card.classList.add("hidden");
+      }
+    });
+
+    if (loadingText) loadingText.style.display = "none";
+    emptyState.style.display = visibleCount === 0 ? "block" : "none";
+    statusPill.textContent = `Status: ${userStatus}`;
+  }
+
+  async function getUserStatus(uid) {
+    try {
+      const userRef = doc(db, "users", uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) return "default";
+
+      const data = userSnap.data();
+      return normalizeStatus(data.status);
+    } catch (error) {
+      console.error("Error getting user status:", error);
+      return "default";
+    }
+  }
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      renderTools("default");
+      return;
+    }
+
+    const userStatus = await getUserStatus(user.uid);
+    renderTools(userStatus);
+  });
+</script>
 
 </body>
 </html>
