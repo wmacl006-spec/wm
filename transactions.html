@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Money | William MacLean</title>
+  <title>Transactions | William MacLean</title>
   <link rel="icon" href="logo.png" />
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -11,45 +11,39 @@
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
   <style>
     :root {
-      --bg: #090a0f;
-      --bg-2: #0f1118;
-      --panel: rgba(18, 20, 31, 0.92);
-      --panel-2: rgba(24, 27, 40, 0.95);
-      --panel-3: rgba(29, 33, 48, 0.95);
-      --text: #f4f1f5;
-      --muted: #9ca3b5;
+      --bg: #000;
+      --panel: #050505;
+      --panel-2: #0b0b0b;
+      --panel-3: #101010;
+      --text: #fff;
+      --muted: #8d8d8d;
+      --line: rgba(255,255,255,0.08);
+      --line-strong: rgba(255,255,255,0.14);
       --accent: #b00b55;
       --accent-2: #cf2d7a;
-      --border: rgba(255,255,255,0.08);
-      --border-strong: rgba(255,255,255,0.14);
       --danger: #ff6b81;
       --success: #57d38c;
-      --shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
-      --radius-xl: 26px;
-      --radius-lg: 20px;
-      --radius-md: 16px;
-      --radius-sm: 12px;
+      --header-h: 64px;
+      --shadow: 0 18px 40px rgba(0,0,0,0.24);
+      --radius: 0px;
+      --radius-sm: 0px;
     }
 
-    * { box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
     html, body { min-height: 100%; }
 
     body {
-      margin: 0;
-      color: var(--text);
       font-family: "Comfortaa", sans-serif;
-      background:
-        radial-gradient(circle at top right, rgba(176, 11, 85, 0.23), transparent 23%),
-        radial-gradient(circle at bottom left, rgba(176, 11, 85, 0.12), transparent 28%),
-        linear-gradient(180deg, #090a0f 0%, #0b0d14 100%);
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
     }
-
-
 
     header {
       position: fixed;
       inset: 0 0 auto 0;
-      height: 64px;
+      height: var(--header-h);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -84,75 +78,50 @@
       font-size: 0.72rem;
       padding: 7px 10px;
       border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 999px;
       color: #fff;
       background: rgba(255,255,255,0.04);
     }
 
     .page {
       min-height: 100vh;
-      padding-top: 64px;
-      display: grid;
-      grid-template-columns: 1fr;
+      padding-top: var(--header-h);
+      display: block;
     }
 
-    .left {
-      position: relative;
-      min-height: 32vh;
-      display: flex;
-      align-items: flex-end;
-      overflow: hidden;
+    .hero {
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(176,11,85,0.10), rgba(176,11,85,0.00));
     }
 
-    .left img {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      filter: brightness(0.45);
+    .hero-inner {
+      width: min(1400px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 34px 0 28px;
     }
 
-    .left::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(0,0,0,0.25), rgba(176,11,85,0.18));
+    .hero h1 {
+      font-size: clamp(2.2rem, 6vw, 4.2rem);
+      line-height: 0.92;
+      letter-spacing: -0.05em;
+      margin-bottom: 10px;
     }
 
-    .overlay {
-      position: relative;
-      z-index: 2;
-      padding: 30px 20px;
+    .hero p {
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.5;
+      max-width: 720px;
     }
 
-    .overlay h1 {
-      margin: 0;
-      font-size: clamp(2.5rem, 8vw, 4rem);
-      line-height: 0.9;
-      letter-spacing: -0.04em;
-    }
-
-    .overlay p {
-      margin: 10px 0 0;
-      color: rgba(255,255,255,0.76);
-      font-size: 0.86rem;
-    }
-
-    .right {
-      background: #050505;
-      padding: 20px 14px 28px;
-    }
-
-    .right-inner {
-      width: 100%;
-      display: flex;
-      justify-content: center;
+    .app-shell {
+      width: min(1400px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 18px 0 30px;
     }
 
     #authGate {
       position: fixed;
-      inset: 64px 0 0 0;
+      inset: var(--header-h) 0 0 0;
       background: rgba(0,0,0,0.82);
       display: flex;
       align-items: center;
@@ -164,74 +133,62 @@
     #authGate.hidden { display: none; }
 
     .gate-card {
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.04);
-      padding: 22px 24px;
-      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      padding: 24px 26px;
       color: #d8d8d8;
       font-size: 0.92rem;
       text-align: center;
-      max-width: 320px;
-    }
-
-    .wrap {
-      width: min(1680px, calc(100% - 28px));
-      margin: 20px auto 32px;
+      max-width: 420px;
+      line-height: 1.5;
     }
 
     .topbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 16px;
-      padding: 24px 28px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-xl);
-      background: linear-gradient(145deg, rgba(176, 11, 85, 0.16), rgba(255,255,255,0.03));
-      box-shadow: var(--shadow);
-      margin-bottom: 18px;
+      gap: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.02);
+      padding: 20px;
+      margin-bottom: 16px;
     }
 
-    .topbar h1 {
-      margin: 0;
-      font-size: clamp(1.6rem, 3vw, 2.7rem);
+    .topbar h2 {
+      font-size: clamp(1.2rem, 2.4vw, 2rem);
       letter-spacing: -0.04em;
-      font-weight: 800;
     }
 
-    .topbar .tag {
-      padding: 10px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.05);
-      color: var(--muted);
-      font-size: 0.88rem;
+    .tag {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
       font-weight: 700;
-      white-space: nowrap;
     }
 
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 12px;
-      margin-bottom: 18px;
+      gap: 14px;
+      margin-bottom: 16px;
     }
 
     .card,
     .panel {
-      border: 1px solid var(--border);
-      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
       box-shadow: var(--shadow);
     }
 
     .card {
-      border-radius: var(--radius-lg);
-      padding: 18px 18px 16px;
+      padding: 18px;
+      min-height: 108px;
     }
 
     .label {
       color: var(--muted);
-      font-size: 0.82rem;
+      font-size: 0.76rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       margin-bottom: 10px;
@@ -239,15 +196,16 @@
     }
 
     .value {
-      font-size: clamp(1.35rem, 2vw, 2rem);
+      font-size: clamp(1.2rem, 2vw, 2rem);
       font-weight: 800;
-      letter-spacing: -0.03em;
+      letter-spacing: -0.04em;
       line-height: 1.1;
+      word-break: break-word;
     }
 
     .panel {
-      border-radius: var(--radius-xl);
       padding: 18px;
+      margin-bottom: 16px;
     }
 
     .panel-head {
@@ -259,50 +217,53 @@
     }
 
     .panel-head h2 {
-      margin: 0;
-      font-size: 1.06rem;
+      font-size: 1rem;
       letter-spacing: -0.02em;
     }
 
     .panel-subtle {
       color: var(--muted);
-      font-size: 0.84rem;
+      font-size: 0.82rem;
       font-weight: 600;
+      text-align: right;
     }
 
     .main-layout {
       display: grid;
-      grid-template-columns: minmax(0, 1.75fr) minmax(320px, 0.9fr);
-      gap: 18px;
+      grid-template-columns: minmax(0, 1.7fr) minmax(320px, 0.95fr);
+      gap: 16px;
       align-items: start;
     }
 
     .left-stack,
     .right-stack {
       display: grid;
-      gap: 18px;
+      gap: 16px;
     }
 
-    .chart-shell {
-      height: 700px;
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border);
-      background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.01));
-      padding: 14px;
-    }
-
+    .chart-shell,
     .pie-chart-shell {
-      height: 360px;
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border);
-      background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.01));
-      padding: 14px;
+      border: 1px solid var(--line);
+      background: #080808;
+      padding: 12px;
     }
 
-    form {
-      display: grid;
-      gap: 12px;
+    .chart-shell { height: 640px; }
+    .pie-chart-shell { height: 340px; }
+
+    .range-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      color: var(--muted);
+      font-size: 0.86rem;
+      font-weight: 700;
     }
+
+    form { display: grid; gap: 12px; }
 
     .form-row,
     .range-row,
@@ -319,47 +280,60 @@
     label.input-label {
       display: grid;
       gap: 8px;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       color: var(--muted);
       font-weight: 600;
     }
 
     input, select, button {
       width: 100%;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      background: #0d1018;
+      border: 1px solid var(--line);
+      background: #0a0a0a;
       color: var(--text);
       padding: 12px 14px;
       font: inherit;
     }
 
     input:focus, select:focus {
-      outline: 2px solid rgba(176, 11, 85, 0.38);
-      border-color: rgba(176, 11, 85, 0.55);
+      outline: none;
+      border-color: rgba(176, 11, 85, 0.7);
+      box-shadow: inset 0 0 0 1px rgba(176, 11, 85, 0.5);
     }
 
     button {
       font-weight: 700;
       cursor: pointer;
-      transition: transform 0.14s ease, filter 0.14s ease, opacity 0.14s ease;
+      transition: transform 0.14s ease, background 0.14s ease, border-color 0.14s ease;
     }
 
-    button:hover { transform: translateY(-1px); filter: brightness(1.05); }
+    button:hover { transform: translateY(-1px); }
     button:disabled { opacity: 0.7; cursor: not-allowed; }
 
     .primary-btn {
-      border: none;
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border: 1px solid rgba(176, 11, 85, 0.75);
+      background: rgba(176, 11, 85, 0.16);
+    }
+
+    .primary-btn:hover {
+      background: rgba(176, 11, 85, 0.22);
     }
 
     .ghost-btn {
+      background: rgba(255,255,255,0.03);
+    }
+
+    .ghost-btn:hover {
       background: rgba(255,255,255,0.05);
+      border-color: var(--line-strong);
     }
 
     .danger-btn {
-      border: none;
-      background: linear-gradient(135deg, #8e1938, #6c1029);
+      border: 1px solid rgba(255,107,129,0.45);
+      background: rgba(255,107,129,0.10);
+    }
+
+    .danger-btn:hover {
+      background: rgba(255,107,129,0.16);
     }
 
     .status {
@@ -382,10 +356,9 @@
       grid-template-columns: auto 1fr auto;
       gap: 12px;
       align-items: center;
-      padding: 12px 13px;
-      border-radius: 14px;
-      background: var(--panel-2);
-      border: 1px solid var(--border);
+      padding: 12px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.02);
     }
 
     .check-row input[type="checkbox"] {
@@ -399,7 +372,6 @@
       width: 42px;
       height: 32px;
       padding: 2px;
-      border-radius: 10px;
       cursor: pointer;
       background: #0d1018;
     }
@@ -408,28 +380,13 @@
     .line-color-input::-webkit-color-swatch,
     .line-color-input::-moz-color-swatch {
       border: none;
-      border-radius: 8px;
-    }
-
-    .range-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.04);
-      color: var(--muted);
-      font-size: 0.9rem;
-      font-weight: 700;
     }
 
     .quick-table-wrap,
     .avg-table-wrap,
     .table-wrap {
       overflow: auto;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
+      border: 1px solid var(--line);
       background: rgba(255,255,255,0.015);
     }
 
@@ -437,16 +394,16 @@
       width: 100%;
       border-collapse: collapse;
       min-width: 760px;
-      font-size: 0.95rem;
+      font-size: 0.93rem;
     }
 
     .quick-table,
     .avg-table {
-      min-width: 1080px;
+      min-width: 1060px;
     }
 
     th, td {
-      padding: 14px 14px;
+      padding: 14px;
       text-align: left;
       border-bottom: 1px solid rgba(255,255,255,0.06);
       vertical-align: middle;
@@ -454,14 +411,24 @@
 
     th {
       color: var(--muted);
-      font-size: 0.82rem;
+      font-size: 0.79rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       font-weight: 700;
-      background: rgba(255,255,255,0.02);
+      background: #090909;
       position: sticky;
       top: 0;
       z-index: 1;
+    }
+
+    .avg-table th:first-child,
+    .avg-table td:first-child,
+    .quick-table th:first-child,
+    .quick-table td:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      background: #090909;
     }
 
     .quick-table td:first-child,
@@ -469,30 +436,13 @@
       font-weight: 700;
     }
 
-    .avg-table th:first-child,
-    .avg-table td:first-child {
-      position: sticky;
-      left: 0;
-      z-index: 1;
-      background: rgba(18,20,31,0.98);
-    }
-
-    .quick-table th:first-child,
-    .quick-table td:first-child {
-      position: sticky;
-      left: 0;
-      z-index: 1;
-      background: rgba(18,20,31,0.98);
-    }
-
     .pill {
       display: inline-flex;
       align-items: center;
       padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(176, 11, 85, 0.16);
       border: 1px solid rgba(176, 11, 85, 0.34);
-      font-size: 0.84rem;
+      background: rgba(176, 11, 85, 0.12);
+      font-size: 0.82rem;
       white-space: nowrap;
     }
 
@@ -505,8 +455,7 @@
     .small-btn {
       width: auto;
       padding: 8px 11px;
-      border-radius: 10px;
-      font-size: 0.87rem;
+      font-size: 0.86rem;
       line-height: 1;
     }
 
@@ -527,7 +476,6 @@
       width: auto;
       min-width: 30px;
       padding: 6px 9px;
-      border-radius: 9px;
       font-size: 0.84rem;
       line-height: 1;
     }
@@ -540,22 +488,21 @@
 
     .mini-stat {
       padding: 16px;
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border);
+      border: 1px solid var(--line);
       background: rgba(255,255,255,0.02);
     }
 
-    .mini-stat .mini-label {
+    .mini-label {
       color: var(--muted);
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       font-weight: 700;
       margin-bottom: 8px;
     }
 
-    .mini-stat .mini-value {
-      font-size: 1.15rem;
+    .mini-value {
+      font-size: 1.08rem;
       font-weight: 800;
       letter-spacing: -0.02em;
       line-height: 1.2;
@@ -568,37 +515,39 @@
       .main-layout { grid-template-columns: 1fr; }
     }
 
-    @media (max-width: 900px) {
-      .chart-shell { height: 540px; }
-    }
-
     @media (max-width: 980px) {
       .mini-stats-grid { grid-template-columns: 1fr 1fr; }
     }
 
+    @media (max-width: 900px) {
+      .chart-shell { height: 500px; }
+    }
+
     @media (max-width: 760px) {
-      .wrap { width: min(100% - 16px, 1680px); }
-      .topbar { padding: 20px; }
+      .app-shell,
+      .hero-inner {
+        width: min(100% - 16px, 1400px);
+      }
+
+      .hero-inner {
+        padding: 26px 0 22px;
+      }
+
       .stats-grid { grid-template-columns: 1fr 1fr; }
       .form-row,
       .range-row,
       .button-row,
       .button-row.three { grid-template-columns: 1fr; }
-      .chart-shell { height: 420px; }
-      .pie-chart-shell { height: 320px; }
+      .chart-shell { height: 400px; }
+      .pie-chart-shell { height: 300px; }
       .mini-stats-grid { grid-template-columns: 1fr; }
       nav { gap: 10px; }
       nav a { font-size: 0.76rem; }
-    }
-
-    @media (min-width: 900px) {
-      .page { grid-template-columns: 1fr 1.35fr; }
-      .left, .right { min-height: calc(100vh - 64px); }
-      .right {
-        overflow-y: auto;
-        padding: 26px 22px 30px;
+      .topbar,
+      .panel,
+      .card {
+        padding: 16px;
       }
-      .overlay { padding: 40px; }
     }
   </style>
 </head>
@@ -617,232 +566,231 @@
     </nav>
   </header>
 
-  <div class="page">
-    <section class="left">
-      <img src="me.png" alt="William MacLean">
-      <div class="overlay">
-        <h1><br>Money</h1>
-        <p>Private dashboard</p>
-      </div>
-    </section>
-
-    <section class="right">
-      <div id="authGate">
-        <div class="gate-card">Checking access...</div>
-      </div>
-      <div class="right-inner">
-        <div class="wrap">
-    <section class="topbar">
-      <h1>Money Tracker</h1>
-    </section>
-
-    <section class="stats-grid">
-      <div class="card">
-        <div class="label">Tracked Days</div>
-        <div class="value" id="daysValue">0</div>
-      </div>
-      <div class="card">
-        <div class="label">Entries</div>
-        <div class="value" id="entriesValue">0</div>
-      </div>
-      <div class="card">
-        <div class="label">Total Income</div>
-        <div class="value" id="incomeValue">$0.00</div>
-      </div>
-      <div class="card">
-        <div class="label">Total Spending</div>
-        <div class="value" id="spendingValue">$0.00</div>
-      </div>
-      <div class="card">
-        <div class="label">Food Total</div>
-        <div class="value" id="foodValue">$0.00</div>
-      </div>
-    </section>
-
-    <section class="panel" style="margin-bottom: 18px;">
-      <div class="panel-head">
-        <h2>Quick Stats</h2>
-        <div class="panel-subtle">Selected range plus rolling averages</div>
-      </div>
-      <div class="quick-table-wrap">
-        <table class="quick-table">
-          <thead>
-            <tr>
-              <th>Metric</th>
-              <th>Selected Range</th>
-              <th>Last Month</th>
-              <th>Last 3 Months</th>
-              <th>Last 6 Months</th>
-              <th>Last Year</th>
-            </tr>
-          </thead>
-          <tbody id="quickStatsBody">
-            <tr><td colspan="6" style="color: var(--muted);">No data yet.</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="main-layout">
-      <div class="left-stack">
-        <section class="panel">
-          <div class="panel-head">
-            <h2>Average Per Day</h2>
-            <div class="range-pill" id="activeRangeLabel">Full Range</div>
-          </div>
-          <div class="chart-shell">
-            <canvas id="moneyChart"></canvas>
-          </div>
-        </section>
-
-        <section class="panel">
-          <div class="panel-head">
-            <h2>Range</h2>
-            <div class="panel-subtle">Controls moved under the graph</div>
-          </div>
-
-          <div class="range-row">
-            <label class="input-label">
-              Start Date
-              <input type="date" id="rangeStartInput" />
-            </label>
-            <label class="input-label">
-              End Date
-              <input type="date" id="rangeEndInput" />
-            </label>
-          </div>
-
-          <div class="button-row three" style="margin-top:12px;">
-            <button type="button" class="primary-btn" id="applyRangeButton">Apply Range</button>
-            <button type="button" class="ghost-btn" id="clearRangeButton">Clear Range</button>
-            <button type="button" class="ghost-btn" id="downloadPdfButton">Download PDF</button>
-          </div>
-        </section>
-      </div>
-
-      <div class="right-stack">
-        <section class="panel">
-          <div class="panel-head">
-            <h2>Spending By Category</h2>
-            <div class="panel-subtle">Current selected range</div>
-          </div>
-          <div class="pie-chart-shell">
-            <canvas id="spendingPieChart"></canvas>
-          </div>
-        </section>
-
-        <section class="panel">
-          <div class="panel-head">
-            <h2>Line Visibility</h2>
-          </div>
-          <div class="controls-wrap" id="toggleGrid"></div>
-        </section>
-
-        <section class="panel">
-          <div class="panel-head">
-            <h2>Total Spending Includes</h2>
-          </div>
-          <div class="controls-wrap" id="spendingIncludeGrid"></div>
-        </section>
-      </div>
-    </section>
-
-    <section class="panel" style="margin-top: 18px;">
-      <div class="panel-head">
-        <h2>Averages By Category</h2>
-        <div class="panel-subtle">Daily averages across multiple lookback windows</div>
-      </div>
-      <div class="avg-table-wrap">
-        <table class="avg-table">
-          <thead>
-            <tr>
-              <th>Category</th>
-              <th>Selected Range</th>
-              <th>Last Month</th>
-              <th>Last 3 Months</th>
-              <th>Last 6 Months</th>
-              <th>Last Year</th>
-            </tr>
-          </thead>
-          <tbody id="averagesBody">
-            <tr><td colspan="6" style="color: var(--muted);">No data yet.</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="panel" style="margin-top: 18px;">
-      <div class="panel-head">
-        <h2>Extra Stats</h2>
-        <div class="panel-subtle">Average bills and yearly projections</div>
-      </div>
-      <div class="mini-stats-grid" id="extraStatsGrid">
-        <div class="mini-stat"><div class="mini-label">Average Grocery Bill</div><div class="mini-value">$0.00</div></div>
-        <div class="mini-stat"><div class="mini-label">Average Fast Food Bill</div><div class="mini-value">$0.00</div></div>
-        <div class="mini-stat"><div class="mini-label">Projected Food / Year</div><div class="mini-value">$0.00</div></div>
-        <div class="mini-stat"><div class="mini-label">Projected Non-Food / Year</div><div class="mini-value">$0.00</div></div>
-      </div>
-    </section>
-
-    <section class="panel" style="margin-top: 18px;">
-      <div class="panel-head">
-        <h2 id="formHeading">Add Transaction</h2>
-        <div class="panel-subtle">Edit and delete are password protected</div>
-      </div>
-
-      <form id="entryForm">
-        <div class="form-row">
-          <label class="input-label">
-            Date
-            <input type="date" id="dateInput" required />
-          </label>
-          <label class="input-label">
-            Category
-            <select id="categoryInput" required></select>
-          </label>
-        </div>
-
-        <label class="input-label">
-          Amount
-          <input type="number" id="amountInput" required min="0" step="0.01" placeholder="25.00" />
-        </label>
-
-        <div class="form-row">
-          <button type="submit" class="primary-btn" id="submitButton">Add Entry</button>
-          <button type="button" class="ghost-btn" id="cancelEditButton" style="display:none;">Cancel Edit</button>
-        </div>
-      </form>
-
-      <div class="status" id="statusText"></div>
-    </section>
-
-    <section class="panel" style="margin-top: 18px;">
-      <div class="panel-head">
-        <h2 id="entriesTitle">Transactions</h2>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Category</th>
-              <th>Type</th>
-              <th>Amount</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="entriesTableBody">
-            <tr><td colspan="5" style="color: var(--muted);">No data yet.</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <div class="footer-space"></div>
-        </div>
-      </div>
-    </section>
+  <div id="authGate">
+    <div class="gate-card">Checking access...</div>
   </div>
+
+  <main class="page">
+    <section class="hero">
+      <div class="hero-inner">
+        <h1>Transactions</h1>
+        <p>Private finance dashboard.</p>
+      </div>
+    </section>
+
+    <section class="app-shell">
+      <section class="topbar">
+        <div>
+          <div class="tag">Finance</div>
+          <h2>Money Tracker</h2>
+        </div>
+      </section>
+
+      <section class="stats-grid">
+        <div class="card">
+          <div class="label">Tracked Days</div>
+          <div class="value" id="daysValue">0</div>
+        </div>
+        <div class="card">
+          <div class="label">Entries</div>
+          <div class="value" id="entriesValue">0</div>
+        </div>
+        <div class="card">
+          <div class="label">Total Income</div>
+          <div class="value" id="incomeValue">$0.00</div>
+        </div>
+        <div class="card">
+          <div class="label">Total Spending</div>
+          <div class="value" id="spendingValue">$0.00</div>
+        </div>
+        <div class="card">
+          <div class="label">Food Total</div>
+          <div class="value" id="foodValue">$0.00</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Quick Stats</h2>
+          <div class="panel-subtle">Selected range plus rolling averages</div>
+        </div>
+        <div class="quick-table-wrap">
+          <table class="quick-table">
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>Selected Range</th>
+                <th>Last Month</th>
+                <th>Last 3 Months</th>
+                <th>Last 6 Months</th>
+                <th>Last Year</th>
+              </tr>
+            </thead>
+            <tbody id="quickStatsBody">
+              <tr><td colspan="6" style="color: var(--muted);">No data yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="main-layout">
+        <div class="left-stack">
+          <section class="panel">
+            <div class="panel-head">
+              <h2>Average Per Day</h2>
+              <div class="range-pill" id="activeRangeLabel">Full Range</div>
+            </div>
+            <div class="chart-shell">
+              <canvas id="moneyChart"></canvas>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2>Range</h2>
+              <div class="panel-subtle">Controls under the graph</div>
+            </div>
+
+            <div class="range-row">
+              <label class="input-label">
+                Start Date
+                <input type="date" id="rangeStartInput" />
+              </label>
+              <label class="input-label">
+                End Date
+                <input type="date" id="rangeEndInput" />
+              </label>
+            </div>
+
+            <div class="button-row three" style="margin-top:12px;">
+              <button type="button" class="primary-btn" id="applyRangeButton">Apply Range</button>
+              <button type="button" class="ghost-btn" id="clearRangeButton">Clear Range</button>
+              <button type="button" class="ghost-btn" id="downloadPdfButton">Download PDF</button>
+            </div>
+          </section>
+        </div>
+
+        <div class="right-stack">
+          <section class="panel">
+            <div class="panel-head">
+              <h2>Spending By Category</h2>
+              <div class="panel-subtle">Current selected range</div>
+            </div>
+            <div class="pie-chart-shell">
+              <canvas id="spendingPieChart"></canvas>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2>Line Visibility</h2>
+            </div>
+            <div class="controls-wrap" id="toggleGrid"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2>Total Spending Includes</h2>
+            </div>
+            <div class="controls-wrap" id="spendingIncludeGrid"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Averages By Category</h2>
+          <div class="panel-subtle">Daily averages across multiple lookback windows</div>
+        </div>
+        <div class="avg-table-wrap">
+          <table class="avg-table">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Selected Range</th>
+                <th>Last Month</th>
+                <th>Last 3 Months</th>
+                <th>Last 6 Months</th>
+                <th>Last Year</th>
+              </tr>
+            </thead>
+            <tbody id="averagesBody">
+              <tr><td colspan="6" style="color: var(--muted);">No data yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Extra Stats</h2>
+          <div class="panel-subtle">Average bills and yearly projections</div>
+        </div>
+        <div class="mini-stats-grid" id="extraStatsGrid">
+          <div class="mini-stat"><div class="mini-label">Average Grocery Bill</div><div class="mini-value">$0.00</div></div>
+          <div class="mini-stat"><div class="mini-label">Average Fast Food Bill</div><div class="mini-value">$0.00</div></div>
+          <div class="mini-stat"><div class="mini-label">Projected Food / Year</div><div class="mini-value">$0.00</div></div>
+          <div class="mini-stat"><div class="mini-label">Projected Non-Food / Year</div><div class="mini-value">$0.00</div></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2 id="formHeading">Add Transaction</h2>
+          <div class="panel-subtle">Edit and delete are password protected</div>
+        </div>
+
+        <form id="entryForm">
+          <div class="form-row">
+            <label class="input-label">
+              Date
+              <input type="date" id="dateInput" required />
+            </label>
+            <label class="input-label">
+              Category
+              <select id="categoryInput" required></select>
+            </label>
+          </div>
+
+          <label class="input-label">
+            Amount
+            <input type="number" id="amountInput" required min="0" step="0.01" placeholder="25.00" />
+          </label>
+
+          <div class="form-row">
+            <button type="submit" class="primary-btn" id="submitButton">Add Entry</button>
+            <button type="button" class="ghost-btn" id="cancelEditButton" style="display:none;">Cancel Edit</button>
+          </div>
+        </form>
+
+        <div class="status" id="statusText"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2 id="entriesTitle">Transactions</h2>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Category</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="entriesTableBody">
+              <tr><td colspan="5" style="color: var(--muted);">No data yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="footer-space"></div>
+    </section>
+  </main>
 
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js';
@@ -941,13 +889,6 @@
     };
 
     const defaultVisible = new Set(['Groceries', 'Fast Food', 'Food', 'Total Income', 'Total Spending']);
-    const WINDOW_DEFS = [
-      { key: 'selected', label: 'Selected Range' },
-      { key: 'last30', label: 'Last Month', days: 30 },
-      { key: 'last90', label: 'Last 3 Months', days: 90 },
-      { key: 'last180', label: 'Last 6 Months', days: 180 },
-      { key: 'last365', label: 'Last Year', days: 365 }
-    ];
 
     let averagesRowOrder = [
       'Misc Income',
@@ -993,8 +934,6 @@
     const foodValue = document.getElementById('foodValue');
     const statusPill = document.getElementById('statusPill');
     const authGate = document.getElementById('authGate');
-
-
 
     const statusRank = {
       default: 0,
