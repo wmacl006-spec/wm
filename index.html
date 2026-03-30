@@ -5,471 +5,534 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>William MacLean</title>
   <link rel="icon" type="image/png" href="logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=+Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #edf2f6;
-      --card: #ffffff;
-      --text: #0e1726;
-      --muted: #64748b;
-      --line: #e8edf3;
+      --bg: #050505;
+      --panel: #0d0d0d;
+      --panel-2: #121212;
+      --text: #f4f4f4;
+      --muted: #9d9d9d;
+      --line: rgba(255,255,255,0.09);
       --accent: #b00b55;
-      --accent-soft: rgba(176, 11, 85, 0.08);
-      --shadow: 0 24px 80px rgba(15, 23, 42, 0.10);
-      --radius: 28px;
+      --accent-soft: rgba(176, 11, 85, 0.18);
+      --max: 1400px;
+      --radius: 24px;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
 
     body {
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(176,11,85,0.08), transparent 22%),
-        linear-gradient(180deg, #f4f7fa 0%, #edf2f6 100%);
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      padding: 16px;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
     }
 
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    img {
-      display: block;
-      max-width: 100%;
-    }
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
 
     .page {
-      max-width: 430px;
+      width: min(100%, var(--max));
       margin: 0 auto;
+      padding: 14px;
     }
 
-    .card {
-      background: var(--card);
-      border: 1px solid rgba(255,255,255,0.85);
-      border-radius: 32px;
-      box-shadow: var(--shadow);
+    .shell {
+      min-height: calc(100vh - 28px);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border: 1px solid var(--line);
+      border-radius: 28px;
       overflow: hidden;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.4);
     }
 
-    .nav {
+    .topbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      padding: 18px 18px 12px;
+      gap: 14px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 20;
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       min-width: 0;
     }
 
     .brand img {
-      width: 38px;
-      height: 38px;
+      width: 34px;
+      height: 34px;
       object-fit: contain;
-      border-radius: 12px;
-      background: #f7f9fc;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.03);
       padding: 5px;
-      border: 1px solid var(--line);
     }
 
-    .brand span {
+    .brand-text {
+      min-width: 0;
+    }
+
+    .brand-text strong {
+      display: block;
       font-size: 0.95rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
+      letter-spacing: 0.02em;
     }
 
-    .nav-links {
+    .brand-text span {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .nav {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
       justify-content: flex-end;
     }
 
-    .nav-links a,
-    .nav-cta {
-      font-size: 0.72rem;
-      padding: 9px 11px;
-      border-radius: 999px;
+    .nav a {
+      padding: 10px 14px;
       border: 1px solid var(--line);
-      background: #fff;
-      color: var(--muted);
-      font-weight: 600;
-    }
-
-    .nav-cta {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-      box-shadow: 0 12px 24px rgba(176, 11, 85, 0.24);
-    }
-
-    .hero {
-      position: relative;
-      padding: 8px 18px 22px;
-      overflow: hidden;
-    }
-
-    .hero::before,
-    .hero::after {
-      content: "";
-      position: absolute;
       border-radius: 999px;
-      background: rgba(15, 23, 42, 0.05);
-      filter: blur(1px);
+      color: #e8e8e8;
+      font-size: 0.86rem;
+      transition: 0.2s ease;
+      background: rgba(255,255,255,0.02);
     }
 
-    .hero::before {
-      width: 14px;
-      height: 14px;
-      top: 38px;
-      left: 84px;
+    .nav a:hover,
+    .nav a:focus-visible {
+      border-color: rgba(176, 11, 85, 0.55);
+      background: var(--accent-soft);
+      outline: none;
+      transform: translateY(-1px);
     }
 
-    .hero::after {
-      width: 10px;
-      height: 10px;
-      right: 24px;
-      top: 120px;
-    }
-
-    .hero-grid {
+    .layout {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 18px;
-      align-items: end;
-      min-height: 485px;
+    }
+
+    .visual {
       position: relative;
+      min-height: 42vh;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,0.0) 40%, rgba(0,0,0,0.6) 100%),
+        linear-gradient(135deg, rgba(176,11,85,0.12), rgba(255,255,255,0) 45%);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .visual img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      min-height: 42vh;
+      filter: grayscale(100%);
+    }
+
+    .visual-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 20px;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.6));
+    }
+
+    .kicker {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: rgba(255,255,255,0.68);
+      margin-bottom: 8px;
+    }
+
+    .hero-name {
+      font-size: clamp(2rem, 8vw, 4.8rem);
+      line-height: 0.95;
+      margin: 0;
+      max-width: 8ch;
+    }
+
+    .hero-sub {
+      margin-top: 10px;
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.72);
+      max-width: 28ch;
+    }
+
+    .content {
+      background: #060606;
+      padding: 20px 16px 24px;
+    }
+
+    .section-label {
+      color: rgba(255,255,255,0.58);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 0.72rem;
+      margin-bottom: 16px;
     }
 
     .intro {
-      position: relative;
-      z-index: 2;
-      padding-top: 12px;
-      max-width: 220px;
+      padding-bottom: 18px;
+      margin-bottom: 22px;
+      border-bottom: 1px solid var(--line);
     }
 
-    .eyebrow {
-      font-size: 0.92rem;
-      color: var(--text);
-      margin-bottom: 10px;
-    }
-
-    .name {
-      font-size: 2.6rem;
-      line-height: 0.88;
-      letter-spacing: -0.06em;
-      font-weight: 900;
-      margin-bottom: 12px;
-    }
-
-    .name span {
-      display: block;
-      color: var(--accent);
-    }
-
-    .summary {
-      font-size: 0.82rem;
-      line-height: 1.7;
-      color: var(--muted);
-      max-width: 200px;
-    }
-
-    .portrait-zone {
-      position: absolute;
-      inset: 58px 0 0 0;
-      display: flex;
-      justify-content: center;
-      align-items: end;
-      pointer-events: none;
-    }
-
-    .portrait-bg {
-      position: absolute;
-      bottom: 28px;
-      width: 240px;
-      height: 240px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(176,11,85,0.11), rgba(176,11,85,0.02) 58%, transparent 72%);
-    }
-
-    .portrait {
-      position: relative;
-      width: 250px;
-      border-radius: 24px;
-      overflow: hidden;
-    }
-
-    .portrait img {
-      width: 100%;
-      height: auto;
-      object-fit: cover;
-      filter: saturate(0.98) contrast(1.03);
-    }
-
-    .float {
-      position: absolute;
-      z-index: 3;
-      background: rgba(255,255,255,0.92);
-      border: 1px solid rgba(15,23,42,0.06);
-      box-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
-      border-radius: 18px;
-      padding: 10px 12px;
-      backdrop-filter: blur(10px);
-    }
-
-    .float small {
-      display: block;
-      color: var(--muted);
-      font-size: 0.62rem;
-      margin-bottom: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-
-    .float strong {
-      display: block;
-      font-size: 0.78rem;
-      line-height: 1.35;
-      color: var(--text);
-    }
-
-    .float.work {
-      right: 6px;
-      top: 100px;
-      width: 108px;
-    }
-
-    .float.edu {
-      left: 132px;
-      bottom: 88px;
-      width: 132px;
-    }
-
-    .float.contact {
-      right: 18px;
-      bottom: 22px;
-      width: 120px;
-    }
-
-    .section {
-      padding: 16px 18px 0;
-    }
-
-    .section-title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-
-    .section-title h2 {
+    .intro p {
       font-size: 1rem;
-      letter-spacing: -0.03em;
+      line-height: 1.7;
+      color: #d5d5d5;
+      max-width: 56ch;
+      margin: 0;
     }
 
-    .section-title span {
-      font-size: 0.72rem;
-      color: var(--muted);
-      text-transform: uppercase;
+    .grid {
+      display: grid;
+      gap: 26px;
+    }
+
+    .panel {
+      padding: 0;
+    }
+
+    .panel h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0 0 18px;
+    }
+
+    .list {
+      border-top: 1px solid var(--line);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 14px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .year,
+    .label {
+      font-size: 0.78rem;
       letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding-top: 2px;
+    }
+
+    .item-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .item-sub {
+      font-size: 0.92rem;
+      color: #d2d2d2;
+      line-height: 1.65;
+      margin-bottom: 8px;
+    }
+
+    .item-meta {
+      font-size: 0.86rem;
+      color: var(--muted);
+      line-height: 1.55;
     }
 
     .contact-list,
-    .resume-list {
+    .strengths {
       display: grid;
       gap: 10px;
     }
 
-    .item {
+    .contact-card,
+    .strength-pill {
       border: 1px solid var(--line);
+      background: var(--panel-2);
       border-radius: 18px;
-      padding: 14px;
-      background: #fcfdff;
     }
 
-    .item .label {
+    .contact-card {
+      padding: 14px 16px;
+    }
+
+    .contact-card small {
       display: block;
-      font-size: 0.68rem;
       color: var(--muted);
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      margin-bottom: 5px;
+      font-size: 0.68rem;
+      margin-bottom: 6px;
     }
 
-    .item .value {
-      font-size: 0.93rem;
-      font-weight: 600;
-      line-height: 1.45;
+    .contact-card span,
+    .contact-card a {
+      font-size: 0.95rem;
+      color: #f3f3f3;
       word-break: break-word;
     }
 
-    .resume-item h3 {
-      font-size: 0.94rem;
-      line-height: 1.35;
-      margin-bottom: 4px;
+    .strengths {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .resume-item .meta {
-      font-size: 0.78rem;
-      color: var(--accent);
-      font-weight: 700;
-      margin-bottom: 8px;
+    .strength-pill {
+      padding: 12px 14px;
+      font-size: 0.9rem;
+      color: #e9e9e9;
     }
 
-    .resume-item p {
-      font-size: 0.84rem;
+    .download {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 18px;
+      padding: 12px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(176, 11, 85, 0.4);
+      background: var(--accent-soft);
+      color: #fff;
+      font-weight: 600;
+      transition: 0.2s ease;
+    }
+
+    .download:hover,
+    .download:focus-visible {
+      transform: translateY(-1px);
+      background: rgba(176, 11, 85, 0.26);
+      outline: none;
+    }
+
+    .footer {
+      padding-top: 24px;
+      margin-top: 24px;
+      border-top: 1px solid var(--line);
       color: var(--muted);
-      line-height: 1.65;
+      font-size: 0.82rem;
     }
 
-    .footer-space {
-      height: 18px;
-    }
+    @media (min-width: 900px) {
+      .layout {
+        grid-template-columns: minmax(420px, 0.92fr) minmax(520px, 1.08fr);
+        min-height: calc(100vh - 63px);
+      }
 
-    @media (min-width: 431px) {
-      body {
+      .visual {
+        min-height: 100%;
+        border-bottom: 0;
+        border-right: 1px solid var(--line);
+      }
+
+      .visual img {
+        min-height: 100%;
+        height: 100%;
+      }
+
+      .visual-overlay {
         padding: 28px;
       }
 
-      .page {
-        max-width: 480px;
+      .content {
+        padding: 34px 30px 30px;
       }
 
-      .hero-grid {
-        min-height: 520px;
+      .grid {
+        grid-template-columns: 1.15fr 0.85fr;
+        align-items: start;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
       }
 
-      .intro {
-        max-width: 240px;
+      .nav {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .nav a {
+        flex: 1 1 auto;
+        text-align: center;
+      }
+
+      .strengths {
+        grid-template-columns: 1fr;
+      }
+
+      .row {
+        grid-template-columns: 1fr;
+        gap: 8px;
       }
     }
   </style>
 </head>
 <body>
-  <main class="page">
-    <div class="card">
-      <header class="nav">
-        <a class="brand" href="index.html">
+  <div class="page">
+    <div class="shell">
+      <header class="topbar">
+        <a class="brand" href="index.html" aria-label="Home">
           <img src="logo.png" alt="William MacLean logo" />
-          <span>wm.</span>
+          <div class="brand-text">
+            <strong>William MacLean</strong>
+            <span>Financial Mathematics & Economics</span>
+          </div>
         </a>
 
-        <div class="nav-links">
-          <a href="tools.html">Tools</a>
+        <nav class="nav" aria-label="Main navigation">
+          <a href="login.html">Login</a>
           <a href="apps.html">Apps</a>
-          <a href="login.html" class="nav-cta">Login</a>
-        </div>
+          <a href="tools.html">Tools</a>
+        </nav>
       </header>
 
-      <section class="hero">
-        <div class="hero-grid">
+      <main class="layout">
+        <section class="visual" aria-label="Portrait">
+          <img src="me.png" alt="Portrait of William MacLean" />
+          <div class="visual-overlay">
+            <div class="kicker">Portfolio / Resume</div>
+            <h1 class="hero-name">William MacLean</h1>
+            <div class="hero-sub">Stagehand, student, and problem solver with experience across live production, logistics, and technical work.</div>
+          </div>
+        </section>
+
+        <section class="content">
           <div class="intro">
-            <p class="eyebrow">Hello, I’m</p>
-            <h1 class="name">WILLIAM <span>MACLEAN</span></h1>
-            <p class="summary">
-              Financial Mathematics and Economics student with stagehand, logistics,
-              technical, and general labour experience.
-            </p>
+            <div class="section-label">Overview</div>
+            <p>I’m based in Ottawa and currently studying Financial Mathematics and Economics at uOttawa, while continuing hands-on work in live events, labour support, and operations.</p>
+            <a class="download" href="WilliamsResume.pdf" download>Download CV</a>
           </div>
 
-          <div class="portrait-zone">
-            <div class="portrait-bg"></div>
-            <div class="portrait">
-              <img src="me.png" alt="William MacLean portrait" />
+          <div class="grid">
+            <div class="panel">
+              <div class="section-label">Experience</div>
+              <div class="list">
+                <article class="row">
+                  <div class="year">2025 — Now</div>
+                  <div>
+                    <div class="item-title">IATSE Local 471</div>
+                    <div class="item-sub">Stagehand supporting carpentry, lighting, audio, and truck loading in the Ottawa region.</div>
+                    <div class="item-meta">Reference: Jeff Manning · Call Steward</div>
+                  </div>
+                </article>
+
+                <article class="row">
+                  <div class="year">2022 — Now</div>
+                  <div>
+                    <div class="item-title">IATSE Local 357</div>
+                    <div class="item-sub">Stagehand supporting carpentry, lighting, audio, pyrotechnics, camera operations, and truck loading in the Kitchener–Waterloo region.</div>
+                    <div class="item-meta">References: Kathleen Orlando · Mark Card</div>
+                  </div>
+                </article>
+
+                <article class="row">
+                  <div class="year">2018 — Now</div>
+                  <div>
+                    <div class="item-title">Gypsy Wind Custom Coach</div>
+                    <div class="item-sub">Runner and general labourer supporting transportation and on-site operations.</div>
+                    <div class="item-meta">Reference: Heidi MacLean · CEO</div>
+                  </div>
+                </article>
+              </div>
+
+              <div class="section-label" style="margin-top: 28px;">Education</div>
+              <div class="list">
+                <article class="row">
+                  <div class="label">2024 — Now</div>
+                  <div>
+                    <div class="item-title">uOttawa</div>
+                    <div class="item-sub">Honours BSc in Financial Mathematics and Economics</div>
+                  </div>
+                </article>
+
+                <article class="row">
+                  <div class="label">2020 — 2024</div>
+                  <div>
+                    <div class="item-title">Grand River Collegiate Institute</div>
+                    <div class="item-sub">High School Diploma</div>
+                  </div>
+                </article>
+              </div>
             </div>
+
+            <aside class="panel">
+              <div class="section-label">Contact</div>
+              <div class="contact-list">
+                <div class="contact-card">
+                  <small>Phone</small>
+                  <a href="tel:15198078017">519-807-8017</a>
+                </div>
+                <div class="contact-card">
+                  <small>Work Email</small>
+                  <a href="mailto:work@williammaclean.ca">work@williammaclean.ca</a>
+                </div>
+                <div class="contact-card">
+                  <small>Contact Email</small>
+                  <a href="mailto:contact@williammaclean.ca">contact@williammaclean.ca</a>
+                </div>
+                <div class="contact-card">
+                  <small>Instagram</small>
+                  <a href="https://www.instagram.com/william_maclean_06" target="_blank" rel="noopener">@william_maclean_06</a>
+                </div>
+                <div class="contact-card">
+                  <small>Discord</small>
+                  <span>tabearus</span>
+                </div>
+                <div class="contact-card">
+                  <small>Steam</small>
+                  <a href="https://steamcommunity.com/id/Tabearus" target="_blank" rel="noopener">Tabearus</a>
+                </div>
+                <div class="contact-card">
+                  <small>Location</small>
+                  <span>Ottawa, ON</span>
+                </div>
+              </div>
+
+              <div class="section-label" style="margin-top: 28px;">Core Strengths</div>
+              <div class="strengths">
+                <div class="strength-pill">Critical Thinking</div>
+                <div class="strength-pill">Logistics & Coordination</div>
+                <div class="strength-pill">Mathematics</div>
+                <div class="strength-pill">Problem Solving</div>
+                <div class="strength-pill">Technology</div>
+                <div class="strength-pill">French</div>
+              </div>
+            </aside>
           </div>
 
-          <div class="float work">
-            <small>Work</small>
-            <strong>IATSE 471 / 357<br />Stagehand</strong>
-          </div>
-
-          <div class="float edu">
-            <small>Education</small>
-            <strong>uOttawa<br />Financial Math & Econ</strong>
-          </div>
-
-          <div class="float contact">
-            <small>Based in</small>
-            <strong>Ottawa, ON<br />Cambridge, ON</strong>
-          </div>
-        </div>
-      </section>
-
-      <section class="section">
-        <div class="section-title">
-          <h2>Contact</h2>
-          <span>Direct</span>
-        </div>
-        <div class="contact-list">
-          <div class="item"><span class="label">Phone</span><div class="value">519-807-8017</div></div>
-          <div class="item"><span class="label">Emails</span><div class="value">work@williammaclean.ca<br />contact@williammaclean.ca</div></div>
-          <div class="item"><span class="label">Instagram</span><div class="value">william_maclean_06</div></div>
-          <div class="item"><span class="label">Discord</span><div class="value">tabearus</div></div>
-          <div class="item"><span class="label">Steam</span><div class="value">steamcommunity.com/id/Tabearus</div></div>
-          <div class="item"><span class="label">LinkedIn</span><div class="value">Add your LinkedIn URL</div></div>
-          <div class="item"><span class="label">Snapchat</span><div class="value">Add your Snapchat</div></div>
-        </div>
-      </section>
-
-      <section class="section">
-        <div class="section-title">
-          <h2>Work Experience</h2>
-          <span>Resume</span>
-        </div>
-        <div class="resume-list">
-          <article class="item resume-item">
-            <h3>IATSE Local 471</h3>
-            <div class="meta">2025 – Present</div>
-            <p>Stagehand supporting carpentry, lighting, audio, and truck loading in the Ottawa region.</p>
-          </article>
-
-          <article class="item resume-item">
-            <h3>IATSE Local 357</h3>
-            <div class="meta">2022 – Present</div>
-            <p>Stagehand supporting carpentry, lighting, audio, pyrotechnics, camera operations, and truck loading in the Kitchener–Waterloo region.</p>
-          </article>
-
-          <article class="item resume-item">
-            <h3>Gypsy Wind Custom Coach</h3>
-            <div class="meta">2018 – Present</div>
-            <p>Runner and general labourer supporting transportation and on-site operations.</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="section">
-        <div class="section-title">
-          <h2>Schooling</h2>
-          <span>Education</span>
-        </div>
-        <div class="resume-list">
-          <article class="item resume-item">
-            <h3>University of Ottawa</h3>
-            <div class="meta">2024 – Present</div>
-            <p>Honours BSc Financial Mathematics and Economics.</p>
-          </article>
-
-          <article class="item resume-item">
-            <h3>Grand River Collegiate Institute</h3>
-            <div class="meta">2020 – 2024</div>
-            <p>High School Diploma.</p>
-          </article>
-        </div>
-      </section>
-
-      <div class="footer-space"></div>
+          <div class="footer">Built to feel clean, editorial, and mobile-first.</div>
+        </section>
+      </main>
     </div>
-  </main>
+  </div>
 </body>
 </html>
