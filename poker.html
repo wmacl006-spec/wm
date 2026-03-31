@@ -481,11 +481,6 @@
       line-height:1;
     }
 
-    .stack{
-      display:grid;
-      gap:10px;
-    }
-
     .empty{
       color:var(--muted);
       padding:12px;
@@ -727,6 +722,27 @@
         <div class="right-stack">
           <section class="panel">
             <div class="panel-head">
+              <h2>Username</h2>
+              <div class="panel-subtle">Shown instead of email</div>
+            </div>
+
+            <form id="usernameForm">
+              <label class="input-label">
+                Username
+                <input type="text" id="usernameInput" maxlength="20" placeholder="pick a username" />
+              </label>
+
+              <div class="button-row">
+                <button type="submit" class="primary-btn">Save Username</button>
+                <button type="button" class="ghost-btn" id="clearUsernameBtn">Clear</button>
+              </div>
+            </form>
+
+            <div class="status" id="usernameStatus"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
               <h2>Your Stats</h2>
               <div class="panel-subtle">From Firestore</div>
             </div>
@@ -748,55 +764,6 @@
                 <div class="mini-label">Net Result</div>
                 <div class="mini-value" id="netResultValue">$0.00</div>
               </div>
-            </div>
-          </section>
-
-          <section class="panel">
-            <div class="panel-head">
-              <h2>Add Debt</h2>
-              <div class="panel-subtle">Manual lobby tracker</div>
-            </div>
-
-            <form id="debtForm">
-              <label class="input-label">
-                Other Player Email
-                <input type="email" id="debtOtherEmailInput" placeholder="friend@email.com" required />
-              </label>
-
-              <div class="form-row">
-                <label class="input-label">
-                  Amount
-                  <input type="number" id="debtAmountInput" min="0.01" step="0.01" placeholder="20.00" required />
-                </label>
-
-                <label class="input-label">
-                  Direction
-                  <select id="debtDirectionInput">
-                    <option value="iOwe">I owe them</option>
-                    <option value="theyOwe">They owe me</option>
-                  </select>
-                </label>
-              </div>
-
-              <label class="input-label">
-                Note
-                <input type="text" id="debtNoteInput" maxlength="120" placeholder="Buy-in for last game" />
-              </label>
-
-              <button type="submit" class="primary-btn">Save Debt</button>
-            </form>
-
-            <div class="status" id="debtStatus"></div>
-          </section>
-
-          <section class="panel">
-            <div class="panel-head">
-              <h2>Top Players</h2>
-              <div class="panel-subtle">By hands won</div>
-            </div>
-
-            <div class="stack" id="topPlayersList">
-              <div class="empty">No player stats yet.</div>
             </div>
           </section>
         </div>
@@ -940,19 +907,16 @@
     const startingStackInput = document.getElementById("startingStackInput");
     const visibilityInput = document.getElementById("visibilityInput");
 
-    const debtForm = document.getElementById("debtForm");
-    const debtStatus = document.getElementById("debtStatus");
-    const debtOtherEmailInput = document.getElementById("debtOtherEmailInput");
-    const debtAmountInput = document.getElementById("debtAmountInput");
-    const debtDirectionInput = document.getElementById("debtDirectionInput");
-    const debtNoteInput = document.getElementById("debtNoteInput");
+    const usernameForm = document.getElementById("usernameForm");
+    const usernameInput = document.getElementById("usernameInput");
+    const usernameStatus = document.getElementById("usernameStatus");
+    const clearUsernameBtn = document.getElementById("clearUsernameBtn");
 
     const gamesTableBody = document.getElementById("gamesTableBody");
     const myGamesTableBody = document.getElementById("myGamesTableBody");
     const debtsIOweBody = document.getElementById("debtsIOweBody");
     const debtsOwedToMeBody = document.getElementById("debtsOwedToMeBody");
     const playerStatsBody = document.getElementById("playerStatsBody");
-    const topPlayersList = document.getElementById("topPlayersList");
 
     const activeGamesValue = document.getElementById("activeGamesValue");
     const myGamesValue = document.getElementById("myGamesValue");
@@ -975,6 +939,7 @@
     let currentUserStatus = "default";
     let currentGames = [];
     let currentStats = [];
+    let currentPlayerProfile = null;
 
     function normalizeStatus(status) {
       if (!status) return "default";
@@ -1030,9 +995,44 @@
       createStatus.style.color = isError ? "var(--danger)" : "var(--muted)";
     }
 
-    function showDebtStatus(message, isError = false) {
-      debtStatus.textContent = message;
-      debtStatus.style.color = isError ? "var(--danger)" : "var(--muted)";
+    function showUsernameStatus(message, isError = false) {
+      usernameStatus.textContent = message;
+      usernameStatus.style.color = isError ? "var(--danger)" : "var(--muted)";
+    }
+
+    function normalizeUsername(value) {
+      return String(value || "")
+        .trim()
+        .replace(/\s+/g, "_")
+        .replace(/[^a-zA-Z0-9_]/g, "")
+        .slice(0, 20);
+    }
+
+    function fallbackNameFromUser(user) {
+      if (!user) return "Player";
+      if (user.displayName && user.displayName.trim()) return user.displayName.trim();
+      return "Player";
+    }
+
+    function getPublicName(data, fallback = "Player") {
+      const username = String(data?.username || "").trim();
+      const displayName = String(data?.displayName || "").trim();
+      if (username) return username;
+      if (displayName) return displayName;
+      return fallback;
+    }
+
+    function getDebtDisplayName(data, kind) {
+      if (kind === "creditor") {
+        return getPublicName(
+          { username: data?.creditorUsername, displayName: data?.creditorDisplayName },
+          "Player"
+        );
+      }
+      return getPublicName(
+        { username: data?.debtorUsername, displayName: data?.debtorDisplayName },
+        "Player"
+      );
     }
 
     async function getUserStatus(uid) {
@@ -1047,42 +1047,59 @@
       }
     }
 
+    async function getPlayerProfile(uid) {
+      const ref = doc(db, "pokerPlayers", uid);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) return null;
+      return { id: snap.id, ...snap.data() };
+    }
+
     async function ensurePlayerProfile(user) {
       const playerRef = doc(db, "pokerPlayers", user.uid);
       const snap = await getDoc(playerRef);
 
-      if (!snap.exists()) {
-        await setDoc(playerRef, {
-          uid: user.uid,
-          email: user.email || "",
-          displayName: user.displayName || "",
-          handsPlayed: 0,
-          handsWon: 0,
-          gamesPlayed: 0,
-          gamesWon: 0,
-          balance: 0,
-          netResult: 0,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        });
-        return;
-      }
-
-      const existing = snap.data() || {};
-      const nextData = {
-        ...existing,
-        email: user.email || existing.email || "",
-        displayName: existing.displayName || user.displayName || "",
+      const baseProfile = {
+        uid: user.uid,
+        email: user.email || "",
+        displayName: user.displayName || "",
+        handsPlayed: 0,
+        handsWon: 0,
+        gamesPlayed: 0,
+        gamesWon: 0,
+        balance: 0,
+        netResult: 0,
         updatedAt: serverTimestamp()
       };
 
-      await setDoc(playerRef, nextData, { merge: true });
+      if (!snap.exists()) {
+        const defaultName = fallbackNameFromUser(user);
+        await setDoc(playerRef, {
+          ...baseProfile,
+          username: "",
+          usernameLower: "",
+          displayName: defaultName,
+          createdAt: serverTimestamp()
+        });
+      } else {
+        const existing = snap.data() || {};
+        await setDoc(playerRef, {
+          ...baseProfile,
+          username: existing.username || "",
+          usernameLower: existing.usernameLower || "",
+          displayName: existing.displayName || fallbackNameFromUser(user)
+        }, { merge: true });
+      }
+
+      currentPlayerProfile = await getPlayerProfile(user.uid);
+      usernameInput.value = currentPlayerProfile?.username || "";
     }
 
     async function protectPlusPage(user) {
       currentUserStatus = await getUserStatus(user.uid);
       statusPill.textContent = `Status: ${currentUserStatus}`;
-      signedInAs.textContent = user.email || "Signed in";
+
+      const publicName = getPublicName(currentPlayerProfile, fallbackNameFromUser(user));
+      signedInAs.textContent = `Signed in as ${publicName}`;
 
       if ((statusRank[currentUserStatus] ?? 0) < statusRank.plus) {
         setGateMessage("This page is for plus or me accounts. Redirecting to Apps...");
@@ -1103,31 +1120,12 @@
       return `${((won / played) * 100).toFixed(1)}%`;
     }
 
-    function renderTopPlayers(players) {
-      if (!players.length) {
-        topPlayersList.innerHTML = `<div class="empty">No player stats yet.</div>`;
-        return;
-      }
-
-      const top = [...players]
-        .sort((a, b) => Number(b.handsWon || 0) - Number(a.handsWon || 0))
-        .slice(0, 5);
-
-      topPlayersList.innerHTML = top.map((player, index) => `
-        <div class="mini-stat">
-          <div class="mini-label">#${index + 1} ${escapeHtml(player.email || player.displayName || "Unknown")}</div>
-          <div class="mini-value">${Number(player.handsWon || 0)} hands won</div>
-        </div>
-      `).join("");
-    }
-
     async function loadPlayerStats() {
-      const snap = await getDocs(query(collection(db, "pokerPlayers"), orderBy("handsWon", "desc"), limit(50)));
+      const snap = await getDocs(query(collection(db, "pokerPlayers"), orderBy("handsWon", "desc"), limit(100)));
       currentStats = snap.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
 
       if (!currentStats.length) {
         playerStatsBody.innerHTML = `<tr><td colspan="8" style="color:var(--muted);">No player stats yet.</td></tr>`;
-        renderTopPlayers([]);
         handsPlayedValue.textContent = "0";
         handsWonValue.textContent = "0";
         winRateValue.textContent = "0%";
@@ -1138,7 +1136,7 @@
 
       playerStatsBody.innerHTML = currentStats.map(player => `
         <tr>
-          <td>${escapeHtml(player.email || player.displayName || "Unknown")}</td>
+          <td>${escapeHtml(getPublicName(player))}</td>
           <td>${Number(player.handsPlayed || 0)}</td>
           <td>${Number(player.handsWon || 0)}</td>
           <td>${getWinRate(player)}</td>
@@ -1149,14 +1147,18 @@
         </tr>
       `).join("");
 
-      renderTopPlayers(currentStats);
-
       const mine = currentUser ? currentStats.find(player => player.id === currentUser.uid) : null;
       handsPlayedValue.textContent = String(Number(mine?.handsPlayed || 0));
       handsWonValue.textContent = String(Number(mine?.handsWon || 0));
       winRateValue.textContent = getWinRate(mine || {});
       netResultValue.textContent = money(mine?.netResult || 0);
       myBalanceValue.textContent = money(mine?.balance || 0);
+
+      if (mine) {
+        currentPlayerProfile = mine;
+        usernameInput.value = mine.username || "";
+        signedInAs.textContent = `Signed in as ${getPublicName(mine, fallbackNameFromUser(currentUser))}`;
+      }
     }
 
     async function loadGames() {
@@ -1175,13 +1177,14 @@
         gamesTableBody.innerHTML = activeGames.map(game => {
           const playerCount = Array.isArray(game.players) ? game.players.length : 0;
           const isMine = currentUser && game.hostUid === currentUser.uid;
+          const hostName = game.hostUsername || game.hostDisplayName || "Player";
           return `
             <tr>
               <td>
                 <strong>${escapeHtml(game.name || "Untitled Game")}</strong><br>
                 <span style="color:var(--muted);font-size:0.82rem;">${escapeHtml(game.visibility || "public")}</span>
               </td>
-              <td>${escapeHtml(game.hostEmail || "Unknown")}</td>
+              <td>${escapeHtml(hostName)}</td>
               <td>${Number(game.smallBlind || 0)} / ${Number(game.bigBlind || 0)}</td>
               <td>${money(game.buyIn || 0)}</td>
               <td>${playerCount} / ${Number(game.maxPlayers || 0)}</td>
@@ -1262,7 +1265,7 @@
           .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
           .map(debt => `
             <tr>
-              <td>${escapeHtml(debt.creditorEmail || "Unknown")}</td>
+              <td>${escapeHtml(getDebtDisplayName(debt, "creditor"))}</td>
               <td>${money(debt.amount || 0)}</td>
               <td>${escapeHtml(debt.note || "—")}</td>
               <td>${formatDate(debt.createdAt)}</td>
@@ -1278,7 +1281,7 @@
           .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
           .map(debt => `
             <tr>
-              <td>${escapeHtml(debt.debtorEmail || "Unknown")}</td>
+              <td>${escapeHtml(getDebtDisplayName(debt, "debtor"))}</td>
               <td>${money(debt.amount || 0)}</td>
               <td>${escapeHtml(debt.note || "—")}</td>
               <td>${formatDate(debt.createdAt)}</td>
@@ -1308,6 +1311,43 @@
       maxPlayersInput.value = 8;
       startingStackInput.value = 1000;
       visibilityInput.value = "public";
+    }
+
+    async function saveUsername(nextUsername) {
+      if (!currentUser) return false;
+
+      const clean = normalizeUsername(nextUsername);
+      if (nextUsername.trim() && clean.length < 3) {
+        showUsernameStatus("Username must be at least 3 characters.", true);
+        return false;
+      }
+
+      if (clean) {
+        const existing = await getDocs(
+          query(collection(db, "pokerPlayers"), where("usernameLower", "==", clean.toLowerCase()), limit(1))
+        );
+
+        const taken = existing.docs.find(d => d.id !== currentUser.uid);
+        if (taken) {
+          showUsernameStatus("That username is already taken.", true);
+          return false;
+        }
+      }
+
+      const displayName = currentPlayerProfile?.displayName || fallbackNameFromUser(currentUser);
+
+      await setDoc(doc(db, "pokerPlayers", currentUser.uid), {
+        username: clean,
+        usernameLower: clean.toLowerCase(),
+        displayName,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+
+      currentPlayerProfile = await getPlayerProfile(currentUser.uid);
+      usernameInput.value = currentPlayerProfile?.username || "";
+      signedInAs.textContent = `Signed in as ${getPublicName(currentPlayerProfile, fallbackNameFromUser(currentUser))}`;
+      showUsernameStatus(clean ? "Username saved." : "Username cleared.");
+      return true;
     }
 
     createGameForm.addEventListener("submit", async (event) => {
@@ -1341,9 +1381,13 @@
       try {
         showCreateStatus("Creating game...");
 
+        const hostName = getPublicName(currentPlayerProfile, fallbackNameFromUser(currentUser));
+
         await addDoc(collection(db, "pokerGames"), {
           name: gameName,
           hostUid: currentUser.uid,
+          hostUsername: currentPlayerProfile?.username || "",
+          hostDisplayName: hostName,
           hostEmail: currentUser.email || "",
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
@@ -1361,6 +1405,8 @@
           players: [
             {
               uid: currentUser.uid,
+              username: currentPlayerProfile?.username || "",
+              displayName: hostName,
               email: currentUser.email || "",
               seat: 1,
               stack: startingStack,
@@ -1384,71 +1430,30 @@
       showCreateStatus("");
     });
 
-    debtForm.addEventListener("submit", async (event) => {
+    usernameForm.addEventListener("submit", async (event) => {
       event.preventDefault();
-      if (!currentUser) return;
-
-      const otherEmail = debtOtherEmailInput.value.trim().toLowerCase();
-      const amount = Number(debtAmountInput.value);
-      const note = debtNoteInput.value.trim();
-      const direction = debtDirectionInput.value;
-
-      if (!otherEmail) {
-        showDebtStatus("Enter the other player's email.", true);
-        return;
-      }
-
-      if (otherEmail === (currentUser.email || "").toLowerCase()) {
-        showDebtStatus("You cannot create a debt with yourself.", true);
-        return;
-      }
-
-      if (!(amount > 0)) {
-        showDebtStatus("Debt amount must be more than 0.", true);
-        return;
-      }
-
-      let debtorUid = "";
-      let creditorUid = "";
-      let debtorEmail = "";
-      let creditorEmail = "";
-
-      if (direction === "iOwe") {
-        debtorUid = currentUser.uid;
-        debtorEmail = currentUser.email || "";
-        creditorUid = "";
-        creditorEmail = otherEmail;
-      } else {
-        debtorUid = "";
-        debtorEmail = otherEmail;
-        creditorUid = currentUser.uid;
-        creditorEmail = currentUser.email || "";
-      }
-
       try {
-        showDebtStatus("Saving debt...");
-
-        await addDoc(collection(db, "pokerDebts"), {
-          debtorUid,
-          debtorEmail,
-          creditorUid,
-          creditorEmail,
-          amount,
-          note,
-          status: "open",
-          createdByUid: currentUser.uid,
-          createdByEmail: currentUser.email || "",
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        });
-
-        debtForm.reset();
-        debtDirectionInput.value = "iOwe";
-        showDebtStatus("Debt saved.");
-        await loadDebts();
+        showUsernameStatus("Saving...");
+        const ok = await saveUsername(usernameInput.value);
+        if (ok) {
+          await refreshLobby();
+        }
       } catch (error) {
         console.error(error);
-        showDebtStatus("Could not save debt.", true);
+        showUsernameStatus("Could not save username.", true);
+      }
+    });
+
+    clearUsernameBtn.addEventListener("click", async () => {
+      try {
+        showUsernameStatus("Clearing...");
+        const ok = await saveUsername("");
+        if (ok) {
+          await refreshLobby();
+        }
+      } catch (error) {
+        console.error(error);
+        showUsernameStatus("Could not clear username.", true);
       }
     });
 
@@ -1488,7 +1493,6 @@
           await loadDebts();
         } catch (error) {
           console.error(error);
-          showDebtStatus("Could not forgive debt.", true);
         }
       }
     });
