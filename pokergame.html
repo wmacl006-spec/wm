@@ -26,18 +26,37 @@
       --shadow:0 18px 40px rgba(0,0,0,0.24);
     }
 
-    *{margin:0;padding:0;box-sizing:border-box}
-    html,body{height:100%}
-
-    body{
-      font-family:"Comfortaa",sans-serif;
-      background:var(--bg);
-      color:var(--text);
-      overflow:hidden;
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
     }
 
-    a{color:inherit;text-decoration:none}
-    button,input{font:inherit}
+    html, body{
+      min-height:100%;
+      background:var(--bg);
+    }
+
+    body{
+      font-family:"Comfortaa", sans-serif;
+      color:var(--text);
+      overflow-x:hidden;
+    }
+
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    button,
+    input{
+      font:inherit;
+    }
+
+    img{
+      display:block;
+      max-width:100%;
+    }
 
     header{
       position:fixed;
@@ -46,7 +65,7 @@
       display:flex;
       align-items:center;
       justify-content:space-between;
-      padding:0 16px;
+      padding:0 18px;
       background:rgba(0,0,0,0.72);
       backdrop-filter:blur(10px);
       border-bottom:1px solid rgba(255,255,255,0.05);
@@ -63,7 +82,6 @@
     .logo img{
       width:28px;
       height:28px;
-      display:block;
     }
 
     .logo span{
@@ -75,160 +93,88 @@
     nav{
       display:flex;
       align-items:center;
-      gap:12px;
+      gap:14px;
       flex-wrap:wrap;
     }
 
     nav a{
-      font-size:0.82rem;
+      font-size:0.84rem;
       color:#cfcfcf;
+      transition:0.2s;
     }
 
-    nav a:hover{color:#fff}
+    nav a:hover{
+      color:#fff;
+    }
 
     .status-pill{
       font-size:0.72rem;
       padding:7px 10px;
       border:1px solid rgba(255,255,255,0.1);
-      color:#fff;
       background:rgba(255,255,255,0.04);
       white-space:nowrap;
     }
 
-    #authGate{
-      position:fixed;
-      inset:var(--header-h) 0 0 0;
-      background:rgba(0,0,0,0.85);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      z-index:280;
-      backdrop-filter:blur(8px);
-    }
-
-    #authGate.hidden{display:none}
-
-    .gate-card{
-      border:1px solid var(--line);
-      background:rgba(255,255,255,0.03);
-      padding:24px 26px;
-      color:#d8d8d8;
-      font-size:0.92rem;
-      text-align:center;
-      max-width:420px;
-      line-height:1.5;
-    }
-
     .page{
-      height:100vh;
+      min-height:100vh;
       padding-top:var(--header-h);
-      display:grid;
-      grid-template-rows:auto auto 1fr auto auto;
-      gap:10px;
-      width:min(100%, 1100px);
-      margin:0 auto;
-      padding-left:10px;
-      padding-right:10px;
-      padding-bottom:10px;
+      display:flex;
+      flex-direction:column;
     }
 
-    .panel,.card{
+    .hero-wrap{
+      border-bottom:1px solid rgba(255,255,255,0.05);
+      background:
+        radial-gradient(circle at top left, rgba(176,11,85,0.15), transparent 32%),
+        radial-gradient(circle at top right, rgba(255,255,255,0.04), transparent 28%),
+        linear-gradient(180deg, rgba(255,255,255,0.015), transparent);
+    }
+
+    .hero{
+      width:min(1100px, calc(100% - 16px));
+      margin:0 auto;
+      padding:28px 0 18px;
+    }
+
+    .hero h1{
+      font-size:clamp(2rem, 8vw, 4rem);
+      line-height:0.95;
+      letter-spacing:-0.05em;
+      margin-bottom:8px;
+    }
+
+    .hero p{
+      color:var(--muted);
+      font-size:0.9rem;
+      line-height:1.5;
+      max-width:720px;
+    }
+
+    .app-shell{
+      width:min(1100px, calc(100% - 16px));
+      margin:0 auto;
+      padding:14px 0 18px;
+      display:grid;
+      gap:12px;
+      flex:1;
+    }
+
+    .panel,
+    .card{
       border:1px solid var(--line);
       background:rgba(255,255,255,0.03);
       box-shadow:var(--shadow);
     }
 
-    .topbar{
-      margin-top:10px;
-      padding:14px;
-      display:grid;
-      grid-template-columns:1fr auto;
-      gap:12px;
-      align-items:center;
-    }
-
-    .tag{
-      font-size:0.7rem;
-      text-transform:uppercase;
-      letter-spacing:0.1em;
-      color:var(--accent);
-      font-weight:700;
-      margin-bottom:5px;
-    }
-
-    .topbar h1{
-      font-size:clamp(1.25rem, 3.4vw, 2rem);
-      letter-spacing:-0.04em;
-      line-height:1;
-      margin-bottom:6px;
-    }
-
-    .subtle{
-      color:var(--muted);
-      font-size:0.82rem;
-      line-height:1.4;
-    }
-
-    .top-actions{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
-
-    .stats-row{
-      display:grid;
-      grid-template-columns:repeat(4, 1fr);
-      gap:10px;
-    }
-
-    .card{
-      padding:14px;
-      min-height:82px;
-    }
-
-    .label{
-      color:var(--muted);
-      font-size:0.72rem;
-      text-transform:uppercase;
-      letter-spacing:0.08em;
-      margin-bottom:8px;
-      font-weight:700;
-    }
-
-    .value{
-      font-size:clamp(1rem, 3.2vw, 1.55rem);
-      font-weight:800;
-      letter-spacing:-0.04em;
-      line-height:1.05;
-    }
-
-    .game-shell{
-      min-height:0;
-      display:grid;
-      grid-template-columns:minmax(0, 0.95fr) minmax(0, 1.25fr);
-      gap:10px;
-    }
-
-    .left-stack,
-    .center-stack{
-      min-height:0;
-      display:grid;
-      gap:10px;
-    }
-
-    .players-panel{
-      min-height:0;
-      display:grid;
-      grid-template-rows:auto 1fr;
+    .panel{
       padding:14px;
     }
 
     .panel-head{
       display:flex;
-      justify-content:space-between;
       align-items:center;
-      gap:10px;
+      justify-content:space-between;
+      gap:12px;
       margin-bottom:12px;
     }
 
@@ -240,16 +186,63 @@
     .panel-subtle{
       color:var(--muted);
       font-size:0.8rem;
-      font-weight:600;
       text-align:right;
     }
 
-    .players-scroll{
-      min-height:0;
+    .top-strip{
+      display:grid;
+      grid-template-columns:repeat(4, minmax(0, 1fr));
+      gap:10px;
+    }
+
+    .card{
+      padding:14px;
+      min-height:88px;
+    }
+
+    .label{
+      color:var(--muted);
+      font-size:0.72rem;
+      text-transform:uppercase;
+      letter-spacing:0.08em;
+      font-weight:700;
+      margin-bottom:10px;
+    }
+
+    .value{
+      font-size:clamp(1rem, 5vw, 1.6rem);
+      font-weight:800;
+      letter-spacing:-0.04em;
+      line-height:1.1;
+      word-break:break-word;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns:minmax(0, 1fr);
+      gap:12px;
+    }
+
+    .game-shell{
+      display:grid;
+      gap:12px;
+    }
+
+    .players-panel{
+      padding:0;
+      overflow:hidden;
+    }
+
+    .players-head{
+      padding:14px 14px 0;
+    }
+
+    .players-list{
+      max-height:220px;
       overflow:auto;
       display:grid;
-      gap:10px;
-      padding-right:2px;
+      gap:8px;
+      padding:12px 14px 14px;
     }
 
     .player-row{
@@ -260,34 +253,33 @@
       gap:8px;
     }
 
-    .player-row.current-turn{
-      border-color:rgba(176,11,85,0.7);
-      box-shadow:inset 0 0 0 1px rgba(176,11,85,0.4);
-      background:rgba(176,11,85,0.08);
-    }
-
-    .player-row.folded{
-      opacity:0.58;
-    }
-
     .player-top{
       display:flex;
-      justify-content:space-between;
-      gap:8px;
       align-items:center;
+      justify-content:space-between;
+      gap:10px;
     }
 
     .player-name{
-      font-size:0.96rem;
       font-weight:700;
-      line-height:1.2;
-      word-break:break-word;
+      font-size:0.96rem;
+      min-width:0;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .player-tags{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
     }
 
     .pill{
       display:inline-flex;
       align-items:center;
-      padding:5px 9px;
+      padding:6px 9px;
       border:1px solid rgba(176,11,85,0.34);
       background:rgba(176,11,85,0.12);
       font-size:0.76rem;
@@ -311,192 +303,125 @@
 
     .player-stats{
       display:grid;
-      grid-template-columns:repeat(3, 1fr);
+      grid-template-columns:repeat(4, minmax(0, 1fr));
       gap:8px;
-    }
-
-    .mini{
-      border:1px solid var(--line);
-      background:#080808;
-      padding:8px;
-    }
-
-    .mini .mini-label{
+      font-size:0.76rem;
       color:var(--muted);
-      font-size:0.68rem;
-      text-transform:uppercase;
-      letter-spacing:0.08em;
-      margin-bottom:5px;
-      font-weight:700;
     }
 
-    .mini .mini-value{
+    .player-stats strong{
+      color:#fff;
+      display:block;
       font-size:0.88rem;
-      font-weight:800;
-      line-height:1.15;
-      word-break:break-word;
+      margin-top:2px;
     }
 
     .board-panel{
-      min-height:0;
       display:grid;
-      grid-template-rows:auto auto 1fr;
-      padding:14px;
+      gap:12px;
     }
 
-    .pot-wrap{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-      margin-bottom:10px;
-    }
-
-    .pot-card{
+    .pot-box{
       border:1px solid var(--line);
       background:#080808;
       padding:14px;
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:10px;
+      align-items:center;
       text-align:center;
     }
 
-    .pot-card .pot-label{
-      color:var(--muted);
+    .pot-item .mini{
       font-size:0.72rem;
+      color:var(--muted);
       text-transform:uppercase;
       letter-spacing:0.08em;
-      margin-bottom:8px;
       font-weight:700;
+      margin-bottom:6px;
     }
 
-    .pot-card .pot-value{
-      font-size:clamp(1.2rem, 4vw, 2rem);
+    .pot-item .big{
+      font-size:clamp(1rem, 5vw, 1.6rem);
       font-weight:800;
       letter-spacing:-0.04em;
-      line-height:1;
     }
 
-    .community-wrap{
-      display:flex;
-      justify-content:center;
+    .board-wrap{
+      border:1px solid var(--line);
+      background:#080808;
+      padding:14px;
+    }
+
+    .board-grid{
+      display:grid;
+      grid-template-columns:repeat(5, 1fr);
       gap:8px;
-      margin-bottom:10px;
-      flex-wrap:nowrap;
     }
 
     .card-slot{
-      width:min(17vw, 76px);
-      aspect-ratio:0.72;
-      border:1px solid var(--line-strong);
-      background:linear-gradient(180deg, #121212, #070707);
+      aspect-ratio: 0.715 / 1;
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
       display:flex;
       align-items:center;
       justify-content:center;
       overflow:hidden;
-    }
-
-    .card-slot.placeholder{
-      color:#4d4d4d;
-      border-style:dashed;
-      font-weight:800;
-      font-size:clamp(0.84rem, 2.8vw, 1rem);
+      min-height:84px;
     }
 
     .card-slot img{
       width:100%;
       height:100%;
       object-fit:contain;
-      display:block;
       background:#fff;
     }
 
-    .board-meta{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-      margin-bottom:10px;
-    }
-
-    .meta-box{
-      border:1px solid var(--line);
-      background:#080808;
-      padding:12px;
-    }
-
-    .meta-box .meta-label{
+    .card-back,
+    .empty-card{
+      width:100%;
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       color:var(--muted);
-      font-size:0.72rem;
-      text-transform:uppercase;
+      font-size:0.82rem;
       letter-spacing:0.08em;
-      margin-bottom:7px;
-      font-weight:700;
+      background:
+        linear-gradient(135deg, rgba(176,11,85,0.17), rgba(255,255,255,0.02)),
+        #090909;
     }
 
-    .meta-box .meta-value{
-      font-size:0.95rem;
-      font-weight:800;
-      line-height:1.2;
-      word-break:break-word;
-    }
-
-    .debt-panel{
-      padding:14px;
-    }
-
-    .debt-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-      margin-top:8px;
-    }
-
-    .debt-box{
-      border:1px solid var(--line);
-      background:#080808;
-      padding:12px;
-    }
-
-    .bottom-area{
-      display:grid;
-      gap:10px;
-    }
-
-    .my-hand{
-      padding:14px;
+    .me-panel{
       display:grid;
       gap:12px;
+      position:sticky;
+      bottom:0;
+      z-index:120;
     }
 
-    .my-hand-top{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      align-items:center;
-    }
-
-    .my-cards{
-      display:flex;
-      gap:10px;
-      justify-content:center;
-    }
-
-    .controls{
+    .my-cards-panel,
+    .actions-panel,
+    .meta-panel{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,0.03);
+      box-shadow:var(--shadow);
       padding:14px;
-      display:grid;
-      gap:10px;
     }
 
-    .action-grid{
+    .my-cards-grid{
       display:grid;
-      grid-template-columns:repeat(4, 1fr);
+      grid-template-columns:repeat(2, minmax(0, 1fr));
       gap:8px;
     }
 
-    .raise-row{
+    .actions-grid{
       display:grid;
-      grid-template-columns:1fr auto auto;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
       gap:8px;
-      align-items:center;
     }
 
+    button,
     input{
       width:100%;
       border:1px solid var(--line);
@@ -512,17 +437,15 @@
     }
 
     button{
-      width:100%;
-      border:1px solid var(--line);
-      background:#0a0a0a;
-      color:var(--text);
-      padding:12px 14px;
       font-weight:700;
       cursor:pointer;
       transition:transform 0.14s ease, background 0.14s ease, border-color 0.14s ease;
     }
 
-    button:hover{transform:translateY(-1px)}
+    button:hover{
+      transform:translateY(-1px);
+    }
+
     button:disabled{
       opacity:0.55;
       cursor:not-allowed;
@@ -534,135 +457,182 @@
       background:rgba(176,11,85,0.16);
     }
 
+    .primary-btn:hover{
+      background:rgba(176,11,85,0.22);
+    }
+
     .ghost-btn{
       background:rgba(255,255,255,0.03);
     }
 
+    .ghost-btn:hover{
+      background:rgba(255,255,255,0.05);
+      border-color:var(--line-strong);
+    }
+
     .danger-btn{
       border:1px solid rgba(255,107,129,0.45);
-      background:rgba(255,107,129,0.1);
+      background:rgba(255,107,129,0.10);
+    }
+
+    .danger-btn:hover{
+      background:rgba(255,107,129,0.16);
     }
 
     .success-btn{
       border:1px solid rgba(87,211,140,0.45);
-      background:rgba(87,211,140,0.1);
+      background:rgba(87,211,140,0.10);
+    }
+
+    .success-btn:hover{
+      background:rgba(87,211,140,0.16);
+    }
+
+    .full-width{
+      grid-column:1 / -1;
+    }
+
+    .raise-row{
+      display:grid;
+      grid-template-columns:minmax(0, 1fr) 120px;
+      gap:8px;
+    }
+
+    .log-panel{
+      max-height:180px;
+      overflow:auto;
+    }
+
+    .log-list{
+      display:grid;
+      gap:8px;
+    }
+
+    .log-item{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,0.02);
+      padding:10px 12px;
+      color:#ddd;
+      font-size:0.84rem;
+      line-height:1.45;
     }
 
     .status-line{
       min-height:1.2em;
       color:var(--muted);
-      font-size:0.88rem;
-      line-height:1.35;
+      font-size:0.9rem;
     }
 
-    .host-tools{
+    .meta-grid{
       display:grid;
-      grid-template-columns:repeat(4, 1fr);
-      gap:8px;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:10px;
     }
 
-    .hidden{display:none!important}
+    .meta-item{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,0.02);
+      padding:10px;
+    }
 
-    @media (max-width:900px){
-      .page{
-        grid-template-rows:auto auto 1fr auto auto;
+    .meta-item .k{
+      color:var(--muted);
+      font-size:0.72rem;
+      text-transform:uppercase;
+      letter-spacing:0.08em;
+      font-weight:700;
+      margin-bottom:6px;
+    }
+
+    .meta-item .v{
+      font-size:0.95rem;
+      font-weight:700;
+      word-break:break-word;
+    }
+
+    #authGate{
+      position:fixed;
+      inset:var(--header-h) 0 0 0;
+      background:rgba(0,0,0,0.82);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:250;
+      backdrop-filter:blur(8px);
+    }
+
+    #authGate.hidden{
+      display:none;
+    }
+
+    .gate-card{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,0.03);
+      padding:24px 26px;
+      color:#d8d8d8;
+      font-size:0.92rem;
+      text-align:center;
+      max-width:420px;
+      line-height:1.5;
+    }
+
+    @media (min-width: 920px){
+      .layout{
+        grid-template-columns:minmax(320px, 0.92fr) minmax(0, 1.3fr);
       }
 
-      .stats-row{
-        grid-template-columns:repeat(2, 1fr);
+      .players-list{
+        max-height:none;
       }
 
-      .game-shell{
-        grid-template-columns:1fr;
-      }
-
-      .players-panel{
-        min-height:220px;
-      }
-
-      .board-panel{
-        min-height:0;
-      }
-
-      .host-tools{
-        grid-template-columns:repeat(2, 1fr);
+      .me-panel{
+        position:static;
       }
     }
 
-    @media (max-width:640px){
+    @media (max-width: 760px){
       header{
-        padding:0 12px;
-      }
-
-      nav{
-        gap:8px;
-      }
-
-      nav a{
-        font-size:0.76rem;
+        padding:0 14px;
       }
 
       .logo span{
         font-size:0.88rem;
       }
 
-      .page{
-        gap:8px;
-        padding-left:8px;
-        padding-right:8px;
-        padding-bottom:8px;
+      nav{
+        gap:10px;
       }
 
-      .topbar{
-        padding:12px;
-        grid-template-columns:1fr;
+      nav a{
+        font-size:0.76rem;
       }
 
-      .top-actions{
-        justify-content:stretch;
-      }
-
-      .stats-row{
-        gap:8px;
-      }
-
-      .card{
-        padding:12px;
-        min-height:74px;
-      }
-
-      .players-panel,
-      .board-panel,
-      .my-hand,
-      .controls,
-      .debt-panel{
-        padding:12px;
+      .top-strip{
+        grid-template-columns:1fr 1fr;
       }
 
       .player-stats{
-        grid-template-columns:1fr 1fr 1fr;
+        grid-template-columns:1fr 1fr;
       }
 
-      .action-grid{
+      .pot-box{
+        grid-template-columns:1fr;
+      }
+
+      .meta-grid{
+        grid-template-columns:1fr;
+      }
+
+      .actions-grid{
         grid-template-columns:1fr 1fr;
       }
 
       .raise-row{
-        grid-template-columns:1fr 1fr;
-      }
-
-      .raise-row button:last-child{
-        grid-column:1 / -1;
+        grid-template-columns:1fr;
       }
 
       .card-slot{
-        width:min(17vw, 64px);
-      }
-
-      .pot-wrap,
-      .board-meta,
-      .debt-grid{
-        grid-template-columns:1fr 1fr;
+        min-height:72px;
       }
     }
   </style>
@@ -682,145 +652,150 @@
   </header>
 
   <div id="authGate">
-    <div class="gate-card">Checking game access...</div>
+    <div class="gate-card">Checking access...</div>
   </div>
 
   <main class="page">
-    <section class="topbar panel">
-      <div>
-        <div class="tag">Game</div>
-        <h1 id="gameTitle">Poker Game</h1>
-        <div class="subtle" id="gameSubtitle">Loading game…</div>
-      </div>
-
-      <div class="top-actions">
-        <button class="ghost-btn" id="joinGameBtn">Join Game</button>
-        <button class="danger-btn" id="leaveGameBtn">Leave Game</button>
+    <section class="hero-wrap">
+      <div class="hero">
+        <h1 id="heroTitle">Poker Game</h1>
+        <p id="heroSubtitle">Live game view.</p>
       </div>
     </section>
 
-    <section class="stats-row">
-      <div class="card">
-        <div class="label">Pot</div>
-        <div class="value" id="potValue">$0.00</div>
-      </div>
-      <div class="card">
-        <div class="label">Current Bet</div>
-        <div class="value" id="currentBetValue">$0.00</div>
-      </div>
-      <div class="card">
-        <div class="label">To Call</div>
-        <div class="value" id="toCallValue">$0.00</div>
-      </div>
-      <div class="card">
-        <div class="label">Your Stack</div>
-        <div class="value" id="myStackValue">$0.00</div>
-      </div>
-    </section>
+    <section class="app-shell">
+      <section class="top-strip">
+        <div class="card">
+          <div class="label">Pot</div>
+          <div class="value" id="potValue">$0.00</div>
+        </div>
+        <div class="card">
+          <div class="label">To Call</div>
+          <div class="value" id="toCallValue">$0.00</div>
+        </div>
+        <div class="card">
+          <div class="label">Your Stack</div>
+          <div class="value" id="myStackValue">$0.00</div>
+        </div>
+        <div class="card">
+          <div class="label">Turn</div>
+          <div class="value" id="turnValue">—</div>
+        </div>
+      </section>
 
-    <section class="game-shell">
-      <div class="left-stack">
-        <section class="players-panel panel">
-          <div class="panel-head">
-            <h2>Players</h2>
-            <div class="panel-subtle" id="playersCountText">0 players</div>
-          </div>
-          <div class="players-scroll" id="playersList"></div>
+      <section class="layout">
+        <section class="game-shell">
+          <section class="panel players-panel">
+            <div class="players-head panel-head">
+              <h2>Players</h2>
+              <div class="panel-subtle" id="playersSubtle">Live</div>
+            </div>
+            <div class="players-list" id="playersList">
+              <div class="log-item">Loading players...</div>
+            </div>
+          </section>
+
+          <section class="panel board-panel">
+            <div class="panel-head">
+              <h2>Board</h2>
+              <div class="panel-subtle" id="streetLabel">Preflop</div>
+            </div>
+
+            <div class="pot-box">
+              <div class="pot-item">
+                <div class="mini">Main Pot</div>
+                <div class="big" id="mainPotDisplay">$0.00</div>
+              </div>
+              <div class="pot-item">
+                <div class="mini">Current Bet</div>
+                <div class="big" id="currentBetDisplay">$0.00</div>
+              </div>
+              <div class="pot-item">
+                <div class="mini">Blinds</div>
+                <div class="big" id="blindsDisplay">0 / 0</div>
+              </div>
+            </div>
+
+            <div class="board-wrap">
+              <div class="board-grid" id="boardGrid">
+                <div class="card-slot"><div class="empty-card">—</div></div>
+                <div class="card-slot"><div class="empty-card">—</div></div>
+                <div class="card-slot"><div class="empty-card">—</div></div>
+                <div class="card-slot"><div class="empty-card">—</div></div>
+                <div class="card-slot"><div class="empty-card">—</div></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel log-panel">
+            <div class="panel-head">
+              <h2>Action</h2>
+              <div class="panel-subtle">Newest first</div>
+            </div>
+            <div class="log-list" id="logList">
+              <div class="log-item">No actions yet.</div>
+            </div>
+          </section>
         </section>
 
-        <section class="debt-panel panel">
-          <div class="panel-head">
-            <h2>Debts</h2>
-            <div class="panel-subtle">Game tracked</div>
-          </div>
-          <div class="debt-grid">
-            <div class="debt-box">
-              <div class="label">You Owe</div>
-              <div class="value" id="youOweValue" style="font-size:1.2rem;">$0.00</div>
+        <section class="me-panel">
+          <section class="my-cards-panel">
+            <div class="panel-head">
+              <h2>Your Cards</h2>
+              <div class="panel-subtle" id="myStatusSubtle">Waiting</div>
             </div>
-            <div class="debt-box">
-              <div class="label">Owed To You</div>
-              <div class="value" id="owedToYouValue" style="font-size:1.2rem;">$0.00</div>
+            <div class="my-cards-grid" id="myCardsGrid">
+              <div class="card-slot"><div class="card-back">CARD</div></div>
+              <div class="card-slot"><div class="card-back">CARD</div></div>
             </div>
-          </div>
+          </section>
+
+          <section class="meta-panel">
+            <div class="panel-head">
+              <h2>Game Info</h2>
+              <div class="panel-subtle" id="signedInAs">Not signed in</div>
+            </div>
+            <div class="meta-grid">
+              <div class="meta-item">
+                <div class="k">Game</div>
+                <div class="v" id="gameNameValue">—</div>
+              </div>
+              <div class="meta-item">
+                <div class="k">Status</div>
+                <div class="v" id="gameStatusValue">—</div>
+              </div>
+              <div class="meta-item">
+                <div class="k">Host</div>
+                <div class="v" id="hostValue">—</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="actions-panel">
+            <div class="panel-head">
+              <h2>Actions</h2>
+              <div class="panel-subtle" id="actionHint">Only on your turn</div>
+            </div>
+
+            <div class="actions-grid">
+              <button class="ghost-btn" id="checkBtn">Check</button>
+              <button class="primary-btn" id="callBtn">Call</button>
+              <button class="danger-btn" id="foldBtn">Fold</button>
+              <button class="success-btn" id="allInBtn">All In</button>
+
+              <div class="raise-row full-width">
+                <input type="number" id="raiseAmountInput" min="0" step="1" placeholder="Raise amount" />
+                <button class="primary-btn" id="raiseBtn">Raise</button>
+              </div>
+
+              <button class="ghost-btn full-width" id="startBtn">Start Game</button>
+              <button class="danger-btn full-width" id="leaveBtn">Leave Game</button>
+            </div>
+
+            <div class="status-line" id="actionStatus"></div>
+          </section>
         </section>
-      </div>
-
-      <div class="center-stack">
-        <section class="board-panel panel">
-          <div class="panel-head">
-            <h2>Board</h2>
-            <div class="panel-subtle" id="handStageText">Waiting</div>
-          </div>
-
-          <div class="pot-wrap">
-            <div class="pot-card">
-              <div class="pot-label">Main Pot</div>
-              <div class="pot-value" id="centerPotValue">$0.00</div>
-            </div>
-            <div class="pot-card">
-              <div class="pot-label">Turn</div>
-              <div class="pot-value" id="turnNameValue" style="font-size:1.15rem;">—</div>
-            </div>
-          </div>
-
-          <div class="community-wrap" id="communityCards"></div>
-
-          <div class="board-meta">
-            <div class="meta-box">
-              <div class="meta-label">Blinds</div>
-              <div class="meta-value" id="blindsText">—</div>
-            </div>
-            <div class="meta-box">
-              <div class="meta-label">Status</div>
-              <div class="meta-value" id="statusText">Loading…</div>
-            </div>
-          </div>
-
-          <div class="status-line" id="gameStatusLine"></div>
-        </section>
-
-        <section class="my-hand panel">
-          <div class="my-hand-top">
-            <div>
-              <div class="label">Your Hand</div>
-              <div class="subtle" id="mySeatText">Not seated</div>
-            </div>
-            <div class="pill" id="myTurnPill">Waiting</div>
-          </div>
-
-          <div class="my-cards" id="myCards"></div>
-        </section>
-      </div>
-    </section>
-
-    <section class="controls panel">
-      <div class="panel-head">
-        <h2>Actions</h2>
-        <div class="panel-subtle" id="actionHint">Waiting for game</div>
-      </div>
-
-      <div class="action-grid">
-        <button class="danger-btn" id="foldBtn">Fold</button>
-        <button class="ghost-btn" id="checkBtn">Check</button>
-        <button class="primary-btn" id="callBtn">Call</button>
-        <button class="success-btn" id="allInBtn">All In</button>
-      </div>
-
-      <div class="raise-row">
-        <input type="number" id="raiseInput" min="0" step="1" placeholder="Raise / bet amount" />
-        <button class="ghost-btn" id="halfPotBtn">Half Pot</button>
-        <button class="primary-btn" id="raiseBtn">Raise / Bet</button>
-      </div>
-
-      <div class="host-tools hidden" id="hostTools">
-        <button class="primary-btn" id="startHandBtn">Start Hand</button>
-        <button class="ghost-btn" id="nextStreetBtn">Next Street</button>
-        <button class="success-btn" id="awardPotBtn">Award Pot</button>
-        <button class="danger-btn" id="finalizeDebtsBtn">Finalize Debts</button>
-      </div>
-
-      <div class="status-line" id="actionStatus"></div>
+      </section>
     </section>
   </main>
 
@@ -834,12 +809,15 @@
       getDoc,
       setDoc,
       updateDoc,
-      addDoc,
-      collection,
+      deleteDoc,
+      serverTimestamp,
+      onSnapshot,
+      arrayUnion,
       getDocs,
+      collection,
       query,
       where,
-      serverTimestamp
+      limit
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -853,83 +831,69 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    if (await analyticsSupported()) getAnalytics(app);
+
+    if (await analyticsSupported()) {
+      getAnalytics(app);
+    }
 
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    const statusRank = { default:0, plus:1, me:2 };
-    const STREET_ORDER = ["preflop", "flop", "turn", "river", "showdown"];
+    const statusPill = document.getElementById("statusPill");
+    const authGate = document.getElementById("authGate");
+    const gateCard = document.querySelector(".gate-card");
 
-    const params = new URLSearchParams(window.location.search);
-    const gameId = params.get("game") || "";
+    const heroTitle = document.getElementById("heroTitle");
+    const heroSubtitle = document.getElementById("heroSubtitle");
+    const signedInAs = document.getElementById("signedInAs");
+    const playersList = document.getElementById("playersList");
+    const playersSubtle = document.getElementById("playersSubtle");
+    const boardGrid = document.getElementById("boardGrid");
+    const logList = document.getElementById("logList");
+    const myCardsGrid = document.getElementById("myCardsGrid");
+    const myStatusSubtle = document.getElementById("myStatusSubtle");
+
+    const potValue = document.getElementById("potValue");
+    const toCallValue = document.getElementById("toCallValue");
+    const myStackValue = document.getElementById("myStackValue");
+    const turnValue = document.getElementById("turnValue");
+
+    const mainPotDisplay = document.getElementById("mainPotDisplay");
+    const currentBetDisplay = document.getElementById("currentBetDisplay");
+    const blindsDisplay = document.getElementById("blindsDisplay");
+    const streetLabel = document.getElementById("streetLabel");
+
+    const gameNameValue = document.getElementById("gameNameValue");
+    const gameStatusValue = document.getElementById("gameStatusValue");
+    const hostValue = document.getElementById("hostValue");
+
+    const checkBtn = document.getElementById("checkBtn");
+    const callBtn = document.getElementById("callBtn");
+    const foldBtn = document.getElementById("foldBtn");
+    const allInBtn = document.getElementById("allInBtn");
+    const raiseBtn = document.getElementById("raiseBtn");
+    const startBtn = document.getElementById("startBtn");
+    const leaveBtn = document.getElementById("leaveBtn");
+    const raiseAmountInput = document.getElementById("raiseAmountInput");
+    const actionStatus = document.getElementById("actionStatus");
+    const actionHint = document.getElementById("actionHint");
+
+    const statusRank = {
+      default: 0,
+      plus: 1,
+      me: 2
+    };
+
+    const qs = new URLSearchParams(window.location.search);
+    const gameId = qs.get("game") || "";
 
     let currentUser = null;
     let currentUserStatus = "default";
     let currentGame = null;
-    let currentProfile = null;
-    let refreshTimer = null;
-
-    const authGate = document.getElementById("authGate");
-    const gateCard = document.querySelector(".gate-card");
-    const statusPill = document.getElementById("statusPill");
-
-    const gameTitle = document.getElementById("gameTitle");
-    const gameSubtitle = document.getElementById("gameSubtitle");
-    const playersCountText = document.getElementById("playersCountText");
-    const playersList = document.getElementById("playersList");
-
-    const potValue = document.getElementById("potValue");
-    const currentBetValue = document.getElementById("currentBetValue");
-    const toCallValue = document.getElementById("toCallValue");
-    const myStackValue = document.getElementById("myStackValue");
-    const centerPotValue = document.getElementById("centerPotValue");
-    const turnNameValue = document.getElementById("turnNameValue");
-    const blindsText = document.getElementById("blindsText");
-    const statusText = document.getElementById("statusText");
-    const handStageText = document.getElementById("handStageText");
-    const gameStatusLine = document.getElementById("gameStatusLine");
-
-    const mySeatText = document.getElementById("mySeatText");
-    const myTurnPill = document.getElementById("myTurnPill");
-    const myCards = document.getElementById("myCards");
-    const communityCards = document.getElementById("communityCards");
-
-    const joinGameBtn = document.getElementById("joinGameBtn");
-    const leaveGameBtn = document.getElementById("leaveGameBtn");
-
-    const foldBtn = document.getElementById("foldBtn");
-    const checkBtn = document.getElementById("checkBtn");
-    const callBtn = document.getElementById("callBtn");
-    const allInBtn = document.getElementById("allInBtn");
-    const raiseBtn = document.getElementById("raiseBtn");
-    const halfPotBtn = document.getElementById("halfPotBtn");
-    const raiseInput = document.getElementById("raiseInput");
-    const actionHint = document.getElementById("actionHint");
-    const actionStatus = document.getElementById("actionStatus");
-
-    const hostTools = document.getElementById("hostTools");
-    const startHandBtn = document.getElementById("startHandBtn");
-    const nextStreetBtn = document.getElementById("nextStreetBtn");
-    const awardPotBtn = document.getElementById("awardPotBtn");
-    const finalizeDebtsBtn = document.getElementById("finalizeDebtsBtn");
-
-    const youOweValue = document.getElementById("youOweValue");
-    const owedToYouValue = document.getElementById("owedToYouValue");
-
-    function money(value) {
-      return new Intl.NumberFormat("en-CA", {
-        style: "currency",
-        currency: "CAD",
-        maximumFractionDigits: 2
-      }).format(Number(value || 0));
-    }
-
-    function normalizeStatus(status) {
-      if (!status) return "default";
-      const clean = String(status).trim().toLowerCase();
-      return ["default", "plus", "me"].includes(clean) ? clean : "default";
-    }
+    let currentPlayerProfile = null;
+    let unsubGame = null;
+    let unsubProfile = null;
+    let isBusy = false;
 
     function setGateMessage(message) {
       gateCard.textContent = message;
@@ -940,13 +904,64 @@
       actionStatus.style.color = isError ? "var(--danger)" : "var(--muted)";
     }
 
+    function normalizeStatus(status) {
+      if (!status) return "default";
+      const clean = String(status).trim().toLowerCase();
+      return ["default", "plus", "me"].includes(clean) ? clean : "default";
+    }
+
+    function normalizeUsername(value) {
+      return String(value || "")
+        .trim()
+        .replace(/\s+/g, "_")
+        .replace(/[^a-zA-Z0-9_]/g, "")
+        .slice(0, 20);
+    }
+
     function escapeHtml(value) {
       return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function money(value) {
+      return new Intl.NumberFormat("en-CA", {
+        style: "currency",
+        currency: "CAD",
+        maximumFractionDigits: 2
+      }).format(Number(value || 0));
+    }
+
+    function formatDate(value) {
+      if (!value) return "—";
+      try {
+        let date;
+        if (typeof value?.toDate === "function") {
+          date = value.toDate();
+        } else {
+          date = new Date(value);
+        }
+        if (Number.isNaN(date.getTime())) return "—";
+        return new Intl.DateTimeFormat("en-CA", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit"
+        }).format(date);
+      } catch {
+        return "—";
+      }
+    }
+
+    function fallbackNameFromUser(user) {
+      if (!user) return "Player";
+      if (user.displayName && user.displayName.trim()) return user.displayName.trim();
+      if (user.email) return user.email.split("@")[0];
+      return "Player";
     }
 
     function getPublicName(data, fallback = "Player") {
@@ -957,31 +972,76 @@
       return fallback;
     }
 
-    function getGamePlayers() {
-      return Array.isArray(currentGame?.players) ? currentGame.players : [];
+    function cardPath(code) {
+      if (!code) return "";
+      return `cards/${encodeURIComponent(code)}.png`;
     }
 
-    function getMe() {
+    function renderCardSlot(code, hidden = false) {
+      if (hidden) {
+        return `<div class="card-slot"><div class="card-back">CARD</div></div>`;
+      }
+      if (!code) {
+        return `<div class="card-slot"><div class="empty-card">—</div></div>`;
+      }
+      return `<div class="card-slot"><img src="${cardPath(code)}" alt="${escapeHtml(code)}" loading="lazy" onerror="this.parentNode.innerHTML='<div class=&quot;empty-card&quot;>${escapeHtml(code)}</div>'"></div>`;
+    }
+
+    function getStreetName(game) {
+      const boardCount = Array.isArray(game?.communityCards) ? game.communityCards.filter(Boolean).length : 0;
+      if (boardCount >= 5) return "River";
+      if (boardCount === 4) return "Turn";
+      if (boardCount === 3) return "Flop";
+      return "Preflop";
+    }
+
+    function getPlayers(game) {
+      return Array.isArray(game?.players) ? [...game.players] : [];
+    }
+
+    function getCurrentPlayer(game) {
       if (!currentUser) return null;
-      return getGamePlayers().find(player => player.uid === currentUser.uid) || null;
+      return getPlayers(game).find(player => player.uid === currentUser.uid) || null;
     }
 
-    function getCurrentTurnPlayer() {
-      const turnUid = currentGame?.currentTurnUid || "";
-      return getGamePlayers().find(player => player.uid === turnUid) || null;
+    function getCurrentTurnPlayer(game) {
+      const players = getPlayers(game);
+      if (!players.length) return null;
+
+      if (game?.currentTurnUid) {
+        return players.find(player => player.uid === game.currentTurnUid) || null;
+      }
+
+      const turnIndex = Number(game?.turnIndex || 0);
+      return players[turnIndex] || null;
     }
 
-    function getPlayerToCall(player) {
-      const currentBet = Number(currentGame?.currentBet || 0);
-      const playerBet = Number(player?.bet || 0);
-      return Math.max(0, currentBet - playerBet);
+    function getToCall(game, player) {
+      const currentBet = Number(game?.currentBet || 0);
+      const myBet = Number(player?.bet || player?.currentBet || 0);
+      return Math.max(0, currentBet - myBet);
     }
 
-    function canAct() {
-      const me = getMe();
-      if (!me || !currentGame || currentGame.status !== "in_progress") return false;
-      if (me.folded || me.isOut) return false;
-      return currentGame.currentTurnUid === currentUser?.uid;
+    function getHostPlayer(game) {
+      const players = getPlayers(game);
+      return players.find(player => player.isHost || player.uid === game.hostUid) || players[0] || null;
+    }
+
+    function nextActiveTurnIndex(players, startIndex) {
+      if (!players.length) return 0;
+      const len = players.length;
+
+      for (let i = 1; i <= len; i++) {
+        const index = (startIndex + i) % len;
+        const player = players[index];
+        if (!player) continue;
+        if (player.left) continue;
+        if (player.folded) continue;
+        if (Number(player.stack || 0) <= 0 && !player.allIn) continue;
+        return index;
+      }
+
+      return startIndex >= 0 ? startIndex : 0;
     }
 
     async function getUserStatus(uid) {
@@ -990,683 +1050,678 @@
         const userSnap = await getDoc(userRef);
         if (!userSnap.exists()) return "default";
         return normalizeStatus(userSnap.data()?.status);
-      } catch {
+      } catch (error) {
+        console.error("Error getting user status:", error);
         return "default";
       }
     }
 
     async function getPlayerProfile(uid) {
-      const snap = await getDoc(doc(db, "pokerPlayers", uid));
+      const ref = doc(db, "pokerPlayers", uid);
+      const snap = await getDoc(ref);
       if (!snap.exists()) return null;
       return { id: snap.id, ...snap.data() };
     }
 
-    async function loadGame() {
-      if (!gameId) {
-        setGateMessage("Missing game id.");
-        return false;
-      }
+    async function ensurePlayerProfile(user) {
+      const playerRef = doc(db, "pokerPlayers", user.uid);
+      const snap = await getDoc(playerRef);
 
-      const snap = await getDoc(doc(db, "pokerGames", gameId));
+      const baseProfile = {
+        uid: user.uid,
+        email: user.email || "",
+        displayName: user.displayName || "",
+        handsPlayed: 0,
+        handsWon: 0,
+        gamesPlayed: 0,
+        gamesWon: 0,
+        balance: 0,
+        netResult: 0,
+        updatedAt: serverTimestamp()
+      };
+
       if (!snap.exists()) {
-        setGateMessage("Game not found.");
+        await setDoc(playerRef, {
+          ...baseProfile,
+          username: "",
+          usernameLower: ""
+        }, { merge: true });
+      } else {
+        await setDoc(playerRef, baseProfile, { merge: true });
+      }
+    }
+
+    async function protectPlusPage(user) {
+      currentUserStatus = await getUserStatus(user.uid);
+      statusPill.textContent = `Status: ${currentUserStatus}`;
+
+      if ((statusRank[currentUserStatus] ?? 0) < statusRank.plus) {
+        setGateMessage("This page is for plus and me accounts. Redirecting to Apps...");
+        setTimeout(() => {
+          window.location.replace("https://williammaclean.ca/apps");
+        }, 2200);
         return false;
       }
 
-      currentGame = { id: snap.id, ...snap.data() };
-      renderGame();
+      authGate.classList.add("hidden");
       return true;
     }
 
-    function getCardImagePath(card) {
-      if (!card) return "";
-      if (typeof card === "string") return `/cards/${card}.png`;
+    async function ensurePlayerInGame(game) {
+      if (!currentUser || !game) return;
 
-      const rankRaw = String(card.rank || card.value || card.r || "").toUpperCase();
-      const suitRaw = String(card.suit || card.s || "").toUpperCase();
+      const players = getPlayers(game);
+      const alreadyIn = players.some(player => player.uid === currentUser.uid && !player.left);
+      if (alreadyIn) return;
 
-      const rankMap = {
-        "A":"A",
-        "ACE":"A",
-        "K":"K",
-        "KING":"K",
-        "Q":"Q",
-        "QUEEN":"Q",
-        "J":"J",
-        "JACK":"J",
-        "10":"10",
-        "9":"9",
-        "8":"8",
-        "7":"7",
-        "6":"6",
-        "5":"5",
-        "4":"4",
-        "3":"3",
-        "2":"2",
-        "1":"1"
+      const profile = currentPlayerProfile || await getPlayerProfile(currentUser.uid);
+      const publicName = getPublicName(profile, fallbackNameFromUser(currentUser));
+      const takenSeats = new Set(players.map(player => Number(player.seat || 0)).filter(Boolean));
+      let seat = 1;
+      while (takenSeats.has(seat)) seat++;
+
+      const nextPlayer = {
+        uid: currentUser.uid,
+        username: profile?.username || "",
+        displayName: publicName,
+        email: currentUser.email || "",
+        seat,
+        stack: Number(game.startingStack || 1000),
+        buyInPaid: false,
+        joinedAt: new Date().toISOString(),
+        isHost: false,
+        cards: [],
+        bet: 0,
+        folded: false,
+        allIn: false,
+        left: false,
+        lastAction: "joined"
       };
 
-      const suitMap = {
-        "H":"H",
-        "HEART":"H",
-        "HEARTS":"H",
-        "♥":"H",
-        "D":"D",
-        "DIAMOND":"D",
-        "DIAMONDS":"D",
-        "♦":"D",
-        "C":"C",
-        "CLUB":"C",
-        "CLUBS":"C",
-        "♣":"C",
-        "S":"S",
-        "SPADE":"S",
-        "SPADES":"S",
-        "♠":"S"
-      };
-
-      const rank = rankMap[rankRaw] || rankRaw;
-      const suit = suitMap[suitRaw] || suitRaw;
-
-      if (!rank || !suit) return "";
-      return `/cards/${rank}${suit}.png`;
+      await updateDoc(doc(db, "pokerGames", gameId), {
+        players: [...players, nextPlayer],
+        updatedAt: serverTimestamp(),
+        actionLog: arrayUnion({
+          type: "join",
+          uid: currentUser.uid,
+          text: `${publicName} joined the game.`,
+          createdAt: new Date().toISOString()
+        })
+      });
     }
 
-    function renderCard(card, hidden = false) {
-      if (hidden) {
-        return `<div class="card-slot"><img src="/cards/BACK.png" alt="Hidden card" onerror="this.parentElement.innerHTML='?'"></div>`;
+    async function syncBuyInDebts(game) {
+      if (!game || !Array.isArray(game.players) || !game.hostUid) return;
+
+      const host = getHostPlayer(game);
+      if (!host) return;
+
+      const openDebtsQuery = query(
+        collection(db, "pokerDebts"),
+        where("gameId", "==", game.id),
+        where("status", "==", "open")
+      );
+
+      const existingSnap = await getDocs(openDebtsQuery);
+      const existingByDebtor = new Map();
+
+      existingSnap.forEach(docSnap => {
+        const data = docSnap.data();
+        if (data.reason === "buy_in_unpaid") {
+          existingByDebtor.set(data.debtorUid, { id: docSnap.id, ...data });
+        }
+      });
+
+      for (const player of game.players) {
+        if (!player || player.uid === game.hostUid || player.left) continue;
+
+        const shouldOwe = player.buyInPaid === false && Number(game.buyIn || 0) > 0;
+        const existing = existingByDebtor.get(player.uid);
+
+        if (shouldOwe && !existing) {
+          await setDoc(doc(collection(db, "pokerDebts")), {
+            gameId: game.id,
+            reason: "buy_in_unpaid",
+            status: "open",
+            amount: Number(game.buyIn || 0),
+            note: `Unpaid buy-in for ${game.name || "Poker Game"}`,
+            debtorUid: player.uid,
+            debtorUsername: player.username || "",
+            debtorDisplayName: getPublicName(player),
+            creditorUid: host.uid,
+            creditorUsername: host.username || "",
+            creditorDisplayName: getPublicName(host),
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+        }
+
+        if (!shouldOwe && existing) {
+          await updateDoc(doc(db, "pokerDebts", existing.id), {
+            status: "forgiven",
+            updatedAt: serverTimestamp(),
+            forgivenByUid: host.uid
+          });
+        }
       }
-
-      if (!card) {
-        return `<div class="card-slot placeholder">—</div>`;
-      }
-
-      const src = getCardImagePath(card);
-      const alt = typeof card === "string" ? card : `${card.rank || card.value || ""}${card.suit || ""}`;
-
-      return `
-        <div class="card-slot">
-          <img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" onerror="this.parentElement.innerHTML='?'">
-        </div>
-      `;
     }
 
-    function renderCommunityCards() {
-      const cards = Array.isArray(currentGame?.communityCards) ? currentGame.communityCards : [];
-      const filled = [...cards];
-      while (filled.length < 5) filled.push(null);
-      communityCards.innerHTML = filled.map(card => renderCard(card, false)).join("");
-    }
-
-    function renderMyCards() {
-      const me = getMe();
-      const cards = Array.isArray(me?.cards) ? me.cards : [];
-      const filled = [...cards];
-      while (filled.length < 2) filled.push(null);
-      myCards.innerHTML = filled.map(card => renderCard(card, false)).join("");
-    }
-
-    function renderPlayers() {
-      const players = getGamePlayers();
-      const turnUid = currentGame?.currentTurnUid || "";
-
-      playersCountText.textContent = `${players.length} player${players.length === 1 ? "" : "s"}`;
+    function renderPlayers(game) {
+      const players = getPlayers(game)
+        .filter(player => !player.left)
+        .sort((a, b) => Number(a.seat || 0) - Number(b.seat || 0));
 
       if (!players.length) {
-        playersList.innerHTML = `<div class="subtle">No players in game.</div>`;
+        playersList.innerHTML = `<div class="log-item">No players in this game.</div>`;
         return;
       }
 
+      const turnPlayer = getCurrentTurnPlayer(game);
+
       playersList.innerHTML = players.map(player => {
-        const isTurn = player.uid === turnUid;
-        const isMe = player.uid === currentUser?.uid;
-        const playerName = getPublicName(player);
-        const stack = money(player.stack || 0);
-        const bet = money(player.bet || 0);
-        const totalPutIn = money(player.totalPutIn || 0);
-        const statePill = player.folded
+        const isMe = currentUser && player.uid === currentUser.uid;
+        const isTurn = turnPlayer && turnPlayer.uid === player.uid;
+        const stateTag = player.folded
           ? `<span class="pill danger">Folded</span>`
-          : player.isOut
-            ? `<span class="pill danger">Out</span>`
+          : player.allIn
+            ? `<span class="pill success">All In</span>`
             : isTurn
-              ? `<span class="pill">Turn</span>`
-              : `<span class="pill success">Live</span>`;
+              ? `<span class="pill warning">Turn</span>`
+              : ``;
 
         return `
-          <div class="player-row ${isTurn ? "current-turn" : ""} ${player.folded ? "folded" : ""}">
+          <div class="player-row">
             <div class="player-top">
-              <div class="player-name">${escapeHtml(playerName)} ${isMe ? '<span style="color:var(--accent)">(You)</span>' : ''}</div>
-              ${statePill}
+              <div class="player-name">${escapeHtml(getPublicName(player))}${isMe ? " (You)" : ""}</div>
+              <div class="player-tags">
+                ${player.isHost ? `<span class="pill">Host</span>` : ``}
+                ${stateTag}
+              </div>
             </div>
-
             <div class="player-stats">
-              <div class="mini">
-                <div class="mini-label">Stack</div>
-                <div class="mini-value">${stack}</div>
-              </div>
-              <div class="mini">
-                <div class="mini-label">Bet</div>
-                <div class="mini-value">${bet}</div>
-              </div>
-              <div class="mini">
-                <div class="mini-label">In Pot</div>
-                <div class="mini-value">${totalPutIn}</div>
-              </div>
+              <div>Stack<strong>${money(player.stack || 0)}</strong></div>
+              <div>Bet<strong>${money(player.bet || 0)}</strong></div>
+              <div>Seat<strong>${Number(player.seat || 0) || "—"}</strong></div>
+              <div>Last<strong>${escapeHtml(player.lastAction || "—")}</strong></div>
             </div>
           </div>
         `;
       }).join("");
+
+      playersSubtle.textContent = `${players.length} player${players.length === 1 ? "" : "s"}`;
     }
 
-    function renderTopArea() {
-      const players = getGamePlayers();
-      const me = getMe();
-      const turnPlayer = getCurrentTurnPlayer();
-
-      gameTitle.textContent = currentGame?.name || "Poker Game";
-      gameSubtitle.textContent = `${players.length} / ${Number(currentGame?.maxPlayers || 0)} players • Buy-in ${money(currentGame?.buyIn || 0)}`;
-
-      const pot = Number(currentGame?.pot || 0);
-      const currentBet = Number(currentGame?.currentBet || 0);
-      const toCall = me ? getPlayerToCall(me) : 0;
-      const myStack = Number(me?.stack || 0);
-
-      potValue.textContent = money(pot);
-      centerPotValue.textContent = money(pot);
-      currentBetValue.textContent = money(currentBet);
-      toCallValue.textContent = money(toCall);
-      myStackValue.textContent = money(myStack);
-
-      turnNameValue.textContent = turnPlayer ? getPublicName(turnPlayer) : "—";
-      blindsText.textContent = `${Number(currentGame?.smallBlind || 0)} / ${Number(currentGame?.bigBlind || 0)}`;
-      statusText.textContent = String(currentGame?.status || "waiting").replaceAll("_", " ");
-      handStageText.textContent = String(currentGame?.street || "waiting").replaceAll("_", " ");
-
-      if (me) {
-        mySeatText.textContent = `Seat ${me.seat || "—"} • ${money(me.stack || 0)} stack`;
-      } else {
-        mySeatText.textContent = "Not seated";
-      }
-
-      if (canAct()) {
-        myTurnPill.textContent = "Your Turn";
-        myTurnPill.className = "pill";
-        actionHint.textContent = "Make your move";
-      } else if (me?.folded) {
-        myTurnPill.textContent = "Folded";
-        myTurnPill.className = "pill danger";
-        actionHint.textContent = "Waiting for next hand";
-      } else {
-        myTurnPill.textContent = "Waiting";
-        myTurnPill.className = "pill warning";
-        actionHint.textContent = turnPlayer ? `${getPublicName(turnPlayer)} to act` : "Waiting for game";
-      }
-
-      const isHost = currentUser?.uid && currentGame?.hostUid === currentUser.uid;
-      hostTools.classList.toggle("hidden", !isHost);
-
-      const inGame = !!me;
-      joinGameBtn.disabled = inGame || players.length >= Number(currentGame?.maxPlayers || 0);
-      leaveGameBtn.disabled = !inGame;
+    function renderBoard(game) {
+      const cards = Array.isArray(game?.communityCards) ? game.communityCards.slice(0, 5) : [];
+      while (cards.length < 5) cards.push("");
+      boardGrid.innerHTML = cards.map(card => renderCardSlot(card)).join("");
+      streetLabel.textContent = getStreetName(game);
     }
 
-    async function loadDebts() {
-      if (!currentUser) return;
-
-      try {
-        const iOweQuery = query(
-          collection(db, "pokerDebts"),
-          where("debtorUid", "==", currentUser.uid),
-          where("status", "==", "open")
-        );
-
-        const owedToMeQuery = query(
-          collection(db, "pokerDebts"),
-          where("creditorUid", "==", currentUser.uid),
-          where("status", "==", "open")
-        );
-
-        const [iOweSnap, owedToMeSnap] = await Promise.all([
-          getDocs(iOweQuery),
-          getDocs(owedToMeQuery)
-        ]);
-
-        const iOwe = iOweSnap.docs
-          .map(docSnap => ({ id: docSnap.id, ...docSnap.data() }))
-          .filter(item => !item.gameId || item.gameId === gameId);
-
-        const owedToMe = owedToMeSnap.docs
-          .map(docSnap => ({ id: docSnap.id, ...docSnap.data() }))
-          .filter(item => !item.gameId || item.gameId === gameId);
-
-        const iOweTotal = iOwe.reduce((sum, debt) => sum + Number(debt.amount || 0), 0);
-        const owedToMeTotal = owedToMe.reduce((sum, debt) => sum + Number(debt.amount || 0), 0);
-
-        youOweValue.textContent = money(iOweTotal);
-        owedToYouValue.textContent = money(owedToMeTotal);
-      } catch {
-        youOweValue.textContent = money(0);
-        owedToYouValue.textContent = money(0);
-      }
+    function renderMyCards(game) {
+      const me = getCurrentPlayer(game);
+      const cards = Array.isArray(me?.cards) ? me.cards.slice(0, 2) : [];
+      while (cards.length < 2) cards.push("");
+      myCardsGrid.innerHTML = cards.map(card => renderCardSlot(card, !card && game?.status === "active")).join("");
     }
 
-    function renderGame() {
-      renderPlayers();
-      renderCommunityCards();
-      renderMyCards();
-      renderTopArea();
-      updateActionButtons();
+    function renderLog(game) {
+      const items = Array.isArray(game?.actionLog) ? [...game.actionLog] : [];
+      const sorted = items.sort((a, b) => {
+        const aTime = new Date(a?.createdAt || 0).getTime();
+        const bTime = new Date(b?.createdAt || 0).getTime();
+        return bTime - aTime;
+      }).slice(0, 25);
 
-      gameStatusLine.textContent = currentGame?.lastActionText || "Game synced.";
-    }
-
-    function updateActionButtons() {
-      const me = getMe();
-      const active = canAct();
-      const toCall = me ? getPlayerToCall(me) : 0;
-      const stack = Number(me?.stack || 0);
-
-      foldBtn.disabled = !active;
-      checkBtn.disabled = !active || toCall > 0;
-      callBtn.disabled = !active || toCall <= 0 || stack <= 0;
-      allInBtn.disabled = !active || stack <= 0;
-      raiseBtn.disabled = !active || stack <= 0;
-      halfPotBtn.disabled = !active || Number(currentGame?.pot || 0) <= 0;
-      raiseInput.disabled = !active;
-
-      callBtn.textContent = toCall > 0 ? `Call ${money(toCall)}` : "Call";
-      checkBtn.textContent = toCall === 0 ? "Check" : "Check";
-    }
-
-    async function syncGame(update) {
-      await updateDoc(doc(db, "pokerGames", gameId), {
-        ...update,
-        updatedAt: serverTimestamp()
-      });
-      await loadGame();
-    }
-
-    function nextTurnUid(players, currentUid) {
-      if (!players.length) return "";
-      const startIndex = Math.max(0, players.findIndex(p => p.uid === currentUid));
-      for (let i = 1; i <= players.length; i++) {
-        const player = players[(startIndex + i) % players.length];
-        if (!player.folded && !player.isOut && Number(player.stack || 0) > 0) {
-          return player.uid;
-        }
-      }
-      return "";
-    }
-
-    async function doFold() {
-      const me = getMe();
-      if (!me || !canAct()) return;
-
-      const players = getGamePlayers().map(player =>
-        player.uid === me.uid ? { ...player, folded: true } : player
-      );
-
-      await syncGame({
-        players,
-        currentTurnUid: nextTurnUid(players, me.uid),
-        lastActionText: `${getPublicName(me)} folded.`
-      });
-      showActionStatus("Folded.");
-    }
-
-    async function doCheck() {
-      const me = getMe();
-      if (!me || !canAct()) return;
-      if (getPlayerToCall(me) > 0) return;
-
-      const players = getGamePlayers();
-      await syncGame({
-        players,
-        currentTurnUid: nextTurnUid(players, me.uid),
-        lastActionText: `${getPublicName(me)} checked.`
-      });
-      showActionStatus("Checked.");
-    }
-
-    async function putChips(amount, label) {
-      const me = getMe();
-      if (!me || !canAct()) return;
-
-      const numAmount = Math.max(0, Math.floor(Number(amount || 0)));
-      const stack = Number(me.stack || 0);
-      const actual = Math.min(stack, numAmount);
-
-      if (actual <= 0) {
-        showActionStatus("Invalid amount.", true);
+      if (!sorted.length) {
+        logList.innerHTML = `<div class="log-item">No actions yet.</div>`;
         return;
       }
 
-      const players = getGamePlayers().map(player => {
-        if (player.uid !== me.uid) return player;
+      logList.innerHTML = sorted.map(item => `
+        <div class="log-item">
+          ${escapeHtml(item?.text || "Action")}
+          <div style="margin-top:6px;color:var(--muted);font-size:0.76rem;">${escapeHtml(formatDate(item?.createdAt))}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderHeaderBits(game) {
+      const me = getCurrentPlayer(game);
+      const turnPlayer = getCurrentTurnPlayer(game);
+      const toCall = getToCall(game, me);
+      const host = getHostPlayer(game);
+
+      heroTitle.textContent = game?.name || "Poker Game";
+      heroSubtitle.textContent = `${game?.visibility || "public"} game • live updates`;
+      gameNameValue.textContent = game?.name || "—";
+      gameStatusValue.textContent = game?.status || "waiting";
+      hostValue.textContent = host ? getPublicName(host) : "—";
+
+      potValue.textContent = money(game?.pot || 0);
+      mainPotDisplay.textContent = money(game?.pot || 0);
+      currentBetDisplay.textContent = money(game?.currentBet || 0);
+      blindsDisplay.textContent = `${Number(game?.smallBlind || 0)} / ${Number(game?.bigBlind || 0)}`;
+      toCallValue.textContent = money(toCall);
+      myStackValue.textContent = money(me?.stack || 0);
+      turnValue.textContent = turnPlayer ? getPublicName(turnPlayer) : "—";
+
+      myStatusSubtle.textContent = me?.folded
+        ? "Folded"
+        : me?.allIn
+          ? "All In"
+          : turnPlayer && me && turnPlayer.uid === me.uid
+            ? "Your turn"
+            : "Waiting";
+
+      if (currentPlayerProfile) {
+        signedInAs.textContent = `Signed in as ${getPublicName(currentPlayerProfile, fallbackNameFromUser(currentUser))}`;
+      } else {
+        signedInAs.textContent = currentUser ? `Signed in as ${fallbackNameFromUser(currentUser)}` : "Not signed in";
+      }
+    }
+
+    function updateActionButtons(game) {
+      const me = getCurrentPlayer(game);
+      const turnPlayer = getCurrentTurnPlayer(game);
+      const isMyTurn = !!(me && turnPlayer && me.uid === turnPlayer.uid);
+      const toCall = getToCall(game, me);
+      const canAct = game?.status === "active" && isMyTurn && !me?.folded && !me?.allIn && Number(me?.stack || 0) > 0;
+      const isHost = !!(currentUser && game?.hostUid === currentUser.uid);
+      const canStart = !!(isHost && game?.status !== "active" && getPlayers(game).filter(player => !player.left).length >= 2);
+
+      checkBtn.disabled = !canAct || toCall > 0;
+      callBtn.disabled = !canAct || toCall <= 0;
+      foldBtn.disabled = !canAct;
+      allInBtn.disabled = !canAct;
+      raiseBtn.disabled = !canAct;
+      raiseAmountInput.disabled = !canAct;
+      startBtn.disabled = !canStart;
+
+      actionHint.textContent = canAct ? "Your turn" : canStart ? "Host can start" : "Only on your turn";
+    }
+
+    function renderGame(game) {
+      currentGame = game;
+      renderPlayers(game);
+      renderBoard(game);
+      renderMyCards(game);
+      renderLog(game);
+      renderHeaderBits(game);
+      updateActionButtons(game);
+    }
+
+    async function subscribeToProfile(uid) {
+      if (unsubProfile) unsubProfile();
+
+      const ref = doc(db, "pokerPlayers", uid);
+      unsubProfile = onSnapshot(ref, snap => {
+        currentPlayerProfile = snap.exists() ? { id: snap.id, ...snap.data() } : null;
+        if (currentGame) renderGame(currentGame);
+      }, error => {
+        console.error("Profile listener failed:", error);
+      });
+    }
+
+    async function subscribeToGame() {
+      if (!gameId) {
+        setGateMessage("Missing game id.");
+        return;
+      }
+
+      if (unsubGame) unsubGame();
+
+      const ref = doc(db, "pokerGames", gameId);
+      unsubGame = onSnapshot(ref, async snap => {
+        if (!snap.exists()) {
+          authGate.classList.remove("hidden");
+          setGateMessage("Game not found.");
+          return;
+        }
+
+        authGate.classList.add("hidden");
+
+        const game = { id: snap.id, ...snap.data() };
+
+        try {
+          await ensurePlayerInGame(game);
+        } catch (error) {
+          console.error("Could not ensure player in game:", error);
+        }
+
+        currentGame = game;
+        renderGame(game);
+
+        try {
+          await syncBuyInDebts(game);
+        } catch (error) {
+          console.error("Debt sync failed:", error);
+        }
+      }, error => {
+        console.error("Game listener failed:", error);
+        authGate.classList.remove("hidden");
+        setGateMessage("Could not load game.");
+      });
+    }
+
+    function buildActionText(playerName, verb, amount = null) {
+      return amount !== null
+        ? `${playerName} ${verb} ${money(amount)}.`
+        : `${playerName} ${verb}.`;
+    }
+
+    async function mutateGame(mutator) {
+      if (isBusy || !currentGame || !currentUser) return;
+      isBusy = true;
+
+      try {
+        const ref = doc(db, "pokerGames", gameId);
+        const snap = await getDoc(ref);
+        if (!snap.exists()) throw new Error("Game not found.");
+
+        const fresh = { id: snap.id, ...snap.data() };
+        const players = getPlayers(fresh);
+        const meIndex = players.findIndex(player => player.uid === currentUser.uid && !player.left);
+
+        if (meIndex === -1) throw new Error("You are not in this game.");
+
+        const result = await mutator({ game: fresh, players, meIndex });
+
+        if (!result) return;
+
+        await updateDoc(ref, {
+          ...result,
+          updatedAt: serverTimestamp()
+        });
+      } catch (error) {
+        console.error(error);
+        showActionStatus(error.message || "Action failed.", true);
+      } finally {
+        isBusy = false;
+      }
+    }
+
+    async function actCheck() {
+      await mutateGame(({ game, players, meIndex }) => {
+        const me = { ...players[meIndex] };
+        const toCall = getToCall(game, me);
+        if (game.status !== "active") throw new Error("Game is not active.");
+        if (game.currentTurnUid !== me.uid) throw new Error("Not your turn.");
+        if (toCall > 0) throw new Error("You cannot check.");
+        me.lastAction = "check";
+        players[meIndex] = me;
+
+        const nextIndex = nextActiveTurnIndex(players, meIndex);
         return {
-          ...player,
-          stack: Number(player.stack || 0) - actual,
-          bet: Number(player.bet || 0) + actual,
-          totalPutIn: Number(player.totalPutIn || 0) + actual
+          players,
+          turnIndex: nextIndex,
+          currentTurnUid: players[nextIndex]?.uid || "",
+          actionLog: arrayUnion({
+            type: "check",
+            uid: me.uid,
+            text: buildActionText(getPublicName(me), "checked"),
+            createdAt: new Date().toISOString()
+          })
+        };
+      });
+    }
+
+    async function actFold() {
+      await mutateGame(({ game, players, meIndex }) => {
+        const me = { ...players[meIndex] };
+        if (game.status !== "active") throw new Error("Game is not active.");
+        if (game.currentTurnUid !== me.uid) throw new Error("Not your turn.");
+
+        me.folded = true;
+        me.lastAction = "fold";
+        players[meIndex] = me;
+
+        const nextIndex = nextActiveTurnIndex(players, meIndex);
+
+        return {
+          players,
+          turnIndex: nextIndex,
+          currentTurnUid: players[nextIndex]?.uid || "",
+          actionLog: arrayUnion({
+            type: "fold",
+            uid: me.uid,
+            text: buildActionText(getPublicName(me), "folded"),
+            createdAt: new Date().toISOString()
+          })
+        };
+      });
+    }
+
+    async function actCall() {
+      await mutateGame(({ game, players, meIndex }) => {
+        const me = { ...players[meIndex] };
+        const toCall = getToCall(game, me);
+        if (game.status !== "active") throw new Error("Game is not active.");
+        if (game.currentTurnUid !== me.uid) throw new Error("Not your turn.");
+        if (toCall <= 0) throw new Error("Nothing to call.");
+
+        const amount = Math.min(Number(me.stack || 0), toCall);
+        me.stack = Number(me.stack || 0) - amount;
+        me.bet = Number(me.bet || 0) + amount;
+        me.lastAction = amount < toCall ? "call all-in" : "call";
+        if (Number(me.stack || 0) <= 0) me.allIn = true;
+        players[meIndex] = me;
+
+        const nextIndex = nextActiveTurnIndex(players, meIndex);
+
+        return {
+          players,
+          pot: Number(game.pot || 0) + amount,
+          turnIndex: nextIndex,
+          currentTurnUid: players[nextIndex]?.uid || "",
+          actionLog: arrayUnion({
+            type: "call",
+            uid: me.uid,
+            text: buildActionText(getPublicName(me), amount < toCall ? "called all-in for" : "called", amount),
+            createdAt: new Date().toISOString()
+          })
+        };
+      });
+    }
+
+    async function actAllIn() {
+      await mutateGame(({ game, players, meIndex }) => {
+        const me = { ...players[meIndex] };
+        if (game.status !== "active") throw new Error("Game is not active.");
+        if (game.currentTurnUid !== me.uid) throw new Error("Not your turn.");
+
+        const amount = Number(me.stack || 0);
+        if (amount <= 0) throw new Error("No chips left.");
+
+        me.bet = Number(me.bet || 0) + amount;
+        me.stack = 0;
+        me.allIn = true;
+        me.lastAction = "all in";
+        players[meIndex] = me;
+
+        const nextIndex = nextActiveTurnIndex(players, meIndex);
+        const nextCurrentBet = Math.max(Number(game.currentBet || 0), Number(me.bet || 0));
+
+        return {
+          players,
+          pot: Number(game.pot || 0) + amount,
+          currentBet: nextCurrentBet,
+          minRaise: Math.max(Number(game.minRaise || game.bigBlind || 0), amount),
+          turnIndex: nextIndex,
+          currentTurnUid: players[nextIndex]?.uid || "",
+          actionLog: arrayUnion({
+            type: "all_in",
+            uid: me.uid,
+            text: buildActionText(getPublicName(me), "went all-in for", amount),
+            createdAt: new Date().toISOString()
+          })
+        };
+      });
+    }
+
+    async function actRaise() {
+      const typed = Number(raiseAmountInput.value || 0);
+
+      await mutateGame(({ game, players, meIndex }) => {
+        const me = { ...players[meIndex] };
+        if (game.status !== "active") throw new Error("Game is not active.");
+        if (game.currentTurnUid !== me.uid) throw new Error("Not your turn.");
+
+        const toCall = getToCall(game, me);
+        const minRaise = Math.max(Number(game.minRaise || game.bigBlind || 0), 1);
+        if (!Number.isFinite(typed) || typed <= 0) throw new Error("Enter a raise amount.");
+
+        const totalNeeded = toCall + typed;
+        if (totalNeeded > Number(me.stack || 0)) throw new Error("Not enough chips.");
+        if (typed < minRaise) throw new Error(`Minimum raise is ${money(minRaise)}.`);
+
+        me.stack = Number(me.stack || 0) - totalNeeded;
+        me.bet = Number(me.bet || 0) + totalNeeded;
+        me.lastAction = "raise";
+        if (Number(me.stack || 0) <= 0) me.allIn = true;
+        players[meIndex] = me;
+
+        const nextIndex = nextActiveTurnIndex(players, meIndex);
+
+        return {
+          players,
+          pot: Number(game.pot || 0) + totalNeeded,
+          currentBet: Number(me.bet || 0),
+          minRaise: typed,
+          turnIndex: nextIndex,
+          currentTurnUid: players[nextIndex]?.uid || "",
+          actionLog: arrayUnion({
+            type: "raise",
+            uid: me.uid,
+            text: buildActionText(getPublicName(me), "raised by", typed),
+            createdAt: new Date().toISOString()
+          })
         };
       });
 
-      const updatedMe = players.find(player => player.uid === me.uid);
-      const newBet = Number(updatedMe?.bet || 0);
-      const currentBet = Math.max(Number(currentGame?.currentBet || 0), newBet);
-      const pot = Number(currentGame?.pot || 0) + actual;
-
-      await syncGame({
-        players,
-        pot,
-        currentBet,
-        currentTurnUid: nextTurnUid(players, me.uid),
-        lastActionText: `${getPublicName(me)} ${label} ${money(actual)}.`
-      });
-
-      raiseInput.value = "";
-      showActionStatus(`${label} ${money(actual)}.`);
+      raiseAmountInput.value = "";
     }
 
-    async function doCall() {
-      const me = getMe();
-      if (!me || !canAct()) return;
-      await putChips(getPlayerToCall(me), "called");
-    }
-
-    async function doAllIn() {
-      const me = getMe();
-      if (!me || !canAct()) return;
-      await putChips(Number(me.stack || 0), "went all in for");
-    }
-
-    async function doRaise() {
-      const me = getMe();
-      if (!me || !canAct()) return;
-
-      const inputAmount = Math.floor(Number(raiseInput.value || 0));
-      if (inputAmount <= 0) {
-        showActionStatus("Enter a raise amount.", true);
-        return;
-      }
-
-      await putChips(inputAmount, "bet");
-    }
-
-    async function joinGame() {
-      if (!currentUser || !currentGame) return;
-
-      const players = getGamePlayers();
-      if (players.some(player => player.uid === currentUser.uid)) {
-        showActionStatus("Already in game.", true);
-        return;
-      }
-
-      if (players.length >= Number(currentGame.maxPlayers || 0)) {
-        showActionStatus("Game is full.", true);
-        return;
-      }
-
-      const takenSeats = new Set(players.map(player => Number(player.seat || 0)));
-      let seat = 1;
-      while (takenSeats.has(seat)) seat++;
-
-      const startingStack = Number(currentGame.startingStack || 0);
-      const name = getPublicName(currentProfile);
-
-      const nextPlayers = [
-        ...players,
-        {
-          uid: currentUser.uid,
-          username: currentProfile?.username || "",
-          displayName: name,
-          email: currentUser.email || "",
-          seat,
-          stack: startingStack,
-          bet: 0,
-          totalPutIn: 0,
-          folded: false,
-          isOut: false,
-          cards: [],
-          joinedAt: new Date().toISOString(),
-          isHost: false
+    async function startGame() {
+      await mutateGame(async ({ game, players }) => {
+        if (!currentUser || game.hostUid !== currentUser.uid) {
+          throw new Error("Only the host can start.");
         }
-      ];
 
-      await syncGame({
-        players: nextPlayers,
-        lastActionText: `${name} joined the game.`
+        const activePlayers = players.filter(player => !player.left);
+        if (activePlayers.length < 2) {
+          throw new Error("Need at least 2 players.");
+        }
+
+        const resetPlayers = activePlayers
+          .sort((a, b) => Number(a.seat || 0) - Number(b.seat || 0))
+          .map(player => ({
+            ...player,
+            stack: Number(player.stack ?? game.startingStack ?? 1000),
+            bet: 0,
+            folded: false,
+            allIn: false,
+            left: false,
+            buyInPaid: player.buyInPaid === true,
+            cards: Array.isArray(player.cards) && player.cards.length === 2 ? player.cards : [],
+            lastAction: "ready"
+          }));
+
+        const firstTurn = resetPlayers[0] || null;
+
+        return {
+          players: resetPlayers,
+          status: "active",
+          phase: "preflop",
+          pot: 0,
+          currentBet: 0,
+          minRaise: Number(game.bigBlind || 2),
+          communityCards: [],
+          turnIndex: 0,
+          currentTurnUid: firstTurn?.uid || "",
+          startedAt: serverTimestamp(),
+          actionLog: arrayUnion({
+            type: "start",
+            uid: currentUser.uid,
+            text: `${getPublicName(getHostPlayer(game) || {})} started the game.`,
+            createdAt: new Date().toISOString()
+          })
+        };
       });
-
-      showActionStatus("Joined game.");
     }
 
     async function leaveGame() {
-      const me = getMe();
-      if (!me || !currentGame) return;
-
       const confirmed = window.confirm("Leave this game?");
       if (!confirmed) return;
 
-      const nextPlayers = getGamePlayers().filter(player => player.uid !== currentUser.uid);
-      const nextTurn = currentGame.currentTurnUid === currentUser.uid
-        ? nextTurnUid(nextPlayers, currentUser.uid)
-        : currentGame.currentTurnUid || "";
+      await mutateGame(({ game, players, meIndex }) => {
+        const me = { ...players[meIndex] };
+        me.left = true;
+        me.folded = true;
+        me.lastAction = "left";
+        players[meIndex] = me;
 
-      await syncGame({
-        players: nextPlayers,
-        currentTurnUid: nextTurn,
-        lastActionText: `${getPublicName(me)} left the game.`
+        const remaining = players.filter(player => !player.left);
+        const isHostLeaving = me.uid === game.hostUid;
+        const nextHost = remaining[0] || null;
+        const currentTurnIndex = Number(game.turnIndex || 0);
+        const nextIndex = nextActiveTurnIndex(players, currentTurnIndex);
+
+        return {
+          players,
+          hostUid: isHostLeaving ? (nextHost?.uid || "") : game.hostUid,
+          hostUsername: isHostLeaving ? (nextHost?.username || "") : (game.hostUsername || ""),
+          hostDisplayName: isHostLeaving ? getPublicName(nextHost || {}) : (game.hostDisplayName || ""),
+          currentTurnUid: players[nextIndex]?.uid || "",
+          turnIndex: nextIndex,
+          status: remaining.length < 2 ? "waiting" : game.status,
+          actionLog: arrayUnion({
+            type: "leave",
+            uid: me.uid,
+            text: `${getPublicName(me)} left the game.`,
+            createdAt: new Date().toISOString()
+          })
+        };
       });
 
-      showActionStatus("Left game.");
+      window.location.href = "poker";
     }
 
-    function getStreetNext(street) {
-      const index = STREET_ORDER.indexOf(street);
-      if (index === -1 || index === STREET_ORDER.length - 1) return "showdown";
-      return STREET_ORDER[index + 1];
-    }
-
-    async function startHand() {
-      if (!currentGame || currentGame.hostUid !== currentUser?.uid) return;
-
-      const players = getGamePlayers().map(player => ({
-        ...player,
-        bet: 0,
-        totalPutIn: 0,
-        folded: false,
-        cards: player.cards || []
-      }));
-
-      const firstLive = players.find(player => !player.isOut && Number(player.stack || 0) > 0);
-
-      await syncGame({
-        players,
-        pot: 0,
-        currentBet: 0,
-        communityCards: [],
-        street: "preflop",
-        status: "in_progress",
-        currentTurnUid: firstLive?.uid || "",
-        lastActionText: "New hand started."
-      });
-
-      showActionStatus("Hand started.");
-    }
-
-    async function nextStreet() {
-      if (!currentGame || currentGame.hostUid !== currentUser?.uid) return;
-
-      const nextStreetValue = getStreetNext(String(currentGame.street || "preflop"));
-      const players = getGamePlayers().map(player => ({ ...player, bet: 0 }));
-      const nextLive = players.find(player => !player.folded && !player.isOut && Number(player.stack || 0) > 0);
-
-      await syncGame({
-        players,
-        street: nextStreetValue,
-        currentBet: 0,
-        currentTurnUid: nextLive?.uid || "",
-        lastActionText: `Moved to ${nextStreetValue}.`
-      });
-
-      showActionStatus(`Moved to ${nextStreetValue}.`);
-    }
-
-    async function awardPot() {
-      if (!currentGame || currentGame.hostUid !== currentUser?.uid) return;
-
-      const winnerName = window.prompt("Winner username/display name exactly as shown:");
-      if (!winnerName) return;
-
-      const players = getGamePlayers();
-      const winner = players.find(player => getPublicName(player).toLowerCase() === winnerName.trim().toLowerCase());
-
-      if (!winner) {
-        showActionStatus("Winner not found.", true);
-        return;
-      }
-
-      const pot = Number(currentGame.pot || 0);
-      const nextPlayers = players.map(player =>
-        player.uid === winner.uid
-          ? { ...player, stack: Number(player.stack || 0) + pot }
-          : player
-      );
-
-      await syncGame({
-        players: nextPlayers,
-        pot: 0,
-        currentBet: 0,
-        street: "showdown",
-        status: "waiting",
-        currentTurnUid: "",
-        lastActionText: `${getPublicName(winner)} won ${money(pot)}.`
-      });
-
-      showActionStatus("Pot awarded.");
-    }
-
-    async function finalizeDebts() {
-      if (!currentGame || currentGame.hostUid !== currentUser?.uid) return;
-
-      const players = getGamePlayers();
-      const buyIn = Number(currentGame.buyIn || 0);
-      const startingStack = Number(currentGame.startingStack || 0);
-
-      const debtWrites = [];
-
-      for (const player of players) {
-        const finalStack = Number(player.stack || 0);
-        const delta = finalStack - startingStack;
-        if (delta >= 0) continue;
-
-        const amountOwed = Math.abs(delta) * (buyIn > 0 && startingStack > 0 ? buyIn / startingStack : 1);
-        const winner = [...players]
-          .filter(other => other.uid !== player.uid)
-          .sort((a, b) => Number(b.stack || 0) - Number(a.stack || 0))[0];
-
-        if (!winner) continue;
-
-        debtWrites.push(addDoc(collection(db, "pokerDebts"), {
-          gameId,
-          debtorUid: player.uid,
-          debtorUsername: player.username || "",
-          debtorDisplayName: getPublicName(player),
-          debtorEmail: player.email || "",
-          creditorUid: winner.uid,
-          creditorUsername: winner.username || "",
-          creditorDisplayName: getPublicName(winner),
-          creditorEmail: winner.email || "",
-          amount: Number(amountOwed.toFixed(2)),
-          note: `${currentGame.name || "Poker game"} debt`,
-          status: "open",
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        }));
-      }
-
-      await Promise.all(debtWrites);
-      showActionStatus("Debts finalized from current stacks.");
-      await loadDebts();
-    }
-
-    joinGameBtn.addEventListener("click", () => joinGame().catch(console.error));
-    leaveGameBtn.addEventListener("click", () => leaveGame().catch(console.error));
-    foldBtn.addEventListener("click", () => doFold().catch(console.error));
-    checkBtn.addEventListener("click", () => doCheck().catch(console.error));
-    callBtn.addEventListener("click", () => doCall().catch(console.error));
-    allInBtn.addEventListener("click", () => doAllIn().catch(console.error));
-    raiseBtn.addEventListener("click", () => doRaise().catch(console.error));
-
-    halfPotBtn.addEventListener("click", () => {
-      const pot = Number(currentGame?.pot || 0);
-      raiseInput.value = String(Math.max(1, Math.floor(pot / 2)));
-    });
-
-    startHandBtn.addEventListener("click", () => startHand().catch(console.error));
-    nextStreetBtn.addEventListener("click", () => nextStreet().catch(console.error));
-    awardPotBtn.addEventListener("click", () => awardPot().catch(console.error));
-    finalizeDebtsBtn.addEventListener("click", () => finalizeDebts().catch(console.error));
+    checkBtn.addEventListener("click", () => actCheck().then(() => showActionStatus("Checked.")));
+    foldBtn.addEventListener("click", () => actFold().then(() => showActionStatus("Folded.")));
+    callBtn.addEventListener("click", () => actCall().then(() => showActionStatus("Called.")));
+    allInBtn.addEventListener("click", () => actAllIn().then(() => showActionStatus("All in.")));
+    raiseBtn.addEventListener("click", () => actRaise().then(() => showActionStatus("Raised.")));
+    startBtn.addEventListener("click", () => startGame().then(() => showActionStatus("Game started.")));
+    leaveBtn.addEventListener("click", () => leaveGame());
 
     onAuthStateChanged(auth, async (user) => {
       currentUser = user;
 
       if (!user) {
         statusPill.textContent = "Status: signed out";
+        signedInAs.textContent = "Not signed in";
         setGateMessage("Please sign in to use Poker.");
         return;
       }
 
       try {
-        currentUserStatus = await getUserStatus(user.uid);
-        statusPill.textContent = `Status: ${currentUserStatus}`;
+        setGateMessage("Checking access...");
+        await ensurePlayerProfile(user);
+        const allowed = await protectPlusPage(user);
+        if (!allowed) return;
 
-        if ((statusRank[currentUserStatus] ?? 0) < statusRank.plus) {
-          setGateMessage("This page is for plus or me accounts.");
-          setTimeout(() => {
-            window.location.replace("https://williammaclean.ca/apps");
-          }, 1500);
-          return;
-        }
-
-        currentProfile = await getPlayerProfile(user.uid);
-        if (!currentProfile) {
-          await setDoc(doc(db, "pokerPlayers", user.uid), {
-            uid: user.uid,
-            email: user.email || "",
-            displayName: user.displayName || "Player",
-            username: "",
-            usernameLower: "",
-            handsPlayed: 0,
-            handsWon: 0,
-            gamesPlayed: 0,
-            gamesWon: 0,
-            balance: 0,
-            netResult: 0,
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
-          }, { merge: true });
-          currentProfile = await getPlayerProfile(user.uid);
-        }
-
-        const ok = await loadGame();
-        if (!ok) return;
-
-        await loadDebts();
-        authGate.classList.add("hidden");
-
-        if (refreshTimer) clearInterval(refreshTimer);
-        refreshTimer = setInterval(async () => {
-          if (!currentUser) return;
-          await loadGame();
-          await loadDebts();
-        }, 4000);
-
+        await subscribeToProfile(user.uid);
+        await subscribeToGame();
       } catch (error) {
         console.error(error);
         setGateMessage("Could not load game.");
       }
+    });
+
+    window.addEventListener("beforeunload", () => {
+      if (unsubGame) unsubGame();
+      if (unsubProfile) unsubProfile();
     });
   </script>
 </body>
