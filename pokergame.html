@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Poker Game | William MacLean</title>
   <link rel="icon" href="logo.png" />
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet" />
@@ -20,24 +20,22 @@
       --success:#57d38c;
       --danger:#ff6b81;
       --warning:#ffd166;
-      --header-h:62px;
+      --header-h:64px;
       --max-w:1100px;
       --shadow:0 18px 40px rgba(0,0,0,0.24);
-
-      --card-w:64px;
-      --card-h:92px;
-      --hole-w:74px;
-      --hole-h:106px;
-      --player-h:62px;
+      --card-w:72px;
+      --card-h:104px;
+      --player-h:72px;
+      --combo-glow:0 0 0 2px rgba(176,11,85,0.95), 0 0 18px rgba(176,11,85,0.35);
     }
 
     *{ margin:0; padding:0; box-sizing:border-box; }
-    html, body{ height:100%; }
+    html, body{ min-height:100%; }
     body{
       font-family:"Comfortaa",sans-serif;
       background:var(--bg);
       color:var(--text);
-      overflow:hidden;
+      overflow-x:hidden;
     }
 
     a{ color:inherit; text-decoration:none; }
@@ -51,11 +49,12 @@
       display:flex;
       align-items:center;
       justify-content:space-between;
-      padding:0 16px;
-      background:rgba(0,0,0,0.78);
+      padding:0 18px;
+      background:rgba(0,0,0,0.72);
       backdrop-filter:blur(10px);
       border-bottom:1px solid rgba(255,255,255,0.05);
       z-index:200;
+      gap:12px;
     }
 
     .logo{
@@ -71,37 +70,57 @@
     }
 
     .logo span{
-      font-size:0.92rem;
+      font-size:0.95rem;
       font-weight:700;
       white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
-    nav{
+    .header-actions{
       display:flex;
       align-items:center;
-      gap:12px;
-      flex-wrap:wrap;
+      gap:8px;
+      flex-shrink:0;
     }
 
-    nav a{
-      font-size:0.82rem;
-      color:#cfcfcf;
-      transition:0.2s;
-    }
-
-    nav a:hover{ color:#fff; }
-
-    .status-pill{
-      font-size:0.7rem;
-      padding:7px 10px;
-      border:1px solid rgba(255,255,255,0.1);
+    .header-btn{
+      min-width:92px;
+      min-height:40px;
+      padding:10px 14px;
+      border:1px solid var(--line);
+      background:#050505;
       color:#fff;
-      background:rgba(255,255,255,0.04);
+      font-weight:700;
+      cursor:pointer;
+      transition:0.14s ease;
+    }
+
+    .header-btn:hover{ transform:translateY(-1px); }
+    .header-btn:disabled{
+      background:#050505;
+      border-color:var(--line);
+      color:#676767;
+      cursor:not-allowed;
+      transform:none;
+      opacity:1;
+    }
+
+    .header-btn.live-start{
+      border-color:rgba(87,211,140,0.65);
+      background:rgba(87,211,140,0.14);
+      color:#fff;
+    }
+
+    .header-btn.live-leave{
+      border-color:rgba(255,107,129,0.45);
+      background:rgba(255,107,129,0.10);
+      color:#fff;
     }
 
     .page{
-      height:100vh;
-      padding-top:calc(var(--header-h) + 8px);
+      min-height:100vh;
+      padding-top:calc(var(--header-h) + 12px);
     }
 
     #authGate{
@@ -129,168 +148,124 @@
     }
 
     .shell{
-      width:min(var(--max-w), calc(100% - 16px));
-      height:calc(100vh - var(--header-h) - 12px);
+      width:min(var(--max-w), calc(100% - 24px));
       margin:0 auto;
+      padding:0 0 18px;
       display:grid;
-      grid-template-rows:minmax(0, 1.1fr) minmax(0, 0.95fr) minmax(0, 1.15fr);
-      gap:8px;
-      padding-bottom:8px;
+      gap:12px;
     }
 
     .panel{
       border:1px solid var(--line);
       background:var(--panel-2);
       box-shadow:var(--shadow);
-      min-height:0;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-rows:auto auto auto;
+      gap:12px;
+      min-height:calc(100vh - var(--header-h) - 48px);
     }
 
     .players-panel{
-      padding:8px;
+      padding:10px;
+      max-height:220px;
       overflow:auto;
-      min-height:0;
     }
 
     .players-list{
       display:grid;
-      gap:6px;
+      gap:8px;
     }
 
     .player{
       min-height:var(--player-h);
       border:1px solid var(--line);
       background:rgba(255,255,255,0.02);
-      padding:8px 10px;
+      padding:10px 12px;
       display:grid;
       grid-template-columns:minmax(0,1fr) auto;
       gap:10px;
       align-items:center;
-      transition:0.14s ease;
     }
 
     .player.current-turn{
-      border-color:rgba(176,11,85,0.72);
-      background:rgba(176,11,85,0.11);
-      box-shadow:inset 0 0 0 1px rgba(176,11,85,0.28);
+      border-color:rgba(176,11,85,0.65);
+      background:rgba(176,11,85,0.10);
     }
 
-    .player.winner{
-      border-color:rgba(87,211,140,0.78);
-      background:rgba(87,211,140,0.08);
-      box-shadow:inset 0 0 0 1px rgba(87,211,140,0.22);
+    .player.round-winner{
+      border-color:rgba(87,211,140,0.65);
+      box-shadow:inset 0 0 0 1px rgba(87,211,140,0.32);
+      background:rgba(87,211,140,0.09);
     }
 
     .player.me{
-      box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06);
-    }
-
-    .player.current-turn.winner{
-      box-shadow:
-        inset 0 0 0 1px rgba(87,211,140,0.22),
-        0 0 0 1px rgba(176,11,85,0.18);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,0.07);
     }
 
     .player-main{ min-width:0; }
 
     .player-name{
-      font-size:0.88rem;
+      font-size:0.92rem;
       font-weight:700;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-      margin-bottom:5px;
+      margin-bottom:6px;
     }
 
     .player-sub{
       display:flex;
       flex-wrap:wrap;
-      gap:8px;
+      gap:10px;
       color:var(--muted);
-      font-size:0.71rem;
-      line-height:1.3;
+      font-size:0.76rem;
+      line-height:1.35;
     }
 
     .center-panel{
-      padding:10px 8px 12px;
+      padding:14px 10px 16px;
       display:grid;
-      grid-template-rows:auto auto auto;
-      gap:10px;
+      gap:14px;
       align-content:start;
-      min-height:0;
     }
 
     .board-top{
       display:flex;
       justify-content:center;
       align-items:center;
-      gap:8px;
+      gap:12px;
       flex-wrap:wrap;
       text-align:center;
     }
 
     .pot-box{
-      border:1px solid rgba(176,11,85,0.45);
+      border:1px solid rgba(176,11,85,0.5);
       background:rgba(176,11,85,0.12);
-      padding:9px 12px;
-      min-width:110px;
+      padding:10px 14px;
+      min-width:130px;
     }
 
     .pot-label{
       color:var(--muted);
-      font-size:0.68rem;
+      font-size:0.72rem;
       text-transform:uppercase;
       letter-spacing:0.08em;
-      margin-bottom:4px;
+      margin-bottom:6px;
     }
 
     .pot-value{
-      font-size:1.12rem;
+      font-size:1.3rem;
       font-weight:800;
       letter-spacing:-0.04em;
-    }
-
-    .mini-info{
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      gap:6px;
-      flex-wrap:wrap;
-    }
-
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      padding:6px 9px;
-      border:1px solid rgba(255,255,255,0.1);
-      font-size:0.68rem;
-      white-space:nowrap;
-      background:rgba(255,255,255,0.03);
-    }
-
-    .pill.accent{
-      border-color:rgba(176,11,85,0.5);
-      background:rgba(176,11,85,0.12);
-    }
-
-    .pill.success{
-      border-color:rgba(87,211,140,0.4);
-      background:rgba(87,211,140,0.1);
-    }
-
-    .pill.warning{
-      border-color:rgba(255,209,102,0.4);
-      background:rgba(255,209,102,0.1);
-    }
-
-    .pill.danger{
-      border-color:rgba(255,107,129,0.35);
-      background:rgba(255,107,129,0.1);
     }
 
     .community{
       display:flex;
       justify-content:center;
-      gap:6px;
+      gap:8px;
       flex-wrap:nowrap;
       overflow:hidden;
     }
@@ -303,7 +278,6 @@
       background:#090909;
       flex:0 0 auto;
       position:relative;
-      overflow:hidden;
     }
 
     .card img{
@@ -317,44 +291,44 @@
       align-items:center;
       justify-content:center;
       color:#5e5e5e;
-      font-size:0.68rem;
+      font-size:0.72rem;
       letter-spacing:0.12em;
     }
 
-    .card.combo,
-    .card-slot.combo{
-      border-color:rgba(255,209,102,0.85);
-      box-shadow:inset 0 0 0 1px rgba(255,209,102,0.28), 0 0 12px rgba(255,209,102,0.12);
+    .card.combo{
+      border-color:rgba(176,11,85,0.95);
+      box-shadow:var(--combo-glow);
+      z-index:2;
     }
 
     .bottom-panel{
-      padding:10px 8px 10px;
+      padding:12px 10px 14px;
       display:grid;
-      grid-template-rows:auto auto auto auto;
-      gap:8px;
-      min-height:0;
-      align-content:start;
+      gap:12px;
+      position:sticky;
+      bottom:0;
+      background:linear-gradient(180deg, rgba(5,5,5,0.95), rgba(5,5,5,1));
+      z-index:5;
     }
 
     .my-cards-wrap{
       display:flex;
       justify-content:center;
-      gap:8px;
-      min-height:var(--hole-h);
+      gap:10px;
     }
 
     .my-cards-wrap .card,
     .my-cards-wrap .card-slot{
-      width:var(--hole-w);
-      height:var(--hole-h);
+      width:84px;
+      height:122px;
     }
 
     .bet-panel{
       border:1px solid var(--line);
       background:rgba(255,255,255,0.02);
-      padding:10px;
+      padding:12px;
       display:grid;
-      gap:8px;
+      gap:10px;
     }
 
     .bet-row{
@@ -367,20 +341,20 @@
 
     .bet-label{
       color:#fff;
-      font-size:0.8rem;
+      font-size:0.85rem;
       font-weight:700;
     }
 
     .bet-value{
       color:var(--accent);
-      font-size:0.9rem;
+      font-size:0.95rem;
       font-weight:700;
     }
 
     .bet-controls{
       display:grid;
-      grid-template-columns:1fr 98px;
-      gap:8px;
+      grid-template-columns:1fr 110px;
+      gap:10px;
       align-items:center;
     }
 
@@ -392,11 +366,11 @@
 
     input[type="number"]{
       width:100%;
-      min-height:40px;
+      min-height:44px;
       border:1px solid var(--line);
       background:#0a0a0a;
       color:#fff;
-      padding:8px 10px;
+      padding:10px 12px;
       outline:none;
     }
 
@@ -404,184 +378,111 @@
       display:grid;
       grid-template-columns:repeat(4, 1fr);
       gap:8px;
-      transition:0.16s ease;
     }
 
-    .controls.turn-active button{
-      opacity:1;
-      filter:none;
-    }
-
-    .controls.turn-active .primary-btn{
-      border-color:rgba(176,11,85,0.9);
-      background:rgba(176,11,85,0.24);
-      box-shadow:0 0 0 1px rgba(176,11,85,0.18);
-    }
-
-    .controls.turn-active .danger-btn{
-      border-color:rgba(255,107,129,0.62);
-      background:rgba(255,107,129,0.18);
-    }
-
-    .controls.not-turn button{
-      opacity:0.45;
-      filter:saturate(0.6);
-    }
-
-    .utility-row{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:8px;
-    }
-
-    button{
+    .action-btn{
       width:100%;
-      min-height:44px;
+      min-height:48px;
       border:1px solid var(--line);
-      background:#0a0a0a;
-      color:var(--text);
-      padding:10px 10px;
+      background:#050505;
+      color:#696969;
+      padding:12px 10px;
       font-weight:700;
       cursor:pointer;
       transition:0.14s ease;
     }
 
-    button:hover{ transform:translateY(-1px); }
+    .action-btn:hover{ transform:translateY(-1px); }
 
-    button:disabled{
-      opacity:0.45;
+    .action-btn:disabled{
+      background:#050505;
+      color:#696969;
+      border-color:var(--line);
       cursor:not-allowed;
       transform:none;
+      opacity:1;
     }
 
-    .primary-btn{
-      border-color:rgba(176,11,85,0.65);
-      background:rgba(176,11,85,0.15);
+    .action-btn.live-check{
+      border-color:rgba(255,255,255,0.18);
+      background:rgba(255,255,255,0.08);
+      color:#fff;
     }
 
-    .ghost-btn{
-      background:rgba(255,255,255,0.03);
+    .action-btn.live-call{
+      border-color:rgba(176,11,85,0.75);
+      background:rgba(176,11,85,0.16);
+      color:#fff;
     }
 
-    .danger-btn{
+    .action-btn.live-bet{
+      border-color:rgba(87,211,140,0.58);
+      background:rgba(87,211,140,0.12);
+      color:#fff;
+    }
+
+    .action-btn.live-fold{
       border-color:rgba(255,107,129,0.45);
       background:rgba(255,107,129,0.10);
-    }
-
-    .success-btn{
-      border-color:rgba(87,211,140,0.45);
-      background:rgba(87,211,140,0.10);
+      color:#fff;
     }
 
     .status-line{
       min-height:1.2em;
       color:var(--muted);
-      font-size:0.82rem;
+      font-size:0.85rem;
       text-align:center;
-      line-height:1.35;
+      line-height:1.4;
     }
 
     .hidden{ display:none !important; }
 
-    @media (max-width: 560px){
-      :root{
-        --card-w:56px;
-        --card-h:82px;
-        --hole-w:68px;
-        --hole-h:98px;
-        --player-h:58px;
-        --header-h:58px;
-      }
-
-      header{ padding:0 12px; }
-      .logo span{ font-size:0.84rem; }
-      nav{ gap:8px; }
-      nav a{ font-size:0.76rem; }
-      .status-pill{ font-size:0.65rem; padding:6px 8px; }
-
-      .shell{
-        width:calc(100% - 10px);
-        gap:6px;
-        grid-template-rows:minmax(0, 1fr) minmax(0, 0.88fr) minmax(0, 1.18fr);
-      }
-
-      .player{
-        padding:7px 8px;
-        gap:8px;
-      }
-
-      .player-name{
-        font-size:0.82rem;
-        margin-bottom:4px;
-      }
-
-      .player-sub{
-        gap:6px;
-        font-size:0.66rem;
-      }
-
-      .community{ gap:5px; }
-      .my-cards-wrap{ gap:6px; }
-      .center-panel{ padding:8px 6px 10px; gap:8px; }
-      .bottom-panel{ padding:8px 6px 8px; gap:7px; }
-      .bet-panel{ padding:8px; gap:7px; }
-
-      .bet-controls{
-        grid-template-columns:1fr 86px;
-        gap:6px;
-      }
-
-      .controls{
-        gap:6px;
-      }
-
-      .utility-row{
-        gap:6px;
-      }
-
-      button{
-        min-height:42px;
-        font-size:0.84rem;
-        padding:9px 8px;
-      }
-
-      .pot-box{
-        min-width:96px;
-        padding:8px 10px;
-      }
-
-      .pot-value{
-        font-size:1rem;
-      }
-
-      .pill{
-        font-size:0.62rem;
-        padding:5px 7px;
-      }
-
-      .status-line{
-        font-size:0.76rem;
+    @media (min-width: 880px){
+      .layout{ grid-template-rows:auto 1fr auto; }
+      .players-panel{ max-height:260px; }
+      .my-cards-wrap .card,
+      .my-cards-wrap .card-slot{
+        width:92px;
+        height:134px;
       }
     }
 
-    @media (max-width: 400px){
+    @media (max-width: 560px){
       :root{
-        --card-w:50px;
-        --card-h:74px;
-        --hole-w:62px;
-        --hole-h:90px;
+        --card-w:60px;
+        --card-h:88px;
       }
 
+      header{ padding:0 12px; }
+      .logo span{ font-size:0.82rem; }
+      .header-actions{ gap:6px; }
+      .header-btn{
+        min-width:78px;
+        min-height:38px;
+        padding:8px 10px;
+        font-size:0.82rem;
+      }
+      .shell{ width:min(100% - 16px, var(--max-w)); }
+      .player{ padding:9px 10px; }
+      .player-sub{
+        gap:8px;
+        font-size:0.72rem;
+      }
+      .community{ gap:6px; }
+      .my-cards-wrap .card,
+      .my-cards-wrap .card-slot{
+        width:76px;
+        height:110px;
+      }
+      .bet-controls{
+        grid-template-columns:1fr;
+      }
       .controls{
         grid-template-columns:1fr 1fr;
       }
-
-      .utility-row{
-        grid-template-columns:1fr 1fr;
-      }
-
-      .bet-controls{
-        grid-template-columns:1fr;
+      .action-btn{
+        min-height:46px;
+        font-size:0.9rem;
       }
     }
   </style>
@@ -590,14 +491,13 @@
   <header>
     <div class="logo">
       <img src="logo.png" alt="Logo" />
-      <span>William MacLean</span>
+      <span id="headerTitle">Poker</span>
     </div>
 
-    <nav>
-      <a href="index">Home</a>
-      <a href="poker">Lobby</a>
-      <span class="status-pill" id="statusPill">Status: loading</span>
-    </nav>
+    <div class="header-actions">
+      <button type="button" class="header-btn" id="startBtn">Start</button>
+      <button type="button" class="header-btn live-leave" id="leaveBtn">Leave</button>
+    </div>
   </header>
 
   <div id="authGate">
@@ -628,14 +528,6 @@
           </div>
         </div>
 
-        <div class="mini-info">
-          <span class="pill" id="gameNamePill">Loading...</span>
-          <span class="pill" id="blindsText">Blinds —</span>
-          <span class="pill accent" id="turnText">Turn —</span>
-          <span class="pill warning" id="phasePill">Waiting...</span>
-          <span class="pill warning" id="startInfoPill">Waiting...</span>
-        </div>
-
         <div class="community" id="communityCards"></div>
       </section>
 
@@ -654,15 +546,10 @@
         </div>
 
         <div class="controls" id="actionButtons">
-          <button type="button" class="ghost-btn" id="checkBtn">Check</button>
-          <button type="button" class="primary-btn" id="callBtn">Call</button>
-          <button type="button" class="primary-btn" id="betBtn">Bet</button>
-          <button type="button" class="danger-btn" id="foldBtn">Fold</button>
-        </div>
-
-        <div class="utility-row">
-          <button type="button" class="success-btn hidden" id="startBtn">Start Hand</button>
-          <button type="button" class="ghost-btn" id="leaveBtn">Leave Game</button>
+          <button type="button" class="action-btn" id="checkBtn">Check</button>
+          <button type="button" class="action-btn" id="callBtn">Call</button>
+          <button type="button" class="action-btn" id="betBtn">Bet</button>
+          <button type="button" class="action-btn" id="foldBtn">Fold</button>
         </div>
 
         <div class="status-line" id="statusLine">Loading game...</div>
@@ -715,15 +602,10 @@
       finished: "Finished"
     };
 
-    const statusPill = document.getElementById("statusPill");
     const authGate = document.getElementById("authGate");
     const gateCard = document.getElementById("gateCard");
+    const headerTitle = document.getElementById("headerTitle");
 
-    const gameNamePill = document.getElementById("gameNamePill");
-    const blindsText = document.getElementById("blindsText");
-    const turnText = document.getElementById("turnText");
-    const phasePill = document.getElementById("phasePill");
-    const startInfoPill = document.getElementById("startInfoPill");
     const potValue = document.getElementById("potValue");
     const toCallValue = document.getElementById("toCallValue");
     const playersList = document.getElementById("playersList");
@@ -741,7 +623,6 @@
     const betSlider = document.getElementById("betSlider");
     const betInput = document.getElementById("betInput");
     const betSizeText = document.getElementById("betSizeText");
-    const actionButtons = document.getElementById("actionButtons");
 
     const query = new URLSearchParams(window.location.search);
     const gameId = query.get("game") || "";
@@ -799,20 +680,28 @@
       return code ? `/cards/${code}.png` : "";
     }
 
-    function renderCard(code, hidden = false, combo = false) {
-      const comboClass = combo ? " combo" : "";
-      if (!code) return `<div class="card-slot${comboClass}"></div>`;
-      if (hidden) return `<div class="card-slot${comboClass}">??</div>`;
-      return `<div class="card${comboClass}"><img src="${cardUrl(code)}" alt="${escapeHtml(code)}" /></div>`;
+    function renderCard(code, hidden = false, highlighted = false) {
+      if (!code) return `<div class="card-slot"></div>`;
+      if (hidden) return `<div class="card-slot">??</div>`;
+      return `<div class="card ${highlighted ? "combo" : ""}"><img src="${cardUrl(code)}" alt="${escapeHtml(code)}" /></div>`;
     }
 
-    function renderCardRow(container, cards, { hidden = false, count = 0, highlightedCards = [] } = {}) {
+    function renderCardRow(container, cards, { hidden = false, count = 0, highlightCodes = [] } = {}) {
       const total = Math.max(count, cards?.length || 0);
-      const highlightSet = new Set(highlightedCards || []);
       const html = [];
+      const remainingHighlights = Array.isArray(highlightCodes) ? highlightCodes.slice() : [];
+
       for (let i = 0; i < total; i++) {
         const code = cards?.[i] || "";
-        html.push(renderCard(code, hidden && !!code, !!code && highlightSet.has(code)));
+        let highlighted = false;
+        if (code) {
+          const idx = remainingHighlights.indexOf(code);
+          if (idx >= 0) {
+            highlighted = true;
+            remainingHighlights.splice(idx, 1);
+          }
+        }
+        html.push(renderCard(code, hidden && !!code, highlighted));
       }
       container.innerHTML = html.join("");
     }
@@ -899,14 +788,15 @@
       const flush = suits.every(s => s === suits[0]);
 
       if (straightHigh && flush) {
-        return { category: 8, ranks: [straightHigh], name: straightHigh === 14 ? "Royal Flush" : "Straight Flush" };
+        return { category: 8, ranks: [straightHigh], name: straightHigh === 14 ? "Royal Flush" : "Straight Flush", cards: cards.slice() };
       }
 
       if (groups[0].count === 4) {
         return {
           category: 7,
           ranks: [groups[0].value, groups[1].value],
-          name: "Four of a Kind"
+          name: "Four of a Kind",
+          cards: cards.slice()
         };
       }
 
@@ -914,7 +804,8 @@
         return {
           category: 6,
           ranks: [groups[0].value, groups[1].value],
-          name: "Full House"
+          name: "Full House",
+          cards: cards.slice()
         };
       }
 
@@ -922,7 +813,8 @@
         return {
           category: 5,
           ranks: values,
-          name: "Flush"
+          name: "Flush",
+          cards: cards.slice()
         };
       }
 
@@ -930,7 +822,8 @@
         return {
           category: 4,
           ranks: [straightHigh],
-          name: "Straight"
+          name: "Straight",
+          cards: cards.slice()
         };
       }
 
@@ -939,7 +832,8 @@
         return {
           category: 3,
           ranks: [groups[0].value, ...kickers],
-          name: "Three of a Kind"
+          name: "Three of a Kind",
+          cards: cards.slice()
         };
       }
 
@@ -949,7 +843,8 @@
         return {
           category: 2,
           ranks: [...pairVals, kicker],
-          name: "Two Pair"
+          name: "Two Pair",
+          cards: cards.slice()
         };
       }
 
@@ -958,14 +853,16 @@
         return {
           category: 1,
           ranks: [groups[0].value, ...kickers],
-          name: "Pair"
+          name: "Pair",
+          cards: cards.slice()
         };
       }
 
       return {
         category: 0,
         ranks: values,
-        name: "High Card"
+        name: "High Card",
+        cards: cards.slice()
       };
     }
 
@@ -975,14 +872,50 @@
       return compareRankArrays(a.ranks, b.ranks);
     }
 
+    function getComboHighlightFromBest5(best) {
+      const cards = Array.isArray(best?.cards) ? best.cards.slice() : [];
+      if (!cards.length) return [];
+
+      const counts = {};
+      for (const card of cards) {
+        const v = cardValue(card);
+        counts[v] = (counts[v] || 0) + 1;
+      }
+
+      if (best.category === 8 || best.category === 6 || best.category === 5 || best.category === 4) {
+        return cards;
+      }
+
+      if (best.category === 7) {
+        const quadValue = Number(Object.keys(counts).find(v => counts[v] === 4));
+        return cards.filter(card => cardValue(card) === quadValue);
+      }
+
+      if (best.category === 3) {
+        const tripValue = Number(Object.keys(counts).find(v => counts[v] === 3));
+        return cards.filter(card => cardValue(card) === tripValue);
+      }
+
+      if (best.category === 2) {
+        const pairValues = Object.keys(counts).filter(v => counts[v] === 2).map(Number);
+        return cards.filter(card => pairValues.includes(cardValue(card)));
+      }
+
+      if (best.category === 1) {
+        const pairValue = Number(Object.keys(counts).find(v => counts[v] === 2));
+        return cards.filter(card => cardValue(card) === pairValue);
+      }
+
+      return [];
+    }
+
     function evaluate7(cards) {
       const all = combinations(cards, 5);
       let best = null;
       for (const combo of all) {
         const score = evaluate5(combo);
-        const scoreWithCards = { ...score, bestCards: combo.slice() };
-        if (!best || compareScores(scoreWithCards, best) > 0) {
-          best = scoreWithCards;
+        if (!best || compareScores(score, best) > 0) {
+          best = score;
         }
       }
       return best;
@@ -1028,10 +961,6 @@
 
     function getPot(game) {
       return Number(game?.pot || 0);
-    }
-
-    function getDealerIndex(game) {
-      return Number.isFinite(Number(game?.dealerIndex)) ? Number(game.dealerIndex) : -1;
     }
 
     function getCurrentBet(game) {
@@ -1168,31 +1097,6 @@
       }
 
       return nextIndex(players, Number(game.dealerIndex), p => !p.out && !p.folded && !p.allIn);
-    }
-
-    function moveToNextStreet(game) {
-      if (activeCount(game.players) <= 1) return finishByLastPlayer(game);
-
-      const currentPhase = String(game.phase || "preflop");
-      resetRoundBets(game);
-
-      if (currentPhase === "preflop") {
-        game.phase = "flop";
-        dealToBoard(game, 3);
-      } else if (currentPhase === "flop") {
-        game.phase = "turn";
-        dealToBoard(game, 1);
-      } else if (currentPhase === "turn") {
-        game.phase = "river";
-        dealToBoard(game, 1);
-      } else {
-        game.phase = "showdown";
-        return resolveShowdown(game);
-      }
-
-      const first = getStreetStartIndex(game, game.phase);
-      game.currentTurnIndex = first;
-      return game;
     }
 
     function finishByLastPlayer(game) {
@@ -1367,8 +1271,6 @@
         : nextIndex(players, bbIndex, p => !p.out && !p.folded && !p.allIn);
 
       players = players.map(p => ({ ...p, actedThisRound: false }));
-      if (players[sbIndex] && !players[sbIndex].out && !players[sbIndex].allIn) players[sbIndex].actedThisRound = false;
-      if (players[bbIndex] && !players[bbIndex].out && !players[bbIndex].allIn) players[bbIndex].actedThisRound = false;
 
       game.players = players;
       game.deck = deck;
@@ -1386,16 +1288,83 @@
       game.lastResultText = "";
       game.lastWinnerUids = [];
       game.handNumber = Number(game.handNumber || 0) + 1;
-      return game;
+      return settleGameAfterStateChange(game);
     }
 
     function playerCanCheck(game, player) {
       return getCallAmount(game, player) === 0;
     }
 
+    function moveToNextStreet(game) {
+      if (activeCount(game.players) <= 1) return finishByLastPlayer(game);
+
+      const currentPhase = String(game.phase || "preflop");
+      resetRoundBets(game);
+
+      if (currentPhase === "preflop") {
+        game.phase = "flop";
+        dealToBoard(game, 3);
+      } else if (currentPhase === "flop") {
+        game.phase = "turn";
+        dealToBoard(game, 1);
+      } else if (currentPhase === "turn") {
+        game.phase = "river";
+        dealToBoard(game, 1);
+      } else {
+        game.phase = "showdown";
+        return resolveShowdown(game);
+      }
+
+      const first = getStreetStartIndex(game, game.phase);
+      game.currentTurnIndex = first;
+      return game;
+    }
+
+    function settleGameAfterStateChange(game) {
+      let safety = 0;
+
+      while (safety < 10) {
+        safety++;
+
+        if (activeCount(game.players) <= 1) {
+          return finishByLastPlayer(game);
+        }
+
+        const active = game.players.filter(p => !p.out && !p.folded);
+        const canAct = active.filter(p => !p.allIn);
+
+        if (String(game.phase || "") === "finished") return game;
+
+        if (canAct.length === 0) {
+          if (String(game.phase || "") === "river" || String(game.phase || "") === "showdown") {
+            return resolveShowdown(game);
+          }
+          game = moveToNextStreet(game);
+          continue;
+        }
+
+        if (roundComplete(game)) {
+          game = moveToNextStreet(game);
+          continue;
+        }
+
+        if (Number(game.currentTurnIndex) < 0 || !game.players[Number(game.currentTurnIndex)] || game.players[Number(game.currentTurnIndex)].out || game.players[Number(game.currentTurnIndex)].folded || game.players[Number(game.currentTurnIndex)].allIn) {
+          const next = nextIndex(game.players, Math.max(-1, Number(game.currentTurnIndex)), p => !p.out && !p.folded && !p.allIn);
+          game.currentTurnIndex = next;
+        }
+
+        return game;
+      }
+
+      return game;
+    }
+
     function advanceTurnOrStreet(game) {
       if (activeCount(game.players) <= 1) return finishByLastPlayer(game);
-      if (roundComplete(game)) return moveToNextStreet(game);
+
+      if (roundComplete(game)) {
+        return settleGameAfterStateChange(moveToNextStreet(game));
+      }
 
       const next = nextIndex(
         game.players,
@@ -1404,7 +1373,7 @@
       );
 
       game.currentTurnIndex = next;
-      return game;
+      return settleGameAfterStateChange(game);
     }
 
     function normalizeGameState(rawGame) {
@@ -1595,14 +1564,13 @@
       betSizeText.textContent = money(value);
     }
 
-    function getComboHighlightForMe(game) {
-      const me = findMe(game);
-      if (!me || !Array.isArray(me.cards) || me.cards.length < 2) return [];
-      const community = getCommunityCards(game).filter(Boolean);
-      const available = [...me.cards, ...community];
-      if (available.length < 5) return [];
-      const best = evaluate7(available);
-      return Array.isArray(best?.bestCards) ? best.bestCards : [];
+    function getCurrentComboHighlight(game, player) {
+      if (!player || !Array.isArray(player.cards) || player.cards.length < 2) return [];
+      const board = getCommunityCards(game);
+      const allCards = [...player.cards, ...board];
+      if (allCards.length < 5) return [];
+      const best = evaluate7(allCards);
+      return getComboHighlightFromBest5(best);
     }
 
     function renderPlayers(game) {
@@ -1619,9 +1587,6 @@
         return;
       }
 
-      const dealerIndex = getDealerIndex(game);
-      const sbIndex = Number(game?.smallBlindIndex ?? -1);
-      const bbIndex = Number(game?.bigBlindIndex ?? -1);
       const lastWinners = Array.isArray(game?.lastWinnerUids) ? game.lastWinnerUids : [];
 
       playersList.innerHTML = players.map(player => {
@@ -1630,35 +1595,54 @@
         const folded = !!player.folded;
         const allIn = !!player.allIn;
         const out = !!player.out;
-        const wonLast = lastWinners.includes(player.uid);
         const bet = Number(player.bet || 0);
         const stack = Number(player.stack || 0);
 
-        let badges = "";
-        if (turn) badges += '<span class="pill accent">Turn</span>';
-        if (Number(player.seatIndex) === dealerIndex) badges += '<span class="pill">Dealer</span>';
-        if (Number(player.seatIndex) === sbIndex) badges += '<span class="pill warning">SB</span>';
-        if (Number(player.seatIndex) === bbIndex) badges += '<span class="pill warning">BB</span>';
-        if (allIn) badges += '<span class="pill warning">All In</span>';
-        if (folded) badges += '<span class="pill">Folded</span>';
-        if (out) badges += '<span class="pill danger">Busted</span>';
-        if (me) badges += '<span class="pill success">You</span>';
+        let rightText = "";
+        if (me) rightText = "You";
+        if (allIn) rightText = rightText ? `${rightText} • All In` : "All In";
+        if (folded) rightText = rightText ? `${rightText} • Folded` : "Folded";
+        if (out) rightText = rightText ? `${rightText} • Busted` : "Busted";
+        if (turn) rightText = rightText ? `${rightText} • Turn` : "Turn";
 
         return `
-          <div class="player ${me ? "me" : ""} ${turn ? "current-turn" : ""} ${wonLast ? "winner" : ""}">
+          <div class="player ${me ? "me" : ""} ${turn ? "current-turn" : ""} ${lastWinners.includes(player.uid) ? "round-winner" : ""}">
             <div class="player-main">
               <div class="player-name">${escapeHtml(getPublicName(player))}</div>
               <div class="player-sub">
                 <span>Stack ${money(stack)}</span>
                 <span>Bet ${money(bet)}</span>
-                <span>Seat ${escapeHtml(player.seat ?? "—")}</span>
                 ${player.winningText ? `<span>${escapeHtml(player.winningText)}</span>` : ""}
               </div>
             </div>
-            <div>${badges}</div>
+            <div class="player-sub">${rightText ? `<span>${escapeHtml(rightText)}</span>` : ""}</div>
           </div>
         `;
       }).join("");
+
+      if (String(game.phase || "") === "finished") {
+        const sorted = seatOrderPlayers(game);
+        const cardsHtml = sorted.map((p) => {
+          if (!Array.isArray(p.cards) || p.cards.length < 2) return "";
+          const combo = getCurrentComboHighlight(game, p);
+          return `
+            <div class="player" style="margin-top:8px;">
+              <div class="player-main">
+                <div class="player-name">${escapeHtml(getPublicName(p))}</div>
+                <div class="player-sub">
+                  <span>${escapeHtml(p.winningText || "")}</span>
+                </div>
+              </div>
+              <div style="display:flex;gap:6px;">
+                ${renderCard(p.cards[0], false, combo.includes(p.cards[0]))}
+                ${renderCard(p.cards[1], false, combo.includes(p.cards[1]))}
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        if (cardsHtml) playersList.innerHTML += cardsHtml;
+      }
     }
 
     function clearStartInterval() {
@@ -1677,42 +1661,30 @@
       const autoStartAtMs = toMillis(game?.autoStartAt);
       const finished = String(game?.phase || "") === "finished";
 
-      startBtn.classList.toggle("hidden", !(host && !started && count >= 2));
-      startBtn.disabled = !(host && !started && count >= 2);
+      startBtn.classList.remove("live-start");
+      startBtn.disabled = true;
+      startBtn.textContent = "Start";
 
-      if (started) {
-        startInfoPill.textContent = "Hand Live";
-        startInfoPill.className = "pill success";
-        return;
+      if (host && !started && count >= 2) {
+        startBtn.disabled = false;
+        startBtn.classList.add("live-start");
+        startBtn.textContent = finished ? "Next Hand" : "Start";
       }
 
-      if (count < 2) {
-        startInfoPill.textContent = "Need 2 players";
-        startInfoPill.className = "pill warning";
-        return;
+      if (!started && count >= 2 && autoStartAtMs) {
+        const tick = () => {
+          const diff = autoStartAtMs - Date.now();
+          if (diff <= 0) {
+            if (!host) headerTitle.textContent = "Starting...";
+            clearStartInterval();
+            return;
+          }
+          const seconds = Math.ceil(diff / 1000);
+          if (!host) headerTitle.textContent = `${game?.name || "Poker"} • ${seconds}s`;
+        };
+        tick();
+        startCountdownInterval = setInterval(tick, 500);
       }
-
-      if (!autoStartAtMs) {
-        startInfoPill.textContent = finished ? "Next hand soon" : (host ? "Ready to start" : "Waiting");
-        startInfoPill.className = host ? "pill accent" : "pill warning";
-        return;
-      }
-
-      const tick = () => {
-        const diff = autoStartAtMs - Date.now();
-        if (diff <= 0) {
-          startInfoPill.textContent = "Starting...";
-          startInfoPill.className = "pill success";
-          clearStartInterval();
-          return;
-        }
-        const seconds = Math.ceil(diff / 1000);
-        startInfoPill.textContent = `Starts in ${seconds}s`;
-        startInfoPill.className = "pill warning";
-      };
-
-      tick();
-      startCountdownInterval = setInterval(tick, 500);
     }
 
     async function ensureAutoStart(game) {
@@ -1722,9 +1694,9 @@
         if (String(game.status || "") === "active") return;
 
         const players = getPlayerCount(game);
-        const autoStartAtMs = toMillis(game?.autoStartAt);
 
         if (players >= 2) {
+          const autoStartAtMs = toMillis(game?.autoStartAt);
           if (!autoStartAtMs) {
             await updateDoc(doc(db, "pokerGames", gameId), {
               autoStartAt: Timestamp.fromMillis(Date.now() + 10000),
@@ -1733,7 +1705,7 @@
           } else if (autoStartAtMs <= Date.now()) {
             await startHand("auto");
           }
-        } else if (autoStartAtMs) {
+        } else if (toMillis(game?.autoStartAt)) {
           await updateDoc(doc(db, "pokerGames", gameId), {
             autoStartAt: null,
             updatedAt: serverTimestamp()
@@ -1744,51 +1716,57 @@
       }
     }
 
+    function setActionButtonState(button, enabled, liveClass) {
+      button.disabled = !enabled;
+      button.classList.remove("live-check", "live-call", "live-bet", "live-fold");
+      if (enabled) button.classList.add(liveClass);
+    }
+
     function renderGame(game) {
       currentGame = normalizeGameState(game);
 
       const me = findMe(currentGame);
       const community = getCommunityCards(currentGame);
       const myHoleCards = getMyCards(currentGame);
-      const comboHighlight = getComboHighlightForMe(currentGame);
 
-      gameNamePill.textContent = currentGame?.name || "Poker";
-      blindsText.textContent = `Blinds ${money(currentGame?.smallBlind || 0)} / ${money(currentGame?.bigBlind || 0)}`;
-      phasePill.textContent = formatPhase(currentGame.phase);
-      phasePill.className = `pill ${String(currentGame.status || "") === "active" ? "accent" : "warning"}`;
+      headerTitle.textContent = currentGame?.name
+        ? `${currentGame.name} • ${formatPhase(currentGame.phase)}`
+        : `Poker • ${formatPhase(currentGame.phase)}`;
 
       const turnPlayer = seatOrderPlayers(currentGame)[Number(currentGame?.currentTurnIndex ?? -1)] || null;
-      turnText.textContent = `Turn ${turnPlayer ? getPublicName(turnPlayer) : "—"}`;
       potValue.textContent = money(getPot(currentGame));
       toCallValue.textContent = money(me ? getCallAmount(currentGame, me) : 0);
 
       renderPlayers(currentGame);
-      renderCardRow(communityCards, community, { count: 5, highlightedCards: comboHighlight });
-      renderCardRow(myCards, myHoleCards, { count: 2, highlightedCards: comboHighlight });
+
+      const comboHighlight = me ? getCurrentComboHighlight(currentGame, me) : [];
+      renderCardRow(communityCards, community, { count: 5, highlightCodes: comboHighlight });
+      renderCardRow(myCards, myHoleCards, { count: 2, highlightCodes: comboHighlight });
 
       updateBetControls(currentGame);
       updateStartDisplay(currentGame);
 
       const started = String(currentGame.status || "") === "active";
-      const itIsMyTurn = !!me && Number(getMySortedIndex(currentGame)) === Number(currentGame.currentTurnIndex);
+      const myIndex = getMySortedIndex(currentGame);
+      const itIsMyTurn = !!me && Number(myIndex) === Number(currentGame.currentTurnIndex);
       const myFolded = !!me?.folded;
       const handDone = String(currentGame.phase || "") === "finished";
       const callAmount = getCallAmount(currentGame, me);
       const canCheck = !!me && playerCanCheck(currentGame, me);
       const minRaise = getMinRaise(currentGame);
 
-      actionButtons.classList.toggle("turn-active", !!itIsMyTurn && started && !handDone);
-      actionButtons.classList.toggle("not-turn", !itIsMyTurn || !started || handDone);
-
       checkBtn.textContent = "Check";
       callBtn.textContent = callAmount > 0 ? `Call ${money(callAmount)}` : "Call";
       betBtn.textContent = callAmount > 0 ? `Raise ${money(Number(betInput.value || 0))}` : `Bet ${money(Number(betInput.value || minRaise))}`;
 
       const disableActions = actionBusy || !started || !itIsMyTurn || myFolded || handDone || !!me?.allIn || !!me?.out;
-      checkBtn.disabled = disableActions || !canCheck;
-      callBtn.disabled = disableActions || canCheck;
-      betBtn.disabled = disableActions || Number(me?.stack || 0) <= 0;
-      foldBtn.disabled = disableActions;
+      setActionButtonState(checkBtn, !disableActions && canCheck, "live-check");
+      setActionButtonState(callBtn, !disableActions && !canCheck, "live-call");
+      setActionButtonState(betBtn, !disableActions && Number(me?.stack || 0) > 0, "live-bet");
+      setActionButtonState(foldBtn, !disableActions, "live-fold");
+
+      leaveBtn.disabled = actionBusy;
+      leaveBtn.classList.add("live-leave");
 
       if (!me) {
         statusLine.textContent = "You are not in this game.";
@@ -1796,7 +1774,7 @@
         statusLine.textContent = currentGame.lastResultText || (
           getPlayerCount(currentGame) < 2
             ? "Waiting for another player."
-            : (isHost(currentGame, currentUser?.uid) ? "Starts automatically in 10 seconds, or start early." : "Next hand starts automatically soon.")
+            : (isHost(currentGame, currentUser?.uid) ? "Start the hand when ready." : "Waiting for start.")
         );
       } else if (myFolded) {
         statusLine.textContent = "You folded.";
@@ -1914,7 +1892,7 @@
       unsubscribeGame = onSnapshot(doc(db, "pokerGames", gameId), async (snap) => {
         if (!snap.exists()) {
           statusLine.textContent = "Game not found.";
-          gameNamePill.textContent = "Game not found";
+          headerTitle.textContent = "Game not found";
           return;
         }
 
@@ -1932,13 +1910,11 @@
       currentUser = user;
 
       if (!user) {
-        statusPill.textContent = "Status: signed out";
         setGateMessage("Please sign in to use Poker.");
         return;
       }
 
       currentUserStatus = await getUserStatus(user.uid);
-      statusPill.textContent = `Status: ${currentUserStatus}`;
 
       if ((statusRank[currentUserStatus] ?? 0) < statusRank.plus) {
         setGateMessage("Poker is for plus and me.");
@@ -1970,7 +1946,7 @@
     betBtn.addEventListener("click", () => act("bet"));
     foldBtn.addEventListener("click", () => act("fold"));
     leaveBtn.addEventListener("click", leaveGame);
-    startBtn.addEventListener("click", () => startHand("manual"));
+    startBtn.addEventListener("click", () => startHand(String(currentGame?.phase || "") === "finished" ? "next-hand" : "manual"));
 
     window.addEventListener("beforeunload", clearStartInterval);
   </script>
