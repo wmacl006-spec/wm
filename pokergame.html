@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Poker Game | William MacLean</title>
   <link rel="icon" href="logo.png" />
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet" />
@@ -20,21 +20,24 @@
       --success:#57d38c;
       --danger:#ff6b81;
       --warning:#ffd166;
-      --header-h:64px;
+      --header-h:62px;
       --max-w:1100px;
       --shadow:0 18px 40px rgba(0,0,0,0.24);
-      --card-w:72px;
-      --card-h:104px;
-      --player-h:72px;
+
+      --card-w:64px;
+      --card-h:92px;
+      --hole-w:74px;
+      --hole-h:106px;
+      --player-h:62px;
     }
 
     *{ margin:0; padding:0; box-sizing:border-box; }
-    html, body{ min-height:100%; }
+    html, body{ height:100%; }
     body{
       font-family:"Comfortaa",sans-serif;
       background:var(--bg);
       color:var(--text);
-      overflow-x:hidden;
+      overflow:hidden;
     }
 
     a{ color:inherit; text-decoration:none; }
@@ -48,8 +51,8 @@
       display:flex;
       align-items:center;
       justify-content:space-between;
-      padding:0 18px;
-      background:rgba(0,0,0,0.72);
+      padding:0 16px;
+      background:rgba(0,0,0,0.78);
       backdrop-filter:blur(10px);
       border-bottom:1px solid rgba(255,255,255,0.05);
       z-index:200;
@@ -68,7 +71,7 @@
     }
 
     .logo span{
-      font-size:0.95rem;
+      font-size:0.92rem;
       font-weight:700;
       white-space:nowrap;
     }
@@ -76,12 +79,12 @@
     nav{
       display:flex;
       align-items:center;
-      gap:14px;
+      gap:12px;
       flex-wrap:wrap;
     }
 
     nav a{
-      font-size:0.84rem;
+      font-size:0.82rem;
       color:#cfcfcf;
       transition:0.2s;
     }
@@ -89,7 +92,7 @@
     nav a:hover{ color:#fff; }
 
     .status-pill{
-      font-size:0.72rem;
+      font-size:0.7rem;
       padding:7px 10px;
       border:1px solid rgba(255,255,255,0.1);
       color:#fff;
@@ -97,8 +100,8 @@
     }
 
     .page{
-      min-height:100vh;
-      padding-top:calc(var(--header-h) + 12px);
+      height:100vh;
+      padding-top:calc(var(--header-h) + 8px);
     }
 
     #authGate{
@@ -126,42 +129,140 @@
     }
 
     .shell{
-      width:min(var(--max-w), calc(100% - 24px));
+      width:min(var(--max-w), calc(100% - 16px));
+      height:calc(100vh - var(--header-h) - 12px);
       margin:0 auto;
-      padding:0 0 18px;
       display:grid;
-      gap:12px;
+      grid-template-rows:minmax(0, 1.1fr) minmax(0, 0.95fr) minmax(0, 1.15fr);
+      gap:8px;
+      padding-bottom:8px;
     }
 
     .panel{
       border:1px solid var(--line);
       background:var(--panel-2);
       box-shadow:var(--shadow);
+      min-height:0;
     }
 
-    .meta-strip{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
+    .players-panel{
+      padding:8px;
+      overflow:auto;
+      min-height:0;
+    }
+
+    .players-list{
+      display:grid;
+      gap:6px;
+    }
+
+    .player{
+      min-height:var(--player-h);
+      border:1px solid var(--line);
+      background:rgba(255,255,255,0.02);
+      padding:8px 10px;
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
       gap:10px;
-      padding:12px 14px;
-      flex-wrap:wrap;
+      align-items:center;
+      transition:0.14s ease;
     }
 
-    .meta-left,
-    .meta-right{
+    .player.current-turn{
+      border-color:rgba(176,11,85,0.72);
+      background:rgba(176,11,85,0.11);
+      box-shadow:inset 0 0 0 1px rgba(176,11,85,0.28);
+    }
+
+    .player.winner{
+      border-color:rgba(87,211,140,0.78);
+      background:rgba(87,211,140,0.08);
+      box-shadow:inset 0 0 0 1px rgba(87,211,140,0.22);
+    }
+
+    .player.me{
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06);
+    }
+
+    .player.current-turn.winner{
+      box-shadow:
+        inset 0 0 0 1px rgba(87,211,140,0.22),
+        0 0 0 1px rgba(176,11,85,0.18);
+    }
+
+    .player-main{ min-width:0; }
+
+    .player-name{
+      font-size:0.88rem;
+      font-weight:700;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      margin-bottom:5px;
+    }
+
+    .player-sub{
       display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      color:var(--muted);
+      font-size:0.71rem;
+      line-height:1.3;
+    }
+
+    .center-panel{
+      padding:10px 8px 12px;
+      display:grid;
+      grid-template-rows:auto auto auto;
+      gap:10px;
+      align-content:start;
+      min-height:0;
+    }
+
+    .board-top{
+      display:flex;
+      justify-content:center;
+      align-items:center;
       gap:8px;
       flex-wrap:wrap;
+      text-align:center;
+    }
+
+    .pot-box{
+      border:1px solid rgba(176,11,85,0.45);
+      background:rgba(176,11,85,0.12);
+      padding:9px 12px;
+      min-width:110px;
+    }
+
+    .pot-label{
+      color:var(--muted);
+      font-size:0.68rem;
+      text-transform:uppercase;
+      letter-spacing:0.08em;
+      margin-bottom:4px;
+    }
+
+    .pot-value{
+      font-size:1.12rem;
+      font-weight:800;
+      letter-spacing:-0.04em;
+    }
+
+    .mini-info{
+      display:flex;
+      justify-content:center;
       align-items:center;
+      gap:6px;
+      flex-wrap:wrap;
     }
 
     .pill{
       display:inline-flex;
       align-items:center;
-      padding:7px 10px;
+      padding:6px 9px;
       border:1px solid rgba(255,255,255,0.1);
-      font-size:0.72rem;
+      font-size:0.68rem;
       white-space:nowrap;
       background:rgba(255,255,255,0.03);
     }
@@ -186,105 +287,10 @@
       background:rgba(255,107,129,0.1);
     }
 
-    .layout{
-      display:grid;
-      grid-template-rows:auto auto auto;
-      gap:12px;
-      min-height:calc(100vh - var(--header-h) - 48px);
-    }
-
-    .players-panel{
-      padding:10px;
-      max-height:220px;
-      overflow:auto;
-    }
-
-    .players-list{
-      display:grid;
-      gap:8px;
-    }
-
-    .player{
-      min-height:var(--player-h);
-      border:1px solid var(--line);
-      background:rgba(255,255,255,0.02);
-      padding:10px 12px;
-      display:grid;
-      grid-template-columns:minmax(0,1fr) auto;
-      gap:10px;
-      align-items:center;
-    }
-
-    .player.current-turn{
-      border-color:rgba(176,11,85,0.65);
-      background:rgba(176,11,85,0.10);
-    }
-
-    .player.me{
-      box-shadow:inset 0 0 0 1px rgba(255,255,255,0.07);
-    }
-
-    .player-main{ min-width:0; }
-
-    .player-name{
-      font-size:0.92rem;
-      font-weight:700;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      margin-bottom:6px;
-    }
-
-    .player-sub{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      color:var(--muted);
-      font-size:0.76rem;
-      line-height:1.35;
-    }
-
-    .center-panel{
-      padding:14px 10px 16px;
-      display:grid;
-      gap:14px;
-      align-content:start;
-    }
-
-    .board-top{
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      gap:12px;
-      flex-wrap:wrap;
-      text-align:center;
-    }
-
-    .pot-box{
-      border:1px solid rgba(176,11,85,0.5);
-      background:rgba(176,11,85,0.12);
-      padding:10px 14px;
-      min-width:130px;
-    }
-
-    .pot-label{
-      color:var(--muted);
-      font-size:0.72rem;
-      text-transform:uppercase;
-      letter-spacing:0.08em;
-      margin-bottom:6px;
-    }
-
-    .pot-value{
-      font-size:1.3rem;
-      font-weight:800;
-      letter-spacing:-0.04em;
-    }
-
     .community{
       display:flex;
       justify-content:center;
-      gap:8px;
+      gap:6px;
       flex-wrap:nowrap;
       overflow:hidden;
     }
@@ -296,6 +302,8 @@
       border:1px solid var(--line);
       background:#090909;
       flex:0 0 auto;
+      position:relative;
+      overflow:hidden;
     }
 
     .card img{
@@ -309,38 +317,44 @@
       align-items:center;
       justify-content:center;
       color:#5e5e5e;
-      font-size:0.72rem;
+      font-size:0.68rem;
       letter-spacing:0.12em;
     }
 
+    .card.combo,
+    .card-slot.combo{
+      border-color:rgba(255,209,102,0.85);
+      box-shadow:inset 0 0 0 1px rgba(255,209,102,0.28), 0 0 12px rgba(255,209,102,0.12);
+    }
+
     .bottom-panel{
-      padding:12px 10px 14px;
+      padding:10px 8px 10px;
       display:grid;
-      gap:12px;
-      position:sticky;
-      bottom:0;
-      background:linear-gradient(180deg, rgba(5,5,5,0.95), rgba(5,5,5,1));
-      z-index:5;
+      grid-template-rows:auto auto auto auto;
+      gap:8px;
+      min-height:0;
+      align-content:start;
     }
 
     .my-cards-wrap{
       display:flex;
       justify-content:center;
-      gap:10px;
+      gap:8px;
+      min-height:var(--hole-h);
     }
 
     .my-cards-wrap .card,
     .my-cards-wrap .card-slot{
-      width:84px;
-      height:122px;
+      width:var(--hole-w);
+      height:var(--hole-h);
     }
 
     .bet-panel{
       border:1px solid var(--line);
       background:rgba(255,255,255,0.02);
-      padding:12px;
+      padding:10px;
       display:grid;
-      gap:10px;
+      gap:8px;
     }
 
     .bet-row{
@@ -353,20 +367,20 @@
 
     .bet-label{
       color:#fff;
-      font-size:0.85rem;
+      font-size:0.8rem;
       font-weight:700;
     }
 
     .bet-value{
       color:var(--accent);
-      font-size:0.95rem;
+      font-size:0.9rem;
       font-weight:700;
     }
 
     .bet-controls{
       display:grid;
-      grid-template-columns:1fr 110px;
-      gap:10px;
+      grid-template-columns:1fr 98px;
+      gap:8px;
       align-items:center;
     }
 
@@ -378,11 +392,11 @@
 
     input[type="number"]{
       width:100%;
-      min-height:44px;
+      min-height:40px;
       border:1px solid var(--line);
       background:#0a0a0a;
       color:#fff;
-      padding:10px 12px;
+      padding:8px 10px;
       outline:none;
     }
 
@@ -390,6 +404,28 @@
       display:grid;
       grid-template-columns:repeat(4, 1fr);
       gap:8px;
+      transition:0.16s ease;
+    }
+
+    .controls.turn-active button{
+      opacity:1;
+      filter:none;
+    }
+
+    .controls.turn-active .primary-btn{
+      border-color:rgba(176,11,85,0.9);
+      background:rgba(176,11,85,0.24);
+      box-shadow:0 0 0 1px rgba(176,11,85,0.18);
+    }
+
+    .controls.turn-active .danger-btn{
+      border-color:rgba(255,107,129,0.62);
+      background:rgba(255,107,129,0.18);
+    }
+
+    .controls.not-turn button{
+      opacity:0.45;
+      filter:saturate(0.6);
     }
 
     .utility-row{
@@ -400,11 +436,11 @@
 
     button{
       width:100%;
-      min-height:48px;
+      min-height:44px;
       border:1px solid var(--line);
       background:#0a0a0a;
       color:var(--text);
-      padding:12px 10px;
+      padding:10px 10px;
       font-weight:700;
       cursor:pointer;
       transition:0.14s ease;
@@ -413,14 +449,14 @@
     button:hover{ transform:translateY(-1px); }
 
     button:disabled{
-      opacity:0.5;
+      opacity:0.45;
       cursor:not-allowed;
       transform:none;
     }
 
     .primary-btn{
-      border-color:rgba(176,11,85,0.75);
-      background:rgba(176,11,85,0.16);
+      border-color:rgba(176,11,85,0.65);
+      background:rgba(176,11,85,0.15);
     }
 
     .ghost-btn{
@@ -440,58 +476,112 @@
     .status-line{
       min-height:1.2em;
       color:var(--muted);
-      font-size:0.85rem;
+      font-size:0.82rem;
       text-align:center;
-      line-height:1.4;
+      line-height:1.35;
     }
 
     .hidden{ display:none !important; }
 
-    @media (min-width: 880px){
-      .layout{ grid-template-rows:auto 1fr auto; }
-      .players-panel{ max-height:260px; }
-      .my-cards-wrap .card,
-      .my-cards-wrap .card-slot{
-        width:92px;
-        height:134px;
+    @media (max-width: 560px){
+      :root{
+        --card-w:56px;
+        --card-h:82px;
+        --hole-w:68px;
+        --hole-h:98px;
+        --player-h:58px;
+        --header-h:58px;
+      }
+
+      header{ padding:0 12px; }
+      .logo span{ font-size:0.84rem; }
+      nav{ gap:8px; }
+      nav a{ font-size:0.76rem; }
+      .status-pill{ font-size:0.65rem; padding:6px 8px; }
+
+      .shell{
+        width:calc(100% - 10px);
+        gap:6px;
+        grid-template-rows:minmax(0, 1fr) minmax(0, 0.88fr) minmax(0, 1.18fr);
+      }
+
+      .player{
+        padding:7px 8px;
+        gap:8px;
+      }
+
+      .player-name{
+        font-size:0.82rem;
+        margin-bottom:4px;
+      }
+
+      .player-sub{
+        gap:6px;
+        font-size:0.66rem;
+      }
+
+      .community{ gap:5px; }
+      .my-cards-wrap{ gap:6px; }
+      .center-panel{ padding:8px 6px 10px; gap:8px; }
+      .bottom-panel{ padding:8px 6px 8px; gap:7px; }
+      .bet-panel{ padding:8px; gap:7px; }
+
+      .bet-controls{
+        grid-template-columns:1fr 86px;
+        gap:6px;
+      }
+
+      .controls{
+        gap:6px;
+      }
+
+      .utility-row{
+        gap:6px;
+      }
+
+      button{
+        min-height:42px;
+        font-size:0.84rem;
+        padding:9px 8px;
+      }
+
+      .pot-box{
+        min-width:96px;
+        padding:8px 10px;
+      }
+
+      .pot-value{
+        font-size:1rem;
+      }
+
+      .pill{
+        font-size:0.62rem;
+        padding:5px 7px;
+      }
+
+      .status-line{
+        font-size:0.76rem;
       }
     }
 
-    @media (max-width: 560px){
+    @media (max-width: 400px){
       :root{
-        --card-w:60px;
-        --card-h:88px;
+        --card-w:50px;
+        --card-h:74px;
+        --hole-w:62px;
+        --hole-h:90px;
       }
 
-      header{ padding:0 14px; }
-      .logo span{ font-size:0.88rem; }
-      nav{ gap:10px; }
-      nav a{ font-size:0.78rem; }
-      .shell{ width:min(100% - 16px, var(--max-w)); }
-      .meta-strip{ padding:10px 12px; }
-      .player{ padding:9px 10px; }
-      .player-sub{
-        gap:8px;
-        font-size:0.72rem;
-      }
-      .community{ gap:6px; }
-      .my-cards-wrap .card,
-      .my-cards-wrap .card-slot{
-        width:76px;
-        height:110px;
-      }
-      .bet-controls{
-        grid-template-columns:1fr;
-      }
       .controls{
         grid-template-columns:1fr 1fr;
       }
+
       .utility-row{
-        grid-template-columns:1fr;
+        grid-template-columns:1fr 1fr;
       }
-      button{
-        min-height:46px;
-        font-size:0.9rem;
+
+      .bet-controls{
+        grid-template-columns:1fr;
       }
     }
   </style>
@@ -516,18 +606,6 @@
 
   <main class="page">
     <section class="shell">
-      <section class="panel meta-strip">
-        <div class="meta-left">
-          <span class="pill" id="gameNamePill">Loading...</span>
-          <span class="pill" id="blindsText">Blinds —</span>
-          <span class="pill accent" id="turnText">Turn —</span>
-        </div>
-        <div class="meta-right">
-          <span class="pill warning" id="phasePill">Waiting...</span>
-          <span class="pill warning" id="startInfoPill">Waiting...</span>
-        </div>
-      </section>
-
       <section class="panel players-panel">
         <div class="players-list" id="playersList">
           <div class="player">
@@ -548,6 +626,14 @@
             <div class="pot-label">To Call</div>
             <div class="pot-value" id="toCallValue">$0</div>
           </div>
+        </div>
+
+        <div class="mini-info">
+          <span class="pill" id="gameNamePill">Loading...</span>
+          <span class="pill" id="blindsText">Blinds —</span>
+          <span class="pill accent" id="turnText">Turn —</span>
+          <span class="pill warning" id="phasePill">Waiting...</span>
+          <span class="pill warning" id="startInfoPill">Waiting...</span>
         </div>
 
         <div class="community" id="communityCards"></div>
@@ -576,7 +662,6 @@
 
         <div class="utility-row">
           <button type="button" class="success-btn hidden" id="startBtn">Start Hand</button>
-          <button type="button" class="success-btn hidden" id="nextHandBtn">Next Hand</button>
           <button type="button" class="ghost-btn" id="leaveBtn">Leave Game</button>
         </div>
 
@@ -652,11 +737,11 @@
     const foldBtn = document.getElementById("foldBtn");
     const leaveBtn = document.getElementById("leaveBtn");
     const startBtn = document.getElementById("startBtn");
-    const nextHandBtn = document.getElementById("nextHandBtn");
 
     const betSlider = document.getElementById("betSlider");
     const betInput = document.getElementById("betInput");
     const betSizeText = document.getElementById("betSizeText");
+    const actionButtons = document.getElementById("actionButtons");
 
     const query = new URLSearchParams(window.location.search);
     const gameId = query.get("game") || "";
@@ -714,18 +799,20 @@
       return code ? `/cards/${code}.png` : "";
     }
 
-    function renderCard(code, hidden = false) {
-      if (!code) return `<div class="card-slot"></div>`;
-      if (hidden) return `<div class="card-slot">??</div>`;
-      return `<div class="card"><img src="${cardUrl(code)}" alt="${escapeHtml(code)}" /></div>`;
+    function renderCard(code, hidden = false, combo = false) {
+      const comboClass = combo ? " combo" : "";
+      if (!code) return `<div class="card-slot${comboClass}"></div>`;
+      if (hidden) return `<div class="card-slot${comboClass}">??</div>`;
+      return `<div class="card${comboClass}"><img src="${cardUrl(code)}" alt="${escapeHtml(code)}" /></div>`;
     }
 
-    function renderCardRow(container, cards, { hidden = false, count = 0 } = {}) {
+    function renderCardRow(container, cards, { hidden = false, count = 0, highlightedCards = [] } = {}) {
       const total = Math.max(count, cards?.length || 0);
+      const highlightSet = new Set(highlightedCards || []);
       const html = [];
       for (let i = 0; i < total; i++) {
         const code = cards?.[i] || "";
-        html.push(renderCard(code, hidden && !!code));
+        html.push(renderCard(code, hidden && !!code, !!code && highlightSet.has(code)));
       }
       container.innerHTML = html.join("");
     }
@@ -893,8 +980,9 @@
       let best = null;
       for (const combo of all) {
         const score = evaluate5(combo);
-        if (!best || compareScores(score, best) > 0) {
-          best = score;
+        const scoreWithCards = { ...score, bestCards: combo.slice() };
+        if (!best || compareScores(scoreWithCards, best) > 0) {
+          best = scoreWithCards;
         }
       }
       return best;
@@ -981,31 +1069,10 @@
       return Array.isArray(game?.players) ? game.players.length : 0;
     }
 
-    function getActivePlayers(players) {
-      return players.filter(p => !p.out);
-    }
-
-    function getInHandPlayers(players) {
-      return players.filter(p => !p.out && !p.folded);
-    }
-
-    function getCanActPlayers(players) {
-      return players.filter(p => !p.out && !p.folded && !p.allIn);
-    }
-
     function nextIndex(players, fromIndex, predicate) {
       if (!players.length) return -1;
       for (let step = 1; step <= players.length; step++) {
         const idx = (fromIndex + step) % players.length;
-        if (predicate(players[idx], idx)) return idx;
-      }
-      return -1;
-    }
-
-    function firstIndexFrom(players, startIndex, predicate) {
-      if (!players.length) return -1;
-      for (let step = 0; step < players.length; step++) {
-        const idx = (startIndex + step) % players.length;
         if (predicate(players[idx], idx)) return idx;
       }
       return -1;
@@ -1039,10 +1106,6 @@
 
     function activeCount(players) {
       return players.filter(p => !p.out && !p.folded).length;
-    }
-
-    function aliveCount(players) {
-      return players.filter(p => !p.out).length;
     }
 
     function removeBustedPlayers(players) {
@@ -1532,6 +1595,16 @@
       betSizeText.textContent = money(value);
     }
 
+    function getComboHighlightForMe(game) {
+      const me = findMe(game);
+      if (!me || !Array.isArray(me.cards) || me.cards.length < 2) return [];
+      const community = getCommunityCards(game).filter(Boolean);
+      const available = [...me.cards, ...community];
+      if (available.length < 5) return [];
+      const best = evaluate7(available);
+      return Array.isArray(best?.bestCards) ? best.bestCards : [];
+    }
+
     function renderPlayers(game) {
       const players = getSortedPlayers(game);
 
@@ -1557,6 +1630,7 @@
         const folded = !!player.folded;
         const allIn = !!player.allIn;
         const out = !!player.out;
+        const wonLast = lastWinners.includes(player.uid);
         const bet = Number(player.bet || 0);
         const stack = Number(player.stack || 0);
 
@@ -1568,11 +1642,10 @@
         if (allIn) badges += '<span class="pill warning">All In</span>';
         if (folded) badges += '<span class="pill">Folded</span>';
         if (out) badges += '<span class="pill danger">Busted</span>';
-        if (lastWinners.includes(player.uid)) badges += '<span class="pill success">Won</span>';
         if (me) badges += '<span class="pill success">You</span>';
 
         return `
-          <div class="player ${me ? "me" : ""} ${turn ? "current-turn" : ""}">
+          <div class="player ${me ? "me" : ""} ${turn ? "current-turn" : ""} ${wonLast ? "winner" : ""}">
             <div class="player-main">
               <div class="player-name">${escapeHtml(getPublicName(player))}</div>
               <div class="player-sub">
@@ -1602,12 +1675,10 @@
       const host = isHost(game, currentUser?.uid);
       const count = getPlayerCount(game);
       const autoStartAtMs = toMillis(game?.autoStartAt);
+      const finished = String(game?.phase || "") === "finished";
 
       startBtn.classList.toggle("hidden", !(host && !started && count >= 2));
       startBtn.disabled = !(host && !started && count >= 2);
-
-      nextHandBtn.classList.toggle("hidden", !(host && !started && String(game?.phase || "") === "finished"));
-      nextHandBtn.disabled = !(host && !started && String(game?.phase || "") === "finished" && count >= 2);
 
       if (started) {
         startInfoPill.textContent = "Hand Live";
@@ -1622,8 +1693,8 @@
       }
 
       if (!autoStartAtMs) {
-        startInfoPill.textContent = host ? "Ready to start" : "Waiting to start";
-        startInfoPill.className = "pill accent";
+        startInfoPill.textContent = finished ? "Next hand soon" : (host ? "Ready to start" : "Waiting");
+        startInfoPill.className = host ? "pill accent" : "pill warning";
         return;
       }
 
@@ -1651,18 +1722,18 @@
         if (String(game.status || "") === "active") return;
 
         const players = getPlayerCount(game);
+        const autoStartAtMs = toMillis(game?.autoStartAt);
 
         if (players >= 2) {
-          const autoStartAtMs = toMillis(game?.autoStartAt);
           if (!autoStartAtMs) {
             await updateDoc(doc(db, "pokerGames", gameId), {
-              autoStartAt: Timestamp.fromMillis(Date.now() + 60000),
+              autoStartAt: Timestamp.fromMillis(Date.now() + 10000),
               updatedAt: serverTimestamp()
             });
           } else if (autoStartAtMs <= Date.now()) {
             await startHand("auto");
           }
-        } else if (toMillis(game?.autoStartAt)) {
+        } else if (autoStartAtMs) {
           await updateDoc(doc(db, "pokerGames", gameId), {
             autoStartAt: null,
             updatedAt: serverTimestamp()
@@ -1679,6 +1750,7 @@
       const me = findMe(currentGame);
       const community = getCommunityCards(currentGame);
       const myHoleCards = getMyCards(currentGame);
+      const comboHighlight = getComboHighlightForMe(currentGame);
 
       gameNamePill.textContent = currentGame?.name || "Poker";
       blindsText.textContent = `Blinds ${money(currentGame?.smallBlind || 0)} / ${money(currentGame?.bigBlind || 0)}`;
@@ -1691,23 +1763,22 @@
       toCallValue.textContent = money(me ? getCallAmount(currentGame, me) : 0);
 
       renderPlayers(currentGame);
-      renderCardRow(communityCards, community, { count: 5 });
-
-      const showAllCards = String(currentGame.phase || "") === "finished";
-      const myIndex = getMySortedIndex(currentGame);
-      const cardsToShow = myHoleCards;
-      renderCardRow(myCards, cardsToShow, { count: 2 });
+      renderCardRow(communityCards, community, { count: 5, highlightedCards: comboHighlight });
+      renderCardRow(myCards, myHoleCards, { count: 2, highlightedCards: comboHighlight });
 
       updateBetControls(currentGame);
       updateStartDisplay(currentGame);
 
       const started = String(currentGame.status || "") === "active";
-      const itIsMyTurn = !!me && Number(myIndex) === Number(currentGame.currentTurnIndex);
+      const itIsMyTurn = !!me && Number(getMySortedIndex(currentGame)) === Number(currentGame.currentTurnIndex);
       const myFolded = !!me?.folded;
       const handDone = String(currentGame.phase || "") === "finished";
       const callAmount = getCallAmount(currentGame, me);
       const canCheck = !!me && playerCanCheck(currentGame, me);
       const minRaise = getMinRaise(currentGame);
+
+      actionButtons.classList.toggle("turn-active", !!itIsMyTurn && started && !handDone);
+      actionButtons.classList.toggle("not-turn", !itIsMyTurn || !started || handDone);
 
       checkBtn.textContent = "Check";
       callBtn.textContent = callAmount > 0 ? `Call ${money(callAmount)}` : "Call";
@@ -1725,7 +1796,7 @@
         statusLine.textContent = currentGame.lastResultText || (
           getPlayerCount(currentGame) < 2
             ? "Waiting for another player."
-            : (isHost(currentGame, currentUser?.uid) ? "Start the hand when ready." : "Waiting for host or auto-start.")
+            : (isHost(currentGame, currentUser?.uid) ? "Starts automatically in 10 seconds, or start early." : "Next hand starts automatically soon.")
         );
       } else if (myFolded) {
         statusLine.textContent = "You folded.";
@@ -1735,31 +1806,6 @@
           : "Your turn.";
       } else {
         statusLine.textContent = turnPlayer ? `${getPublicName(turnPlayer)} to act.` : "Waiting...";
-      }
-
-      if (showAllCards) {
-        const sorted = seatOrderPlayers(currentGame);
-        const cardsHtml = sorted.map((p, idx) => {
-          if (!Array.isArray(p.cards) || p.cards.length < 2) return "";
-          return `
-            <div class="player" style="margin-top:8px;">
-              <div class="player-main">
-                <div class="player-name">${escapeHtml(getPublicName(p))}</div>
-                <div class="player-sub">
-                  <span>${escapeHtml(p.winningText || "")}</span>
-                </div>
-              </div>
-              <div style="display:flex;gap:6px;">
-                ${renderCard(p.cards[0], false)}
-                ${renderCard(p.cards[1], false)}
-              </div>
-            </div>
-          `;
-        }).join("");
-
-        if (cardsHtml) {
-          playersList.innerHTML += cardsHtml;
-        }
       }
     }
 
@@ -1925,7 +1971,6 @@
     foldBtn.addEventListener("click", () => act("fold"));
     leaveBtn.addEventListener("click", leaveGame);
     startBtn.addEventListener("click", () => startHand("manual"));
-    nextHandBtn.addEventListener("click", () => startHand("next-hand"));
 
     window.addEventListener("beforeunload", clearStartInterval);
   </script>
