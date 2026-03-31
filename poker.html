@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Poker Lobby | William MacLean</title>
+  <link rel="icon" href="logo.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root{
+      --bg:#000;
+      --panel:#050505;
+      --panel-2:#0a0a0a;
+      --panel-3:rgba(255,255,255,0.03);
+      --text:#fff;
+      --muted:#8d8d8d;
+      --line:rgba(255,255,255,0.08);
+      --line-strong:rgba(255,255,255,0.14);
+      --accent:#b00b55;
+      --accent-2:#cf2d7a;
+      --danger:#ff6b81;
+      --success:#57d38c;
+      --warning:#ffd166;
+      --header-h:64px;
+      --max-w:1400px;
+      --shadow:0 18px 40px rgba(0,0,0,0.24);
+      --radius:0px;
+    }
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
+
+    html, body{
+      min-height:100%;
+    }
+
+    body{
+      font-family:"Comfortaa",sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      overflow-x:hidden;
+    }
+
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    button,
+    input,
+    select{
+      font:inherit;
+    }
+
+    header{
+      position:fixed;
+      inset:0 0 auto 0;
+      height:var(--header-h);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 18px;
+      background:rgba(0,0,0,0.72);
+      backdrop-filter:blur(10px);
+      border-bottom:1px solid rgba(255,255,255,0.05);
+      z-index:200;
+    }
+
+    .logo{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+
+    .logo img{
+      width:28px;
+      height:28px;
+      display:block;
+    }
+
+    .logo span{
+      font-size:0.95rem;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    nav{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+
+    nav a{
+      font-size:0.84rem;
+      color:#cfcfcf;
+      transition:0.2s;
+    }
+
+    nav a:hover{
+      color:#fff;
+    }
+
+    .status-pill{
+      font-size:0.72rem;
+      padding:7px 10px;
+      border:1px solid rgba(255,255,255,0.1);
+      color:#fff;
+      background:rgba(255,255,255,0.04);
+    }
+
+    .page{
+      min-height:100vh;
+      padding-top:var(--header-h);
+    }
+
+    .hero-wrap{
+      width:100%;
+      border-bottom:1px solid rgba(255,255,255,0.05);
+      background:
+        radial-gradient(circle at top left, rgba(176,11,85,0.15), transparent 32%),
+        radial-gradient(circle at top right, rgba(255,255,255,0.04), transparent 28%),
+        linear-gradient(180deg, rgba(255,255,255,0.015), transparent);
+    }
+
+    .hero{
+      width:min(var(--max-w), calc(100% - 32px));
+      margin:0 auto;
+      padding:42px 0 28px;
+    }
+
+    .hero h1{
+      font-size:clamp(2.2rem, 7vw, 4.2rem);
+      line-height:0.95;
+      letter-spacing:-0.05em;
+      margin-bottom:10px;
+    }
+
+    .hero p{
+      color:var(--muted);
+      font-size:0.92rem;
+      line-height:1.5;
+      max-width:720px;
+    }
+
+    .app-shell{
+      width:min(var(--max-w), calc(100% - 32px));
+      margin:0 auto;
+      padding:18px 0 32px;
+    }
+
+    #authGate{
+      position:fixed;
+      inset:var(--header-h) 0 0 0;
+      background:rgba(0,0,0,0.82);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:150;
+      backdrop-filter:blur(8px);
+    }
+
+    #authGate.hidden{
+      display:none;
+    }
+
+    .gate-card{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,0.03);
+      padding:24px 26px;
+      color:#d8d8d8;
+      font-size:0.92rem;
+      text-align:center;
+      max-width:420px;
+      line-height:1.5;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,0.02);
+      padding:20px;
+      margin-bottom:16px;
+      box-shadow:var(--shadow);
+    }
+
+    .topbar h2{
+      font-size:clamp(1.2rem, 2.4vw, 2rem);
+      letter-spacing:-0.04em;
+    }
+
+    .tag{
+      font-size:0.72rem;
+      text-transform:uppercase;
+      letter-spacing:0.1em;
+      color:var(--accent);
+      font-weight:700;
+      margin-bottom:6px;
+    }
+
+    .panel,
+    .card{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,0.03);
+      box-shadow:var(--shadow);
+    }
+
+    .panel{
+      padding:18px;
+      margin-bottom:16px;
+    }
+
+    .card{
+      padding:18px;
+      min-height:108px;
+    }
+
+    .panel-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .panel-head h2{
+      font-size:1rem;
+      letter-spacing:-0.02em;
+    }
+
+    .panel-subtle{
+      color:var(--muted);
+      font-size:0.82rem;
+      font-weight:600;
+      text-align:right;
+    }
+
+    .stats-grid{
+      display:grid;
+      grid-template-columns:repeat(5, 1fr);
+      gap:14px;
+      margin-bottom:16px;
+    }
+
+    .label{
+      color:var(--muted);
+      font-size:0.76rem;
+      text-transform:uppercase;
+      letter-spacing:0.08em;
+      margin-bottom:10px;
+      font-weight:700;
+    }
+
+    .value{
+      font-size:clamp(1.2rem, 2vw, 2rem);
+      font-weight:800;
+      letter-spacing:-0.04em;
+      line-height:1.1;
+      word-break:break-word;
+    }
+
+    .main-layout{
+      display:grid;
+      grid-template-columns:minmax(0, 1.45fr) minmax(320px, 0.95fr);
+      gap:16px;
+      align-items:start;
+    }
+
+    .left-stack,
+    .right-stack{
+      display:grid;
+      gap:16px;
+    }
+
+    form{
+      display:grid;
+      gap:12px;
+    }
+
+    .form-row,
+    .button-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    .button-row.three{
+      grid-template-columns:repeat(3, 1fr);
+    }
+
+    .button-row.four{
+      grid-template-columns:repeat(4, 1fr);
+    }
+
+    label.input-label{
+      display:grid;
+      gap:8px;
+      font-size:0.88rem;
+      color:var(--muted);
+      font-weight:600;
+    }
+
+    input,
+    select,
+    button{
+      width:100%;
+      border:1px solid var(--line);
+      background:#0a0a0a;
+      color:var(--text);
+      padding:12px 14px;
+    }
+
+    input:focus,
+    select:focus{
+      outline:none;
+      border-color:rgba(176,11,85,0.7);
+      box-shadow:inset 0 0 0 1px rgba(176,11,85,0.5);
+    }
+
+    button{
+      font-weight:700;
+      cursor:pointer;
+      transition:transform 0.14s ease, background 0.14s ease, border-color 0.14s ease;
+    }
+
+    button:hover{
+      transform:translateY(-1px);
+    }
+
+    button:disabled{
+      opacity:0.7;
+      cursor:not-allowed;
+    }
+
+    .primary-btn{
+      border:1px solid rgba(176,11,85,0.75);
+      background:rgba(176,11,85,0.16);
+    }
+
+    .primary-btn:hover{
+      background:rgba(176,11,85,0.22);
+    }
+
+    .ghost-btn{
+      background:rgba(255,255,255,0.03);
+    }
+
+    .ghost-btn:hover{
+      background:rgba(255,255,255,0.05);
+      border-color:var(--line-strong);
+    }
+
+    .danger-btn{
+      border:1px solid rgba(255,107,129,0.45);
+      background:rgba(255,107,129,0.10);
+    }
+
+    .danger-btn:hover{
+      background:rgba(255,107,129,0.16);
+    }
+
+    .success-btn{
+      border:1px solid rgba(87,211,140,0.45);
+      background:rgba(87,211,140,0.10);
+    }
+
+    .success-btn:hover{
+      background:rgba(87,211,140,0.16);
+    }
+
+    .status{
+      min-height:1.2em;
+      margin-top:2px;
+      color:var(--muted);
+      font-size:0.92rem;
+    }
+
+    .sub-grid{
+      display:grid;
+      gap:12px;
+    }
+
+    .mini-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    .mini-stat{
+      padding:16px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,0.02);
+    }
+
+    .mini-label{
+      color:var(--muted);
+      font-size:0.78rem;
+      text-transform:uppercase;
+      letter-spacing:0.08em;
+      font-weight:700;
+      margin-bottom:8px;
+    }
+
+    .mini-value{
+      font-size:1.08rem;
+      font-weight:800;
+      letter-spacing:-0.02em;
+      line-height:1.2;
+    }
+
+    .table-wrap{
+      overflow:auto;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,0.015);
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:760px;
+      font-size:0.93rem;
+    }
+
+    th, td{
+      padding:14px;
+      text-align:left;
+      border-bottom:1px solid rgba(255,255,255,0.06);
+      vertical-align:middle;
+    }
+
+    th{
+      color:var(--muted);
+      font-size:0.79rem;
+      text-transform:uppercase;
+      letter-spacing:0.08em;
+      font-weight:700;
+      background:#090909;
+      position:sticky;
+      top:0;
+      z-index:1;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      padding:6px 10px;
+      border:1px solid rgba(176,11,85,0.34);
+      background:rgba(176,11,85,0.12);
+      font-size:0.82rem;
+      white-space:nowrap;
+    }
+
+    .pill.success{
+      border-color:rgba(87,211,140,0.34);
+      background:rgba(87,211,140,0.12);
+    }
+
+    .pill.warning{
+      border-color:rgba(255,209,102,0.34);
+      background:rgba(255,209,102,0.12);
+    }
+
+    .inline-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .small-btn{
+      width:auto;
+      padding:8px 11px;
+      font-size:0.86rem;
+      line-height:1;
+    }
+
+    .stack{
+      display:grid;
+      gap:10px;
+    }
+
+    .empty{
+      color:var(--muted);
+      padding:12px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,0.02);
+    }
+
+    .footer-space{
+      height:6px;
+    }
+
+    @media (max-width:1280px){
+      .stats-grid{
+        grid-template-columns:repeat(3, 1fr);
+      }
+
+      .main-layout{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width:760px){
+      .hero,
+      .app-shell{
+        width:min(100% - 16px, var(--max-w));
+      }
+
+      .hero{
+        padding:32px 0 22px;
+      }
+
+      .stats-grid{
+        grid-template-columns:1fr 1fr;
+      }
+
+      .form-row,
+      .button-row,
+      .button-row.three,
+      .button-row.four,
+      .mini-grid{
+        grid-template-columns:1fr;
+      }
+
+      nav{
+        gap:10px;
+      }
+
+      nav a{
+        font-size:0.76rem;
+      }
+
+      .topbar,
+      .panel,
+      .card{
+        padding:16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <img src="logo.png" alt="Logo" />
+      <span>William MacLean</span>
+    </div>
+
+    <nav>
+      <a href="index">Home</a>
+      <a href="apps">Apps</a>
+      <span class="status-pill" id="statusPill">Status: loading</span>
+    </nav>
+  </header>
+
+  <div id="authGate">
+    <div class="gate-card">Checking access...</div>
+  </div>
+
+  <main class="page">
+    <section class="hero-wrap">
+      <div class="hero">
+        <h1>Poker Lobby</h1>
+        <p>Create games, join active games, track debts, and see player stats.</p>
+      </div>
+    </section>
+
+    <section class="app-shell">
+      <section class="topbar">
+        <div>
+          <div class="tag">Game</div>
+          <h2>Lobby Control</h2>
+        </div>
+        <div class="panel-subtle" id="signedInAs">Not signed in</div>
+      </section>
+
+      <section class="stats-grid">
+        <div class="card">
+          <div class="label">Active Games</div>
+          <div class="value" id="activeGamesValue">0</div>
+        </div>
+        <div class="card">
+          <div class="label">Your Open Games</div>
+          <div class="value" id="myGamesValue">0</div>
+        </div>
+        <div class="card">
+          <div class="label">You Owe</div>
+          <div class="value" id="youOweValue">$0.00</div>
+        </div>
+        <div class="card">
+          <div class="label">Owed To You</div>
+          <div class="value" id="owedToYouValue">$0.00</div>
+        </div>
+        <div class="card">
+          <div class="label">Your Balance</div>
+          <div class="value" id="myBalanceValue">$0.00</div>
+        </div>
+      </section>
+
+      <section class="main-layout">
+        <div class="left-stack">
+          <section class="panel">
+            <div class="panel-head">
+              <h2>Create Game</h2>
+              <div class="panel-subtle">Lobby only for now</div>
+            </div>
+
+            <form id="createGameForm">
+              <div class="form-row">
+                <label class="input-label">
+                  Game Name
+                  <input type="text" id="gameNameInput" maxlength="40" placeholder="Friday Night Poker" required />
+                </label>
+
+                <label class="input-label">
+                  Turn Time (sec)
+                  <input type="number" id="turnTimeInput" min="10" max="300" step="5" value="30" required />
+                </label>
+              </div>
+
+              <div class="form-row">
+                <label class="input-label">
+                  Buy In
+                  <input type="number" id="buyInInput" min="0" step="1" value="20" required />
+                </label>
+
+                <label class="input-label">
+                  Small Blind
+                  <input type="number" id="smallBlindInput" min="0" step="1" value="1" required />
+                </label>
+              </div>
+
+              <div class="form-row">
+                <label class="input-label">
+                  Big Blind
+                  <input type="number" id="bigBlindInput" min="0" step="1" value="2" required />
+                </label>
+
+                <label class="input-label">
+                  Max Players
+                  <input type="number" id="maxPlayersInput" min="2" max="12" step="1" value="8" required />
+                </label>
+              </div>
+
+              <div class="form-row">
+                <label class="input-label">
+                  Starting Stack
+                  <input type="number" id="startingStackInput" min="1" step="1" value="1000" required />
+                </label>
+
+                <label class="input-label">
+                  Visibility
+                  <select id="visibilityInput">
+                    <option value="public">Public</option>
+                    <option value="private">Private</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="button-row">
+                <button type="submit" class="primary-btn">Create Game</button>
+                <button type="button" class="ghost-btn" id="resetGameFormBtn">Reset</button>
+              </div>
+            </form>
+
+            <div class="status" id="createStatus"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2>Active Games</h2>
+              <div class="panel-subtle">Newest first</div>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Game</th>
+                    <th>Host</th>
+                    <th>Blinds</th>
+                    <th>Buy In</th>
+                    <th>Players</th>
+                    <th>Turn</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="gamesTableBody">
+                  <tr><td colspan="8" style="color:var(--muted);">No active games.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2>Your Games</h2>
+              <div class="panel-subtle">Delete only your own</div>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Game</th>
+                    <th>Created</th>
+                    <th>Players</th>
+                    <th>Settings</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="myGamesTableBody">
+                  <tr><td colspan="5" style="color:var(--muted);">No games created by you.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <div class="right-stack">
+          <section class="panel">
+            <div class="panel-head">
+              <h2>Your Stats</h2>
+              <div class="panel-subtle">From Firestore</div>
+            </div>
+
+            <div class="mini-grid">
+              <div class="mini-stat">
+                <div class="mini-label">Hands Played</div>
+                <div class="mini-value" id="handsPlayedValue">0</div>
+              </div>
+              <div class="mini-stat">
+                <div class="mini-label">Hands Won</div>
+                <div class="mini-value" id="handsWonValue">0</div>
+              </div>
+              <div class="mini-stat">
+                <div class="mini-label">Win Rate</div>
+                <div class="mini-value" id="winRateValue">0%</div>
+              </div>
+              <div class="mini-stat">
+                <div class="mini-label">Net Result</div>
+                <div class="mini-value" id="netResultValue">$0.00</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2>Add Debt</h2>
+              <div class="panel-subtle">Manual lobby tracker</div>
+            </div>
+
+            <form id="debtForm">
+              <label class="input-label">
+                Other Player Email
+                <input type="email" id="debtOtherEmailInput" placeholder="friend@email.com" required />
+              </label>
+
+              <div class="form-row">
+                <label class="input-label">
+                  Amount
+                  <input type="number" id="debtAmountInput" min="0.01" step="0.01" placeholder="20.00" required />
+                </label>
+
+                <label class="input-label">
+                  Direction
+                  <select id="debtDirectionInput">
+                    <option value="iOwe">I owe them</option>
+                    <option value="theyOwe">They owe me</option>
+                  </select>
+                </label>
+              </div>
+
+              <label class="input-label">
+                Note
+                <input type="text" id="debtNoteInput" maxlength="120" placeholder="Buy-in for last game" />
+              </label>
+
+              <button type="submit" class="primary-btn">Save Debt</button>
+            </form>
+
+            <div class="status" id="debtStatus"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2>Top Players</h2>
+              <div class="panel-subtle">By hands won</div>
+            </div>
+
+            <div class="stack" id="topPlayersList">
+              <div class="empty">No player stats yet.</div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Debts You Owe</h2>
+          <div class="panel-subtle">Your unpaid debts</div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>To</th>
+                <th>Amount</th>
+                <th>Note</th>
+                <th>Created</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="debtsIOweBody">
+              <tr><td colspan="5" style="color:var(--muted);">No debts.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Debts Owed To You</h2>
+          <div class="panel-subtle">Forgive after they pay</div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>From</th>
+                <th>Amount</th>
+                <th>Note</th>
+                <th>Created</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="debtsOwedToMeBody">
+              <tr><td colspan="6" style="color:var(--muted);">No debts owed to you.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>All Player Stats</h2>
+          <div class="panel-subtle">Balance, win rate, hands</div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Player</th>
+                <th>Hands Played</th>
+                <th>Hands Won</th>
+                <th>Win Rate</th>
+                <th>Games Played</th>
+                <th>Games Won</th>
+                <th>Balance</th>
+                <th>Net</th>
+              </tr>
+            </thead>
+            <tbody id="playerStatsBody">
+              <tr><td colspan="8" style="color:var(--muted);">No player stats yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="footer-space"></div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getAnalytics, isSupported as analyticsSupported } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-analytics.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      doc,
+      addDoc,
+      getDoc,
+      getDocs,
+      setDoc,
+      deleteDoc,
+      updateDoc,
+      serverTimestamp,
+      query,
+      where,
+      orderBy,
+      limit
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBLQmCVdVkz_sxxdfvXshDmoe3PeYIUMAY",
+      authDomain: "site-78972.firebaseapp.com",
+      projectId: "site-78972",
+      storageBucket: "site-78972.firebasestorage.app",
+      messagingSenderId: "519857042562",
+      appId: "1:519857042562:web:64ff26e5f795208081f09b",
+      measurementId: "G-TSQ1FNH5W1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+
+    if (await analyticsSupported()) {
+      getAnalytics(app);
+    }
+
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const statusPill = document.getElementById("statusPill");
+    const signedInAs = document.getElementById("signedInAs");
+    const authGate = document.getElementById("authGate");
+    const gateCard = document.querySelector(".gate-card");
+
+    const createGameForm = document.getElementById("createGameForm");
+    const resetGameFormBtn = document.getElementById("resetGameFormBtn");
+    const createStatus = document.getElementById("createStatus");
+
+    const gameNameInput = document.getElementById("gameNameInput");
+    const turnTimeInput = document.getElementById("turnTimeInput");
+    const buyInInput = document.getElementById("buyInInput");
+    const smallBlindInput = document.getElementById("smallBlindInput");
+    const bigBlindInput = document.getElementById("bigBlindInput");
+    const maxPlayersInput = document.getElementById("maxPlayersInput");
+    const startingStackInput = document.getElementById("startingStackInput");
+    const visibilityInput = document.getElementById("visibilityInput");
+
+    const debtForm = document.getElementById("debtForm");
+    const debtStatus = document.getElementById("debtStatus");
+    const debtOtherEmailInput = document.getElementById("debtOtherEmailInput");
+    const debtAmountInput = document.getElementById("debtAmountInput");
+    const debtDirectionInput = document.getElementById("debtDirectionInput");
+    const debtNoteInput = document.getElementById("debtNoteInput");
+
+    const gamesTableBody = document.getElementById("gamesTableBody");
+    const myGamesTableBody = document.getElementById("myGamesTableBody");
+    const debtsIOweBody = document.getElementById("debtsIOweBody");
+    const debtsOwedToMeBody = document.getElementById("debtsOwedToMeBody");
+    const playerStatsBody = document.getElementById("playerStatsBody");
+    const topPlayersList = document.getElementById("topPlayersList");
+
+    const activeGamesValue = document.getElementById("activeGamesValue");
+    const myGamesValue = document.getElementById("myGamesValue");
+    const youOweValue = document.getElementById("youOweValue");
+    const owedToYouValue = document.getElementById("owedToYouValue");
+    const myBalanceValue = document.getElementById("myBalanceValue");
+
+    const handsPlayedValue = document.getElementById("handsPlayedValue");
+    const handsWonValue = document.getElementById("handsWonValue");
+    const winRateValue = document.getElementById("winRateValue");
+    const netResultValue = document.getElementById("netResultValue");
+
+    const statusRank = {
+      default: 0,
+      plus: 1,
+      me: 2
+    };
+
+    let currentUser = null;
+    let currentUserStatus = "default";
+    let currentGames = [];
+    let currentStats = [];
+
+    function normalizeStatus(status) {
+      if (!status) return "default";
+      const clean = String(status).trim().toLowerCase();
+      return ["default", "plus", "me"].includes(clean) ? clean : "default";
+    }
+
+    function money(value) {
+      return new Intl.NumberFormat("en-CA", {
+        style: "currency",
+        currency: "CAD",
+        maximumFractionDigits: 2
+      }).format(Number(value || 0));
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function formatDate(value) {
+      if (!value) return "—";
+      try {
+        let date;
+        if (typeof value?.toDate === "function") {
+          date = value.toDate();
+        } else {
+          date = new Date(value);
+        }
+        if (Number.isNaN(date.getTime())) return "—";
+        return new Intl.DateTimeFormat("en-CA", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit"
+        }).format(date);
+      } catch {
+        return "—";
+      }
+    }
+
+    function setGateMessage(message) {
+      gateCard.textContent = message;
+    }
+
+    function showCreateStatus(message, isError = false) {
+      createStatus.textContent = message;
+      createStatus.style.color = isError ? "var(--danger)" : "var(--muted)";
+    }
+
+    function showDebtStatus(message, isError = false) {
+      debtStatus.textContent = message;
+      debtStatus.style.color = isError ? "var(--danger)" : "var(--muted)";
+    }
+
+    async function getUserStatus(uid) {
+      try {
+        const userRef = doc(db, "users", uid);
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.exists()) return "default";
+        return normalizeStatus(userSnap.data()?.status);
+      } catch (error) {
+        console.error("Error getting user status:", error);
+        return "default";
+      }
+    }
+
+    async function ensurePlayerProfile(user) {
+      const playerRef = doc(db, "pokerPlayers", user.uid);
+      const snap = await getDoc(playerRef);
+
+      if (!snap.exists()) {
+        await setDoc(playerRef, {
+          uid: user.uid,
+          email: user.email || "",
+          displayName: user.displayName || "",
+          handsPlayed: 0,
+          handsWon: 0,
+          gamesPlayed: 0,
+          gamesWon: 0,
+          balance: 0,
+          netResult: 0,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+        return;
+      }
+
+      const existing = snap.data() || {};
+      const nextData = {
+        ...existing,
+        email: user.email || existing.email || "",
+        displayName: existing.displayName || user.displayName || "",
+        updatedAt: serverTimestamp()
+      };
+
+      await setDoc(playerRef, nextData, { merge: true });
+    }
+
+    async function protectPlusPage(user) {
+      currentUserStatus = await getUserStatus(user.uid);
+      statusPill.textContent = `Status: ${currentUserStatus}`;
+      signedInAs.textContent = user.email || "Signed in";
+
+      if ((statusRank[currentUserStatus] ?? 0) < statusRank.plus) {
+        setGateMessage("This page is for plus or me accounts. Redirecting to Apps...");
+        setTimeout(() => {
+          window.location.replace("https://williammaclean.ca/apps");
+        }, 1800);
+        return false;
+      }
+
+      authGate.classList.add("hidden");
+      return true;
+    }
+
+    function getWinRate(stats) {
+      const played = Number(stats?.handsPlayed || 0);
+      const won = Number(stats?.handsWon || 0);
+      if (!played) return "0%";
+      return `${((won / played) * 100).toFixed(1)}%`;
+    }
+
+    function renderTopPlayers(players) {
+      if (!players.length) {
+        topPlayersList.innerHTML = `<div class="empty">No player stats yet.</div>`;
+        return;
+      }
+
+      const top = [...players]
+        .sort((a, b) => Number(b.handsWon || 0) - Number(a.handsWon || 0))
+        .slice(0, 5);
+
+      topPlayersList.innerHTML = top.map((player, index) => `
+        <div class="mini-stat">
+          <div class="mini-label">#${index + 1} ${escapeHtml(player.email || player.displayName || "Unknown")}</div>
+          <div class="mini-value">${Number(player.handsWon || 0)} hands won</div>
+        </div>
+      `).join("");
+    }
+
+    async function loadPlayerStats() {
+      const snap = await getDocs(query(collection(db, "pokerPlayers"), orderBy("handsWon", "desc"), limit(50)));
+      currentStats = snap.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+
+      if (!currentStats.length) {
+        playerStatsBody.innerHTML = `<tr><td colspan="8" style="color:var(--muted);">No player stats yet.</td></tr>`;
+        renderTopPlayers([]);
+        handsPlayedValue.textContent = "0";
+        handsWonValue.textContent = "0";
+        winRateValue.textContent = "0%";
+        netResultValue.textContent = money(0);
+        myBalanceValue.textContent = money(0);
+        return;
+      }
+
+      playerStatsBody.innerHTML = currentStats.map(player => `
+        <tr>
+          <td>${escapeHtml(player.email || player.displayName || "Unknown")}</td>
+          <td>${Number(player.handsPlayed || 0)}</td>
+          <td>${Number(player.handsWon || 0)}</td>
+          <td>${getWinRate(player)}</td>
+          <td>${Number(player.gamesPlayed || 0)}</td>
+          <td>${Number(player.gamesWon || 0)}</td>
+          <td>${money(player.balance || 0)}</td>
+          <td>${money(player.netResult || 0)}</td>
+        </tr>
+      `).join("");
+
+      renderTopPlayers(currentStats);
+
+      const mine = currentUser ? currentStats.find(player => player.id === currentUser.uid) : null;
+      handsPlayedValue.textContent = String(Number(mine?.handsPlayed || 0));
+      handsWonValue.textContent = String(Number(mine?.handsWon || 0));
+      winRateValue.textContent = getWinRate(mine || {});
+      netResultValue.textContent = money(mine?.netResult || 0);
+      myBalanceValue.textContent = money(mine?.balance || 0);
+    }
+
+    async function loadGames() {
+      const snap = await getDocs(query(collection(db, "pokerGames"), orderBy("createdAt", "desc")));
+      currentGames = snap.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+
+      const activeGames = currentGames.filter(game => game.status !== "deleted" && game.status !== "finished");
+      const myGames = currentUser ? activeGames.filter(game => game.hostUid === currentUser.uid) : [];
+
+      activeGamesValue.textContent = String(activeGames.length);
+      myGamesValue.textContent = String(myGames.length);
+
+      if (!activeGames.length) {
+        gamesTableBody.innerHTML = `<tr><td colspan="8" style="color:var(--muted);">No active games.</td></tr>`;
+      } else {
+        gamesTableBody.innerHTML = activeGames.map(game => {
+          const playerCount = Array.isArray(game.players) ? game.players.length : 0;
+          const isMine = currentUser && game.hostUid === currentUser.uid;
+          return `
+            <tr>
+              <td>
+                <strong>${escapeHtml(game.name || "Untitled Game")}</strong><br>
+                <span style="color:var(--muted);font-size:0.82rem;">${escapeHtml(game.visibility || "public")}</span>
+              </td>
+              <td>${escapeHtml(game.hostEmail || "Unknown")}</td>
+              <td>${Number(game.smallBlind || 0)} / ${Number(game.bigBlind || 0)}</td>
+              <td>${money(game.buyIn || 0)}</td>
+              <td>${playerCount} / ${Number(game.maxPlayers || 0)}</td>
+              <td>${Number(game.turnTime || 0)}s</td>
+              <td><span class="pill ${game.status === "waiting" ? "warning" : "success"}">${escapeHtml(game.status || "waiting")}</span></td>
+              <td>
+                <div class="inline-actions">
+                  <a class="small-btn ghost-btn" href="game.html?game=${encodeURIComponent(game.id)}">Open</a>
+                  ${isMine ? `<button class="small-btn danger-btn" data-delete-game="${game.id}">Delete</button>` : ``}
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join("");
+      }
+
+      if (!myGames.length) {
+        myGamesTableBody.innerHTML = `<tr><td colspan="5" style="color:var(--muted);">No games created by you.</td></tr>`;
+      } else {
+        myGamesTableBody.innerHTML = myGames.map(game => {
+          const playerCount = Array.isArray(game.players) ? game.players.length : 0;
+          return `
+            <tr>
+              <td>${escapeHtml(game.name || "Untitled Game")}</td>
+              <td>${formatDate(game.createdAt)}</td>
+              <td>${playerCount} / ${Number(game.maxPlayers || 0)}</td>
+              <td>
+                Buy-in ${money(game.buyIn || 0)}<br>
+                <span style="color:var(--muted);font-size:0.82rem;">
+                  ${Number(game.smallBlind || 0)}/${Number(game.bigBlind || 0)} • ${Number(game.turnTime || 0)}s
+                </span>
+              </td>
+              <td>
+                <div class="inline-actions">
+                  <a class="small-btn ghost-btn" href="game.html?game=${encodeURIComponent(game.id)}">Open</a>
+                  <button class="small-btn danger-btn" data-delete-game="${game.id}">Delete</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join("");
+      }
+    }
+
+    async function loadDebts() {
+      if (!currentUser) return;
+
+      const iOweQuery = query(
+        collection(db, "pokerDebts"),
+        where("debtorUid", "==", currentUser.uid),
+        where("status", "==", "open")
+      );
+
+      const owedToMeQuery = query(
+        collection(db, "pokerDebts"),
+        where("creditorUid", "==", currentUser.uid),
+        where("status", "==", "open")
+      );
+
+      const [iOweSnap, owedToMeSnap] = await Promise.all([
+        getDocs(iOweQuery),
+        getDocs(owedToMeQuery)
+      ]);
+
+      const iOwe = iOweSnap.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+      const owedToMe = owedToMeSnap.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+
+      const iOweTotal = iOwe.reduce((sum, debt) => sum + Number(debt.amount || 0), 0);
+      const owedToMeTotal = owedToMe.reduce((sum, debt) => sum + Number(debt.amount || 0), 0);
+
+      youOweValue.textContent = money(iOweTotal);
+      owedToYouValue.textContent = money(owedToMeTotal);
+
+      if (!iOwe.length) {
+        debtsIOweBody.innerHTML = `<tr><td colspan="5" style="color:var(--muted);">No debts.</td></tr>`;
+      } else {
+        debtsIOweBody.innerHTML = iOwe
+          .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
+          .map(debt => `
+            <tr>
+              <td>${escapeHtml(debt.creditorEmail || "Unknown")}</td>
+              <td>${money(debt.amount || 0)}</td>
+              <td>${escapeHtml(debt.note || "—")}</td>
+              <td>${formatDate(debt.createdAt)}</td>
+              <td><span class="pill warning">${escapeHtml(debt.status || "open")}</span></td>
+            </tr>
+          `).join("");
+      }
+
+      if (!owedToMe.length) {
+        debtsOwedToMeBody.innerHTML = `<tr><td colspan="6" style="color:var(--muted);">No debts owed to you.</td></tr>`;
+      } else {
+        debtsOwedToMeBody.innerHTML = owedToMe
+          .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
+          .map(debt => `
+            <tr>
+              <td>${escapeHtml(debt.debtorEmail || "Unknown")}</td>
+              <td>${money(debt.amount || 0)}</td>
+              <td>${escapeHtml(debt.note || "—")}</td>
+              <td>${formatDate(debt.createdAt)}</td>
+              <td><span class="pill warning">${escapeHtml(debt.status || "open")}</span></td>
+              <td>
+                <button class="small-btn success-btn" data-forgive-debt="${debt.id}">Forgive</button>
+              </td>
+            </tr>
+          `).join("");
+      }
+    }
+
+    async function refreshLobby() {
+      await Promise.all([
+        loadGames(),
+        loadDebts(),
+        loadPlayerStats()
+      ]);
+    }
+
+    function resetGameForm() {
+      gameNameInput.value = "";
+      turnTimeInput.value = 30;
+      buyInInput.value = 20;
+      smallBlindInput.value = 1;
+      bigBlindInput.value = 2;
+      maxPlayersInput.value = 8;
+      startingStackInput.value = 1000;
+      visibilityInput.value = "public";
+    }
+
+    createGameForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!currentUser) return;
+
+      const gameName = gameNameInput.value.trim();
+      const turnTime = Number(turnTimeInput.value);
+      const buyIn = Number(buyInInput.value);
+      const smallBlind = Number(smallBlindInput.value);
+      const bigBlind = Number(bigBlindInput.value);
+      const maxPlayers = Number(maxPlayersInput.value);
+      const startingStack = Number(startingStackInput.value);
+      const visibility = visibilityInput.value;
+
+      if (!gameName) {
+        showCreateStatus("Enter a game name.", true);
+        return;
+      }
+
+      if (bigBlind < smallBlind) {
+        showCreateStatus("Big blind should be at least the small blind.", true);
+        return;
+      }
+
+      if (maxPlayers < 2) {
+        showCreateStatus("Max players must be at least 2.", true);
+        return;
+      }
+
+      try {
+        showCreateStatus("Creating game...");
+
+        await addDoc(collection(db, "pokerGames"), {
+          name: gameName,
+          hostUid: currentUser.uid,
+          hostEmail: currentUser.email || "",
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          status: "waiting",
+          visibility,
+          turnTime,
+          buyIn,
+          smallBlind,
+          bigBlind,
+          maxPlayers,
+          startingStack,
+          pot: 0,
+          communityCards: [],
+          currentTurnUid: "",
+          players: [
+            {
+              uid: currentUser.uid,
+              email: currentUser.email || "",
+              seat: 1,
+              stack: startingStack,
+              joinedAt: new Date().toISOString(),
+              isHost: true
+            }
+          ]
+        });
+
+        resetGameForm();
+        showCreateStatus("Game created.");
+        await loadGames();
+      } catch (error) {
+        console.error(error);
+        showCreateStatus("Could not create game.", true);
+      }
+    });
+
+    resetGameFormBtn.addEventListener("click", () => {
+      resetGameForm();
+      showCreateStatus("");
+    });
+
+    debtForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!currentUser) return;
+
+      const otherEmail = debtOtherEmailInput.value.trim().toLowerCase();
+      const amount = Number(debtAmountInput.value);
+      const note = debtNoteInput.value.trim();
+      const direction = debtDirectionInput.value;
+
+      if (!otherEmail) {
+        showDebtStatus("Enter the other player's email.", true);
+        return;
+      }
+
+      if (otherEmail === (currentUser.email || "").toLowerCase()) {
+        showDebtStatus("You cannot create a debt with yourself.", true);
+        return;
+      }
+
+      if (!(amount > 0)) {
+        showDebtStatus("Debt amount must be more than 0.", true);
+        return;
+      }
+
+      let debtorUid = "";
+      let creditorUid = "";
+      let debtorEmail = "";
+      let creditorEmail = "";
+
+      if (direction === "iOwe") {
+        debtorUid = currentUser.uid;
+        debtorEmail = currentUser.email || "";
+        creditorUid = "";
+        creditorEmail = otherEmail;
+      } else {
+        debtorUid = "";
+        debtorEmail = otherEmail;
+        creditorUid = currentUser.uid;
+        creditorEmail = currentUser.email || "";
+      }
+
+      try {
+        showDebtStatus("Saving debt...");
+
+        await addDoc(collection(db, "pokerDebts"), {
+          debtorUid,
+          debtorEmail,
+          creditorUid,
+          creditorEmail,
+          amount,
+          note,
+          status: "open",
+          createdByUid: currentUser.uid,
+          createdByEmail: currentUser.email || "",
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+
+        debtForm.reset();
+        debtDirectionInput.value = "iOwe";
+        showDebtStatus("Debt saved.");
+        await loadDebts();
+      } catch (error) {
+        console.error(error);
+        showDebtStatus("Could not save debt.", true);
+      }
+    });
+
+    document.addEventListener("click", async (event) => {
+      const deleteBtn = event.target.closest("[data-delete-game]");
+      const forgiveBtn = event.target.closest("[data-forgive-debt]");
+
+      if (deleteBtn) {
+        const gameId = deleteBtn.dataset.deleteGame;
+        const game = currentGames.find(item => item.id === gameId);
+
+        if (!game || !currentUser || game.hostUid !== currentUser.uid) return;
+
+        const confirmed = window.confirm(`Delete "${game.name || "this game"}"?`);
+        if (!confirmed) return;
+
+        try {
+          await deleteDoc(doc(db, "pokerGames", gameId));
+          await loadGames();
+        } catch (error) {
+          console.error(error);
+          showCreateStatus("Could not delete game.", true);
+        }
+      }
+
+      if (forgiveBtn) {
+        const debtId = forgiveBtn.dataset.forgiveDebt;
+        const confirmed = window.confirm("Mark this debt as forgiven?");
+        if (!confirmed) return;
+
+        try {
+          await updateDoc(doc(db, "pokerDebts", debtId), {
+            status: "forgiven",
+            updatedAt: serverTimestamp(),
+            forgivenByUid: currentUser?.uid || ""
+          });
+          await loadDebts();
+        } catch (error) {
+          console.error(error);
+          showDebtStatus("Could not forgive debt.", true);
+        }
+      }
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
+
+      if (!user) {
+        statusPill.textContent = "Status: signed out";
+        signedInAs.textContent = "Not signed in";
+        setGateMessage("Please sign in to use Poker.");
+        return;
+      }
+
+      try {
+        setGateMessage("Checking access...");
+        await ensurePlayerProfile(user);
+        const allowed = await protectPlusPage(user);
+        if (!allowed) return;
+        await refreshLobby();
+      } catch (error) {
+        console.error(error);
+        setGateMessage("Could not load lobby.");
+      }
+    });
+
+    setInterval(() => {
+      if (currentUser && authGate.classList.contains("hidden")) {
+        refreshLobby().catch(error => console.error("Auto refresh failed:", error));
+      }
+    }, 10000);
+  </script>
+</body>
+</html>
