@@ -11,21 +11,18 @@
     :root{
       --bg:#000;
       --panel:#050505;
-      --panel-2:#0a0a0a;
-      --panel-3:rgba(255,255,255,0.03);
+      --panel-2:rgba(255,255,255,0.03);
       --text:#fff;
       --muted:#8d8d8d;
       --line:rgba(255,255,255,0.08);
       --line-strong:rgba(255,255,255,0.14);
       --accent:#b00b55;
-      --accent-2:#cf2d7a;
       --danger:#ff6b81;
       --success:#57d38c;
       --warning:#ffd166;
       --header-h:64px;
-      --max-w:1400px;
+      --max-w:1180px;
       --shadow:0 18px 40px rgba(0,0,0,0.24);
-      --radius:0px;
     }
 
     *{
@@ -34,7 +31,7 @@
       box-sizing:border-box;
     }
 
-    html, body{
+    html,body{
       min-height:100%;
     }
 
@@ -50,9 +47,7 @@
       text-decoration:none;
     }
 
-    button,
-    input,
-    select{
+    button,input,select{
       font:inherit;
     }
 
@@ -63,7 +58,7 @@
       display:flex;
       align-items:center;
       justify-content:space-between;
-      padding:0 18px;
+      padding:0 16px;
       background:rgba(0,0,0,0.72);
       backdrop-filter:blur(10px);
       border-bottom:1px solid rgba(255,255,255,0.05);
@@ -92,12 +87,12 @@
     nav{
       display:flex;
       align-items:center;
-      gap:14px;
+      gap:12px;
       flex-wrap:wrap;
     }
 
     nav a{
-      font-size:0.84rem;
+      font-size:0.82rem;
       color:#cfcfcf;
       transition:0.2s;
     }
@@ -107,8 +102,8 @@
     }
 
     .status-pill{
-      font-size:0.72rem;
-      padding:7px 10px;
+      font-size:0.7rem;
+      padding:7px 9px;
       border:1px solid rgba(255,255,255,0.1);
       color:#fff;
       background:rgba(255,255,255,0.04);
@@ -129,13 +124,13 @@
     }
 
     .hero{
-      width:min(var(--max-w), calc(100% - 32px));
+      width:min(var(--max-w), calc(100% - 16px));
       margin:0 auto;
-      padding:42px 0 28px;
+      padding:28px 0 18px;
     }
 
     .hero h1{
-      font-size:clamp(2.2rem, 7vw, 4.2rem);
+      font-size:clamp(2rem, 9vw, 4rem);
       line-height:0.95;
       letter-spacing:-0.05em;
       margin-bottom:10px;
@@ -143,15 +138,17 @@
 
     .hero p{
       color:var(--muted);
-      font-size:0.92rem;
+      font-size:0.9rem;
       line-height:1.5;
-      max-width:720px;
+      max-width:700px;
     }
 
     .app-shell{
-      width:min(var(--max-w), calc(100% - 32px));
+      width:min(var(--max-w), calc(100% - 16px));
       margin:0 auto;
-      padding:18px 0 32px;
+      padding:14px 0 28px;
+      display:grid;
+      gap:12px;
     }
 
     #authGate{
@@ -180,25 +177,31 @@
       line-height:1.5;
     }
 
-    .topbar{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:14px;
+    .panel,
+    .card{
       border:1px solid var(--line);
-      background:rgba(255,255,255,0.02);
-      padding:20px;
-      margin-bottom:16px;
+      background:var(--panel-2);
       box-shadow:var(--shadow);
     }
 
-    .topbar h2{
-      font-size:clamp(1.2rem, 2.4vw, 2rem);
-      letter-spacing:-0.04em;
+    .panel{
+      padding:14px;
+    }
+
+    .card{
+      padding:14px;
+      min-height:94px;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
     }
 
     .tag{
-      font-size:0.72rem;
+      font-size:0.7rem;
       text-transform:uppercase;
       letter-spacing:0.1em;
       color:var(--accent);
@@ -206,53 +209,28 @@
       margin-bottom:6px;
     }
 
-    .panel,
-    .card{
-      border:1px solid var(--line);
-      background:rgba(255,255,255,0.03);
-      box-shadow:var(--shadow);
-    }
-
-    .panel{
-      padding:18px;
-      margin-bottom:16px;
-    }
-
-    .card{
-      padding:18px;
-      min-height:108px;
-    }
-
-    .panel-head{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-      margin-bottom:14px;
-    }
-
-    .panel-head h2{
-      font-size:1rem;
-      letter-spacing:-0.02em;
+    .topbar h2{
+      font-size:1.2rem;
+      letter-spacing:-0.04em;
     }
 
     .panel-subtle{
       color:var(--muted);
-      font-size:0.82rem;
+      font-size:0.8rem;
       font-weight:600;
       text-align:right;
+      line-height:1.4;
     }
 
     .stats-grid{
       display:grid;
-      grid-template-columns:repeat(5, 1fr);
-      gap:14px;
-      margin-bottom:16px;
+      grid-template-columns:repeat(2, 1fr);
+      gap:10px;
     }
 
     .label{
       color:var(--muted);
-      font-size:0.76rem;
+      font-size:0.72rem;
       text-transform:uppercase;
       letter-spacing:0.08em;
       margin-bottom:10px;
@@ -260,7 +238,7 @@
     }
 
     .value{
-      font-size:clamp(1.2rem, 2vw, 2rem);
+      font-size:clamp(1.05rem, 4.8vw, 1.9rem);
       font-weight:800;
       letter-spacing:-0.04em;
       line-height:1.1;
@@ -269,41 +247,32 @@
 
     .main-layout{
       display:grid;
-      grid-template-columns:minmax(0, 1.45fr) minmax(320px, 0.95fr);
-      gap:16px;
-      align-items:start;
+      gap:12px;
     }
 
     .left-stack,
     .right-stack{
       display:grid;
-      gap:16px;
+      gap:12px;
     }
 
     form{
       display:grid;
-      gap:12px;
+      gap:10px;
     }
 
     .form-row,
-    .button-row{
+    .button-row,
+    .mini-grid{
       display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-    }
-
-    .button-row.three{
-      grid-template-columns:repeat(3, 1fr);
-    }
-
-    .button-row.four{
-      grid-template-columns:repeat(4, 1fr);
+      grid-template-columns:1fr;
+      gap:10px;
     }
 
     label.input-label{
       display:grid;
       gap:8px;
-      font-size:0.88rem;
+      font-size:0.84rem;
       color:var(--muted);
       font-weight:600;
     }
@@ -315,7 +284,7 @@
       border:1px solid var(--line);
       background:#0a0a0a;
       color:var(--text);
-      padding:12px 14px;
+      padding:12px 13px;
     }
 
     input:focus,
@@ -336,8 +305,9 @@
     }
 
     button:disabled{
-      opacity:0.7;
+      opacity:0.6;
       cursor:not-allowed;
+      transform:none;
     }
 
     .primary-btn{
@@ -345,17 +315,8 @@
       background:rgba(176,11,85,0.16);
     }
 
-    .primary-btn:hover{
-      background:rgba(176,11,85,0.22);
-    }
-
     .ghost-btn{
       background:rgba(255,255,255,0.03);
-    }
-
-    .ghost-btn:hover{
-      background:rgba(255,255,255,0.05);
-      border-color:var(--line-strong);
     }
 
     .danger-btn{
@@ -363,46 +324,27 @@
       background:rgba(255,107,129,0.10);
     }
 
-    .danger-btn:hover{
-      background:rgba(255,107,129,0.16);
-    }
-
     .success-btn{
       border:1px solid rgba(87,211,140,0.45);
       background:rgba(87,211,140,0.10);
-    }
-
-    .success-btn:hover{
-      background:rgba(87,211,140,0.16);
     }
 
     .status{
       min-height:1.2em;
       margin-top:2px;
       color:var(--muted);
-      font-size:0.92rem;
-    }
-
-    .sub-grid{
-      display:grid;
-      gap:12px;
-    }
-
-    .mini-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
+      font-size:0.88rem;
     }
 
     .mini-stat{
-      padding:16px;
+      padding:14px;
       border:1px solid var(--line);
       background:rgba(255,255,255,0.02);
     }
 
     .mini-label{
       color:var(--muted);
-      font-size:0.78rem;
+      font-size:0.72rem;
       text-transform:uppercase;
       letter-spacing:0.08em;
       font-weight:700;
@@ -410,13 +352,111 @@
     }
 
     .mini-value{
-      font-size:1.08rem;
+      font-size:1rem;
       font-weight:800;
       letter-spacing:-0.02em;
       line-height:1.2;
     }
 
-    .table-wrap{
+    .games-mobile{
+      display:grid;
+      gap:10px;
+    }
+
+    .game-card{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,0.02);
+      padding:12px;
+      display:grid;
+      gap:10px;
+    }
+
+    .game-card-top{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:flex-start;
+    }
+
+    .game-card-title{
+      font-size:0.98rem;
+      font-weight:700;
+      line-height:1.2;
+      margin-bottom:5px;
+      word-break:break-word;
+    }
+
+    .game-card-sub{
+      font-size:0.76rem;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .game-meta-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+    }
+
+    .meta-box{
+      border:1px solid var(--line);
+      background:#0a0a0a;
+      padding:10px;
+    }
+
+    .meta-box-label{
+      font-size:0.66rem;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:0.08em;
+      margin-bottom:5px;
+      font-weight:700;
+    }
+
+    .meta-box-value{
+      font-size:0.86rem;
+      font-weight:700;
+      line-height:1.25;
+      word-break:break-word;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      padding:6px 10px;
+      border:1px solid rgba(176,11,85,0.34);
+      background:rgba(176,11,85,0.12);
+      font-size:0.76rem;
+      white-space:nowrap;
+      height:fit-content;
+    }
+
+    .pill.success{
+      border-color:rgba(87,211,140,0.34);
+      background:rgba(87,211,140,0.12);
+    }
+
+    .pill.warning{
+      border-color:rgba(255,209,102,0.34);
+      background:rgba(255,209,102,0.12);
+    }
+
+    .game-actions,
+    .inline-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .small-btn{
+      width:auto;
+      padding:9px 12px;
+      font-size:0.82rem;
+      line-height:1;
+    }
+
+    .desktop-table-wrap{
+      display:none;
       overflow:auto;
       border:1px solid var(--line);
       background:rgba(255,255,255,0.015);
@@ -426,7 +466,7 @@
       width:100%;
       border-collapse:collapse;
       min-width:760px;
-      font-size:0.93rem;
+      font-size:0.9rem;
     }
 
     th, td{
@@ -448,39 +488,6 @@
       z-index:1;
     }
 
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      padding:6px 10px;
-      border:1px solid rgba(176,11,85,0.34);
-      background:rgba(176,11,85,0.12);
-      font-size:0.82rem;
-      white-space:nowrap;
-    }
-
-    .pill.success{
-      border-color:rgba(87,211,140,0.34);
-      background:rgba(87,211,140,0.12);
-    }
-
-    .pill.warning{
-      border-color:rgba(255,209,102,0.34);
-      background:rgba(255,209,102,0.12);
-    }
-
-    .inline-actions{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-
-    .small-btn{
-      width:auto;
-      padding:8px 11px;
-      font-size:0.86rem;
-      line-height:1;
-    }
-
     .empty{
       color:var(--muted);
       padding:12px;
@@ -492,50 +499,46 @@
       height:6px;
     }
 
-    @media (max-width:1280px){
+    @media (min-width:700px){
       .stats-grid{
         grid-template-columns:repeat(3, 1fr);
       }
 
-      .main-layout{
-        grid-template-columns:1fr;
-      }
-    }
-
-    @media (max-width:760px){
-      .hero,
-      .app-shell{
-        width:min(100% - 16px, var(--max-w));
-      }
-
-      .hero{
-        padding:32px 0 22px;
-      }
-
-      .stats-grid{
+      .mini-grid{
         grid-template-columns:1fr 1fr;
       }
 
       .form-row,
-      .button-row,
-      .button-row.three,
-      .button-row.four,
-      .mini-grid{
-        grid-template-columns:1fr;
+      .button-row{
+        grid-template-columns:1fr 1fr;
+      }
+    }
+
+    @media (min-width:980px){
+      .hero{
+        width:min(var(--max-w), calc(100% - 32px));
+        padding:38px 0 24px;
       }
 
-      nav{
-        gap:10px;
+      .app-shell{
+        width:min(var(--max-w), calc(100% - 32px));
       }
 
-      nav a{
-        font-size:0.76rem;
+      .main-layout{
+        grid-template-columns:minmax(0, 1.3fr) minmax(300px, 0.9fr);
+        align-items:start;
       }
 
-      .topbar,
-      .panel,
-      .card{
-        padding:16px;
+      .stats-grid{
+        grid-template-columns:repeat(5, 1fr);
+      }
+
+      .games-mobile{
+        display:none;
+      }
+
+      .desktop-table-wrap{
+        display:block;
       }
     }
   </style>
@@ -562,15 +565,15 @@
     <section class="hero-wrap">
       <div class="hero">
         <h1>Poker Lobby</h1>
-        <p>Create games, join active games, track debts, and see player stats.</p>
+        <p>Create a game, join active games, and track player stats and debts.</p>
       </div>
     </section>
 
     <section class="app-shell">
-      <section class="topbar">
+      <section class="panel topbar">
         <div>
           <div class="tag">Game</div>
-          <h2>Lobby Control</h2>
+          <h2>Lobby</h2>
         </div>
         <div class="panel-subtle" id="signedInAs">Not signed in</div>
       </section>
@@ -581,7 +584,7 @@
           <div class="value" id="activeGamesValue">0</div>
         </div>
         <div class="card">
-          <div class="label">Your Open Games</div>
+          <div class="label">Your Games</div>
           <div class="value" id="myGamesValue">0</div>
         </div>
         <div class="card">
@@ -593,7 +596,7 @@
           <div class="value" id="owedToYouValue">$0.00</div>
         </div>
         <div class="card">
-          <div class="label">Your Balance</div>
+          <div class="label">Balance</div>
           <div class="value" id="myBalanceValue">$0.00</div>
         </div>
       </section>
@@ -601,62 +604,58 @@
       <section class="main-layout">
         <div class="left-stack">
           <section class="panel">
-            <div class="panel-head">
-              <h2>Create Game</h2>
-              <div class="panel-subtle">Lobby only for now</div>
-            </div>
+            <div class="tag">Create</div>
+            <div style="font-size:1rem;font-weight:700;margin-bottom:12px;">New Game</div>
 
             <form id="createGameForm">
+              <label class="input-label">
+                Game Name
+                <input type="text" id="gameNameInput" maxlength="40" placeholder="Friday Night Poker" required />
+              </label>
+
               <div class="form-row">
                 <label class="input-label">
-                  Game Name
-                  <input type="text" id="gameNameInput" maxlength="40" placeholder="Friday Night Poker" required />
-                </label>
-
-                <label class="input-label">
-                  Turn Time (sec)
+                  Turn Time
                   <input type="number" id="turnTimeInput" min="10" max="300" step="5" value="30" required />
                 </label>
-              </div>
 
-              <div class="form-row">
                 <label class="input-label">
                   Buy In
                   <input type="number" id="buyInInput" min="0" step="1" value="20" required />
                 </label>
+              </div>
 
+              <div class="form-row">
                 <label class="input-label">
                   Small Blind
                   <input type="number" id="smallBlindInput" min="0" step="1" value="1" required />
                 </label>
-              </div>
 
-              <div class="form-row">
                 <label class="input-label">
                   Big Blind
                   <input type="number" id="bigBlindInput" min="0" step="1" value="2" required />
                 </label>
-
-                <label class="input-label">
-                  Max Players
-                  <input type="number" id="maxPlayersInput" min="2" max="12" step="1" value="8" required />
-                </label>
               </div>
 
               <div class="form-row">
                 <label class="input-label">
-                  Starting Stack
-                  <input type="number" id="startingStackInput" min="1" step="1" value="1000" required />
+                  Max Players
+                  <input type="number" id="maxPlayersInput" min="2" max="12" step="1" value="8" required />
                 </label>
 
                 <label class="input-label">
-                  Visibility
-                  <select id="visibilityInput">
-                    <option value="public">Public</option>
-                    <option value="private">Private</option>
-                  </select>
+                  Starting Stack
+                  <input type="number" id="startingStackInput" min="1" step="1" value="1000" required />
                 </label>
               </div>
+
+              <label class="input-label">
+                Visibility
+                <select id="visibilityInput">
+                  <option value="public">Public</option>
+                  <option value="private">Private</option>
+                </select>
+              </label>
 
               <div class="button-row">
                 <button type="submit" class="primary-btn">Create Game</button>
@@ -668,12 +667,14 @@
           </section>
 
           <section class="panel">
-            <div class="panel-head">
-              <h2>Active Games</h2>
-              <div class="panel-subtle">Newest first</div>
+            <div class="tag">Games</div>
+            <div style="font-size:1rem;font-weight:700;margin-bottom:12px;">Active Games</div>
+
+            <div class="games-mobile" id="gamesMobileList">
+              <div class="empty">No active games.</div>
             </div>
 
-            <div class="table-wrap">
+            <div class="desktop-table-wrap">
               <table>
                 <thead>
                   <tr>
@@ -695,12 +696,12 @@
           </section>
 
           <section class="panel">
-            <div class="panel-head">
-              <h2>Your Games</h2>
-              <div class="panel-subtle">Delete only your own</div>
+            <div class="tag">Your Games</div>
+            <div class="games-mobile" id="myGamesMobileList">
+              <div class="empty">No games created by you.</div>
             </div>
 
-            <div class="table-wrap">
+            <div class="desktop-table-wrap">
               <table>
                 <thead>
                   <tr>
@@ -721,10 +722,7 @@
 
         <div class="right-stack">
           <section class="panel">
-            <div class="panel-head">
-              <h2>Username</h2>
-              <div class="panel-subtle">Shown instead of email</div>
-            </div>
+            <div class="tag">Username</div>
 
             <form id="usernameForm">
               <label class="input-label">
@@ -742,10 +740,7 @@
           </section>
 
           <section class="panel">
-            <div class="panel-head">
-              <h2>Your Stats</h2>
-              <div class="panel-subtle">From Firestore</div>
-            </div>
+            <div class="tag">Your Stats</div>
 
             <div class="mini-grid">
               <div class="mini-stat">
@@ -770,12 +765,10 @@
       </section>
 
       <section class="panel">
-        <div class="panel-head">
-          <h2>Debts You Owe</h2>
-          <div class="panel-subtle">Your unpaid debts</div>
-        </div>
+        <div class="tag">Debts</div>
+        <div style="font-size:1rem;font-weight:700;margin-bottom:12px;">Debts You Owe</div>
 
-        <div class="table-wrap">
+        <div class="desktop-table-wrap" style="display:block;">
           <table>
             <thead>
               <tr>
@@ -794,12 +787,10 @@
       </section>
 
       <section class="panel">
-        <div class="panel-head">
-          <h2>Debts Owed To You</h2>
-          <div class="panel-subtle">Forgive after they pay</div>
-        </div>
+        <div class="tag">Debts</div>
+        <div style="font-size:1rem;font-weight:700;margin-bottom:12px;">Debts Owed To You</div>
 
-        <div class="table-wrap">
+        <div class="desktop-table-wrap" style="display:block;">
           <table>
             <thead>
               <tr>
@@ -819,12 +810,10 @@
       </section>
 
       <section class="panel">
-        <div class="panel-head">
-          <h2>All Player Stats</h2>
-          <div class="panel-subtle">Balance, win rate, hands</div>
-        </div>
+        <div class="tag">Players</div>
+        <div style="font-size:1rem;font-weight:700;margin-bottom:12px;">All Player Stats</div>
 
-        <div class="table-wrap">
+        <div class="desktop-table-wrap" style="display:block;">
           <table>
             <thead>
               <tr>
@@ -917,6 +906,9 @@
     const debtsIOweBody = document.getElementById("debtsIOweBody");
     const debtsOwedToMeBody = document.getElementById("debtsOwedToMeBody");
     const playerStatsBody = document.getElementById("playerStatsBody");
+
+    const gamesMobileList = document.getElementById("gamesMobileList");
+    const myGamesMobileList = document.getElementById("myGamesMobileList");
 
     const activeGamesValue = document.getElementById("activeGamesValue");
     const myGamesValue = document.getElementById("myGamesValue");
@@ -1120,6 +1112,33 @@
       return `${((won / played) * 100).toFixed(1)}%`;
     }
 
+    function isAlreadyInGame(game) {
+      if (!currentUser || !Array.isArray(game?.players)) return false;
+      return game.players.some(player => player.uid === currentUser.uid);
+    }
+
+    function canJoinGame(game) {
+      const playerCount = Array.isArray(game?.players) ? game.players.length : 0;
+      const maxPlayers = Number(game?.maxPlayers || 0);
+      const status = String(game?.status || "").toLowerCase();
+      if (isAlreadyInGame(game)) return false;
+      if (playerCount >= maxPlayers) return false;
+      if (["finished", "deleted"].includes(status)) return false;
+      return true;
+    }
+
+    function renderJoinButton(game) {
+      if (isAlreadyInGame(game)) {
+        return `<a class="small-btn ghost-btn" href="pokergame.html?game=${encodeURIComponent(game.id)}">In Game</a>`;
+      }
+
+      if (!canJoinGame(game)) {
+        return `<button class="small-btn ghost-btn" disabled>Full</button>`;
+      }
+
+      return `<button class="small-btn primary-btn" data-join-game="${game.id}">Join</button>`;
+    }
+
     async function loadPlayerStats() {
       const snap = await getDocs(query(collection(db, "pokerPlayers"), orderBy("handsWon", "desc"), limit(100)));
       currentStats = snap.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
@@ -1173,6 +1192,7 @@
 
       if (!activeGames.length) {
         gamesTableBody.innerHTML = `<tr><td colspan="8" style="color:var(--muted);">No active games.</td></tr>`;
+        gamesMobileList.innerHTML = `<div class="empty">No active games.</div>`;
       } else {
         gamesTableBody.innerHTML = activeGames.map(game => {
           const playerCount = Array.isArray(game.players) ? game.players.length : 0;
@@ -1192,17 +1212,60 @@
               <td><span class="pill ${game.status === "waiting" ? "warning" : "success"}">${escapeHtml(game.status || "waiting")}</span></td>
               <td>
                 <div class="inline-actions">
-                  <a class="small-btn ghost-btn" href="pokergame.html?game=${encodeURIComponent(game.id)}">Open</a>
+                  ${renderJoinButton(game)}
                   ${isMine ? `<button class="small-btn danger-btn" data-delete-game="${game.id}">Delete</button>` : ``}
                 </div>
               </td>
             </tr>
           `;
         }).join("");
+
+        gamesMobileList.innerHTML = activeGames.map(game => {
+          const playerCount = Array.isArray(game.players) ? game.players.length : 0;
+          const isMine = currentUser && game.hostUid === currentUser.uid;
+          const hostName = game.hostUsername || game.hostDisplayName || "Player";
+
+          return `
+            <div class="game-card">
+              <div class="game-card-top">
+                <div>
+                  <div class="game-card-title">${escapeHtml(game.name || "Untitled Game")}</div>
+                  <div class="game-card-sub">Host ${escapeHtml(hostName)} • ${escapeHtml(game.visibility || "public")}</div>
+                </div>
+                <span class="pill ${game.status === "waiting" ? "warning" : "success"}">${escapeHtml(game.status || "waiting")}</span>
+              </div>
+
+              <div class="game-meta-grid">
+                <div class="meta-box">
+                  <div class="meta-box-label">Blinds</div>
+                  <div class="meta-box-value">${Number(game.smallBlind || 0)} / ${Number(game.bigBlind || 0)}</div>
+                </div>
+                <div class="meta-box">
+                  <div class="meta-box-label">Buy In</div>
+                  <div class="meta-box-value">${money(game.buyIn || 0)}</div>
+                </div>
+                <div class="meta-box">
+                  <div class="meta-box-label">Players</div>
+                  <div class="meta-box-value">${playerCount} / ${Number(game.maxPlayers || 0)}</div>
+                </div>
+                <div class="meta-box">
+                  <div class="meta-box-label">Turn Time</div>
+                  <div class="meta-box-value">${Number(game.turnTime || 0)}s</div>
+                </div>
+              </div>
+
+              <div class="game-actions">
+                ${renderJoinButton(game)}
+                ${isMine ? `<button class="small-btn danger-btn" data-delete-game="${game.id}">Delete</button>` : ``}
+              </div>
+            </div>
+          `;
+        }).join("");
       }
 
       if (!myGames.length) {
         myGamesTableBody.innerHTML = `<tr><td colspan="5" style="color:var(--muted);">No games created by you.</td></tr>`;
+        myGamesMobileList.innerHTML = `<div class="empty">No games created by you.</div>`;
       } else {
         myGamesTableBody.innerHTML = myGames.map(game => {
           const playerCount = Array.isArray(game.players) ? game.players.length : 0;
@@ -1219,11 +1282,50 @@
               </td>
               <td>
                 <div class="inline-actions">
-                  <a class="small-btn ghost-btn" href="pokergame.html?game=${encodeURIComponent(game.id)}">Open</a>
+                  ${renderJoinButton(game)}
                   <button class="small-btn danger-btn" data-delete-game="${game.id}">Delete</button>
                 </div>
               </td>
             </tr>
+          `;
+        }).join("");
+
+        myGamesMobileList.innerHTML = myGames.map(game => {
+          const playerCount = Array.isArray(game.players) ? game.players.length : 0;
+          return `
+            <div class="game-card">
+              <div class="game-card-top">
+                <div>
+                  <div class="game-card-title">${escapeHtml(game.name || "Untitled Game")}</div>
+                  <div class="game-card-sub">${formatDate(game.createdAt)}</div>
+                </div>
+                <span class="pill warning">${escapeHtml(game.status || "waiting")}</span>
+              </div>
+
+              <div class="game-meta-grid">
+                <div class="meta-box">
+                  <div class="meta-box-label">Players</div>
+                  <div class="meta-box-value">${playerCount} / ${Number(game.maxPlayers || 0)}</div>
+                </div>
+                <div class="meta-box">
+                  <div class="meta-box-label">Buy In</div>
+                  <div class="meta-box-value">${money(game.buyIn || 0)}</div>
+                </div>
+                <div class="meta-box">
+                  <div class="meta-box-label">Blinds</div>
+                  <div class="meta-box-value">${Number(game.smallBlind || 0)} / ${Number(game.bigBlind || 0)}</div>
+                </div>
+                <div class="meta-box">
+                  <div class="meta-box-label">Turn Time</div>
+                  <div class="meta-box-value">${Number(game.turnTime || 0)}s</div>
+                </div>
+              </div>
+
+              <div class="game-actions">
+                ${renderJoinButton(game)}
+                <button class="small-btn danger-btn" data-delete-game="${game.id}">Delete</button>
+              </div>
+            </div>
           `;
         }).join("");
       }
@@ -1350,6 +1452,51 @@
       return true;
     }
 
+    async function joinGame(gameId) {
+      if (!currentUser) return;
+
+      const gameRef = doc(db, "pokerGames", gameId);
+      const gameSnap = await getDoc(gameRef);
+
+      if (!gameSnap.exists()) {
+        showCreateStatus("Game not found.", true);
+        return;
+      }
+
+      const game = { id: gameSnap.id, ...gameSnap.data() };
+      const players = Array.isArray(game.players) ? [...game.players] : [];
+
+      if (players.some(player => player.uid === currentUser.uid)) {
+        window.location.href = `pokergame.html?game=${encodeURIComponent(gameId)}`;
+        return;
+      }
+
+      if (players.length >= Number(game.maxPlayers || 0)) {
+        showCreateStatus("Game is full.", true);
+        return;
+      }
+
+      const publicName = getPublicName(currentPlayerProfile, fallbackNameFromUser(currentUser));
+
+      players.push({
+        uid: currentUser.uid,
+        username: currentPlayerProfile?.username || "",
+        displayName: publicName,
+        email: currentUser.email || "",
+        seat: players.length + 1,
+        stack: Number(game.startingStack || 0),
+        joinedAt: new Date().toISOString(),
+        isHost: false
+      });
+
+      await updateDoc(gameRef, {
+        players,
+        updatedAt: serverTimestamp()
+      });
+
+      window.location.href = `pokergame.html?game=${encodeURIComponent(gameId)}`;
+    }
+
     createGameForm.addEventListener("submit", async (event) => {
       event.preventDefault();
       if (!currentUser) return;
@@ -1460,6 +1607,18 @@
     document.addEventListener("click", async (event) => {
       const deleteBtn = event.target.closest("[data-delete-game]");
       const forgiveBtn = event.target.closest("[data-forgive-debt]");
+      const joinBtn = event.target.closest("[data-join-game]");
+
+      if (joinBtn) {
+        const gameId = joinBtn.dataset.joinGame;
+        try {
+          showCreateStatus("Joining game...");
+          await joinGame(gameId);
+        } catch (error) {
+          console.error(error);
+          showCreateStatus("Could not join game.", true);
+        }
+      }
 
       if (deleteBtn) {
         const gameId = deleteBtn.dataset.deleteGame;
