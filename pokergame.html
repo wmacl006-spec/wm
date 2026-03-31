@@ -25,12 +25,11 @@
       --shadow:0 18px 40px rgba(0,0,0,0.24);
       --card-w:72px;
       --card-h:104px;
-      --player-h:68px;
+      --player-h:72px;
     }
 
     *{ margin:0; padding:0; box-sizing:border-box; }
     html, body{ min-height:100%; }
-
     body{
       font-family:"Comfortaa",sans-serif;
       background:var(--bg);
@@ -182,6 +181,11 @@
       background:rgba(255,209,102,0.1);
     }
 
+    .pill.danger{
+      border-color:rgba(255,107,129,0.35);
+      background:rgba(255,107,129,0.1);
+    }
+
     .layout{
       display:grid;
       grid-template-rows:auto auto auto;
@@ -191,7 +195,7 @@
 
     .players-panel{
       padding:10px;
-      max-height:192px;
+      max-height:220px;
       overflow:auto;
     }
 
@@ -445,8 +449,7 @@
 
     @media (min-width: 880px){
       .layout{ grid-template-rows:auto 1fr auto; }
-      .players-panel{ max-height:240px; }
-
+      .players-panel{ max-height:260px; }
       .my-cards-wrap .card,
       .my-cards-wrap .card-slot{
         width:92px;
@@ -461,44 +464,31 @@
       }
 
       header{ padding:0 14px; }
-
       .logo span{ font-size:0.88rem; }
-
       nav{ gap:10px; }
-
       nav a{ font-size:0.78rem; }
-
       .shell{ width:min(100% - 16px, var(--max-w)); }
-
       .meta-strip{ padding:10px 12px; }
-
       .player{ padding:9px 10px; }
-
       .player-sub{
         gap:8px;
         font-size:0.72rem;
       }
-
       .community{ gap:6px; }
-
       .my-cards-wrap .card,
       .my-cards-wrap .card-slot{
         width:76px;
         height:110px;
       }
-
       .bet-controls{
         grid-template-columns:1fr;
       }
-
       .controls{
         grid-template-columns:1fr 1fr;
       }
-
       .utility-row{
         grid-template-columns:1fr;
       }
-
       button{
         min-height:46px;
         font-size:0.9rem;
@@ -533,6 +523,7 @@
           <span class="pill accent" id="turnText">Turn —</span>
         </div>
         <div class="meta-right">
+          <span class="pill warning" id="phasePill">Waiting...</span>
           <span class="pill warning" id="startInfoPill">Waiting...</span>
         </div>
       </section>
@@ -553,6 +544,10 @@
             <div class="pot-label">Pot</div>
             <div class="pot-value" id="potValue">$0</div>
           </div>
+          <div class="pot-box">
+            <div class="pot-label">To Call</div>
+            <div class="pot-value" id="toCallValue">$0</div>
+          </div>
         </div>
 
         <div class="community" id="communityCards"></div>
@@ -563,7 +558,7 @@
 
         <div class="bet-panel">
           <div class="bet-row">
-            <div class="bet-label">Bet Size</div>
+            <div class="bet-label">Bet / Raise Size</div>
             <div class="bet-value" id="betSizeText">$0</div>
           </div>
           <div class="bet-controls">
@@ -580,7 +575,8 @@
         </div>
 
         <div class="utility-row">
-          <button type="button" class="success-btn hidden" id="startBtn">Start Game</button>
+          <button type="button" class="success-btn hidden" id="startBtn">Start Hand</button>
+          <button type="button" class="success-btn hidden" id="nextHandBtn">Next Hand</button>
           <button type="button" class="ghost-btn" id="leaveBtn">Leave Game</button>
         </div>
 
@@ -601,7 +597,8 @@
       onSnapshot,
       serverTimestamp,
       arrayRemove,
-      Timestamp
+      Timestamp,
+      runTransaction
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -615,13 +612,23 @@
     };
 
     const app = initializeApp(firebaseConfig);
-
-    if (await analyticsSupported()) {
-      getAnalytics(app);
-    }
+    if (await analyticsSupported()) getAnalytics(app);
 
     const auth = getAuth(app);
     const db = getFirestore(app);
+
+    const SUITS = ["S", "C", "H", "D"];
+    const VALUES = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
+    const VALUE_TO_NUM = { "2":2, "3":3, "4":4, "5":5, "6":6, "7":7, "8":8, "9":9, "10":10, "J":11, "Q":12, "K":13, "A":14 };
+    const PHASE_LABELS = {
+      waiting: "Waiting",
+      preflop: "Preflop",
+      flop: "Flop",
+      turn: "Turn",
+      river: "River",
+      showdown: "Showdown",
+      finished: "Finished"
+    };
 
     const statusPill = document.getElementById("statusPill");
     const authGate = document.getElementById("authGate");
@@ -630,8 +637,10 @@
     const gameNamePill = document.getElementById("gameNamePill");
     const blindsText = document.getElementById("blindsText");
     const turnText = document.getElementById("turnText");
+    const phasePill = document.getElementById("phasePill");
     const startInfoPill = document.getElementById("startInfoPill");
     const potValue = document.getElementById("potValue");
+    const toCallValue = document.getElementById("toCallValue");
     const playersList = document.getElementById("playersList");
     const communityCards = document.getElementById("communityCards");
     const myCards = document.getElementById("myCards");
@@ -643,6 +652,7 @@
     const foldBtn = document.getElementById("foldBtn");
     const leaveBtn = document.getElementById("leaveBtn");
     const startBtn = document.getElementById("startBtn");
+    const nextHandBtn = document.getElementById("nextHandBtn");
 
     const betSlider = document.getElementById("betSlider");
     const betInput = document.getElementById("betInput");
@@ -656,12 +666,9 @@
     let unsubscribeGame = null;
     let currentGame = null;
     let startCountdownInterval = null;
+    let actionBusy = false;
 
-    const statusRank = {
-      default: 0,
-      plus: 1,
-      me: 2
-    };
+    const statusRank = { default: 0, plus: 1, me: 2 };
 
     function normalizeStatus(status) {
       if (!status) return "default";
@@ -699,90 +706,260 @@
 
     function getUserStatus(uid) {
       return getDoc(doc(db, "users", uid))
-        .then(snap => {
-          if (!snap.exists()) return "default";
-          return normalizeStatus(snap.data()?.status);
-        })
+        .then(snap => snap.exists() ? normalizeStatus(snap.data()?.status) : "default")
         .catch(() => "default");
     }
 
     function cardUrl(code) {
-      if (!code) return "";
-      return `/cards/${code}.png`;
+      return code ? `/cards/${code}.png` : "";
     }
 
     function renderCard(code, hidden = false) {
-      if (!code) {
-        return `<div class="card-slot"></div>`;
-      }
-
-      if (hidden) {
-        return `<div class="card-slot">??</div>`;
-      }
-
-      return `
-        <div class="card">
-          <img src="${cardUrl(code)}" alt="${escapeHtml(code)}" />
-        </div>
-      `;
+      if (!code) return `<div class="card-slot"></div>`;
+      if (hidden) return `<div class="card-slot">??</div>`;
+      return `<div class="card"><img src="${cardUrl(code)}" alt="${escapeHtml(code)}" /></div>`;
     }
 
     function renderCardRow(container, cards, { hidden = false, count = 0 } = {}) {
       const total = Math.max(count, cards?.length || 0);
       const html = [];
-
       for (let i = 0; i < total; i++) {
         const code = cards?.[i] || "";
         html.push(renderCard(code, hidden && !!code));
       }
-
       container.innerHTML = html.join("");
     }
 
+    function clone(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function buildDeck() {
+      const deck = [];
+      for (const v of VALUES) {
+        for (const s of SUITS) deck.push(`${v}${s}`);
+      }
+      for (let i = deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+      }
+      return deck;
+    }
+
+    function cardValue(code) {
+      return VALUE_TO_NUM[String(code).slice(0, -1)];
+    }
+
+    function cardSuit(code) {
+      return String(code).slice(-1);
+    }
+
+    function combinations(arr, choose) {
+      const results = [];
+      function helper(start, picked) {
+        if (picked.length === choose) {
+          results.push(picked.slice());
+          return;
+        }
+        for (let i = start; i < arr.length; i++) {
+          picked.push(arr[i]);
+          helper(i + 1, picked);
+          picked.pop();
+        }
+      }
+      helper(0, []);
+      return results;
+    }
+
+    function compareRankArrays(a = [], b = []) {
+      const len = Math.max(a.length, b.length);
+      for (let i = 0; i < len; i++) {
+        const av = Number(a[i] || 0);
+        const bv = Number(b[i] || 0);
+        if (av > bv) return 1;
+        if (av < bv) return -1;
+      }
+      return 0;
+    }
+
+    function describeHand(score) {
+      return score?.name || "High Card";
+    }
+
+    function evaluate5(cards) {
+      const values = cards.map(cardValue).sort((a, b) => b - a);
+      const suits = cards.map(cardSuit);
+      const counts = {};
+      for (const v of values) counts[v] = (counts[v] || 0) + 1;
+
+      const groups = Object.entries(counts)
+        .map(([value, count]) => ({ value: Number(value), count }))
+        .sort((a, b) => b.count - a.count || b.value - a.value);
+
+      const uniqueDesc = [...new Set(values)].sort((a, b) => b - a);
+      let straightHigh = 0;
+
+      if (uniqueDesc.length === 5) {
+        const max = uniqueDesc[0];
+        const min = uniqueDesc[4];
+        if (max - min === 4) {
+          straightHigh = max;
+        } else if (JSON.stringify(uniqueDesc) === JSON.stringify([14,5,4,3,2])) {
+          straightHigh = 5;
+        }
+      }
+
+      const flush = suits.every(s => s === suits[0]);
+
+      if (straightHigh && flush) {
+        return { category: 8, ranks: [straightHigh], name: straightHigh === 14 ? "Royal Flush" : "Straight Flush" };
+      }
+
+      if (groups[0].count === 4) {
+        return {
+          category: 7,
+          ranks: [groups[0].value, groups[1].value],
+          name: "Four of a Kind"
+        };
+      }
+
+      if (groups[0].count === 3 && groups[1].count === 2) {
+        return {
+          category: 6,
+          ranks: [groups[0].value, groups[1].value],
+          name: "Full House"
+        };
+      }
+
+      if (flush) {
+        return {
+          category: 5,
+          ranks: values,
+          name: "Flush"
+        };
+      }
+
+      if (straightHigh) {
+        return {
+          category: 4,
+          ranks: [straightHigh],
+          name: "Straight"
+        };
+      }
+
+      if (groups[0].count === 3) {
+        const kickers = groups.slice(1).map(g => g.value).sort((a, b) => b - a);
+        return {
+          category: 3,
+          ranks: [groups[0].value, ...kickers],
+          name: "Three of a Kind"
+        };
+      }
+
+      if (groups[0].count === 2 && groups[1].count === 2) {
+        const pairVals = [groups[0].value, groups[1].value].sort((a, b) => b - a);
+        const kicker = groups[2].value;
+        return {
+          category: 2,
+          ranks: [...pairVals, kicker],
+          name: "Two Pair"
+        };
+      }
+
+      if (groups[0].count === 2) {
+        const kickers = groups.slice(1).map(g => g.value).sort((a, b) => b - a);
+        return {
+          category: 1,
+          ranks: [groups[0].value, ...kickers],
+          name: "Pair"
+        };
+      }
+
+      return {
+        category: 0,
+        ranks: values,
+        name: "High Card"
+      };
+    }
+
+    function compareScores(a, b) {
+      if (a.category > b.category) return 1;
+      if (a.category < b.category) return -1;
+      return compareRankArrays(a.ranks, b.ranks);
+    }
+
+    function evaluate7(cards) {
+      const all = combinations(cards, 5);
+      let best = null;
+      for (const combo of all) {
+        const score = evaluate5(combo);
+        if (!best || compareScores(score, best) > 0) {
+          best = score;
+        }
+      }
+      return best;
+    }
+
+    function getSortedPlayers(game) {
+      const players = Array.isArray(game?.players) ? clone(game.players) : [];
+      players.sort((a, b) => Number(a.seat ?? 999) - Number(b.seat ?? 999));
+      return players.map((p, index) => ({ ...p, seatIndex: index }));
+    }
+
+    function seatOrderPlayers(game) {
+      const players = Array.isArray(game?.players) ? clone(game.players) : [];
+      players.sort((a, b) => Number(a.seat ?? 999) - Number(b.seat ?? 999));
+      return players;
+    }
+
     function isCurrentTurn(player, game) {
-      const turnSeat = Number(game?.currentTurnSeat ?? game?.turnSeat ?? -1);
-      const playerSeat = Number(player?.seat ?? -2);
-      return turnSeat >= 0 && playerSeat === turnSeat;
+      const turnIndex = Number(game?.currentTurnIndex ?? -1);
+      return turnIndex >= 0 && Number(player?.seatIndex ?? -2) === turnIndex;
     }
 
     function findMe(game) {
       if (!currentUser || !Array.isArray(game?.players)) return null;
-      return game.players.find(player => player.uid === currentUser.uid) || null;
+      const sorted = seatOrderPlayers(game);
+      return sorted.find(player => player.uid === currentUser.uid) || null;
+    }
+
+    function getMySortedIndex(game) {
+      if (!currentUser || !Array.isArray(game?.players)) return -1;
+      const sorted = seatOrderPlayers(game);
+      return sorted.findIndex(player => player.uid === currentUser.uid);
     }
 
     function getMyCards(game) {
       const me = findMe(game);
-      if (!me) return ["", ""];
-      if (Array.isArray(me.cards) && me.cards.length) return me.cards.slice(0, 2);
-      if (Array.isArray(game?.holeCards?.[me.uid])) return game.holeCards[me.uid].slice(0, 2);
-      return ["", ""];
+      return Array.isArray(me?.cards) ? me.cards.slice(0, 2) : ["", ""];
     }
 
     function getCommunityCards(game) {
-      if (Array.isArray(game?.communityCards)) return game.communityCards.slice(0, 5);
-      if (Array.isArray(game?.board)) return game.board.slice(0, 5);
-      return [];
+      return Array.isArray(game?.communityCards) ? game.communityCards.slice(0, 5) : [];
     }
 
     function getPot(game) {
-      if (Number.isFinite(Number(game?.pot))) return Number(game.pot);
-      if (Number.isFinite(Number(game?.potValue))) return Number(game.potValue);
-      return 0;
+      return Number(game?.pot || 0);
+    }
+
+    function getDealerIndex(game) {
+      return Number.isFinite(Number(game?.dealerIndex)) ? Number(game.dealerIndex) : -1;
+    }
+
+    function getCurrentBet(game) {
+      return Number(game?.currentBet || 0);
     }
 
     function getCallAmount(game, me) {
-      const toCall = Number(me?.toCall ?? game?.toCall ?? 0);
-      return Number.isFinite(toCall) && toCall > 0 ? toCall : 0;
+      return Math.max(0, getCurrentBet(game) - Number(me?.bet || 0));
     }
 
-    function getMinBet(game) {
-      const minBet = Number(game?.minRaise ?? game?.bigBlind ?? game?.minBet ?? 0);
-      return Number.isFinite(minBet) && minBet > 0 ? minBet : 0;
+    function getMinRaise(game) {
+      return Math.max(1, Number(game?.minRaise || game?.bigBlind || 1));
     }
 
     function getMaxBet(game, me) {
-      const stack = Number(me?.stack ?? 0);
-      return Number.isFinite(stack) && stack > 0 ? stack : 0;
+      return Math.max(0, Number(me?.stack || 0));
     }
 
     function toMillis(value) {
@@ -797,51 +974,541 @@
     }
 
     function isHost(game, uid) {
-      if (!game || !uid) return false;
-      return game.hostUid === uid || game.createdByUid === uid || game.ownerUid === uid;
+      return !!game && !!uid && (game.hostUid === uid || game.createdByUid === uid || game.ownerUid === uid);
     }
 
     function getPlayerCount(game) {
       return Array.isArray(game?.players) ? game.players.length : 0;
     }
 
-    function getGameStarted(game) {
-      const s = String(game?.status || "").toLowerCase();
-      return s === "active" || s === "in_progress" || s === "in-progress" || s === "playing" || !!game?.startedAt;
+    function getActivePlayers(players) {
+      return players.filter(p => !p.out);
     }
 
-    function clearStartInterval() {
-      if (startCountdownInterval) {
-        clearInterval(startCountdownInterval);
-        startCountdownInterval = null;
+    function getInHandPlayers(players) {
+      return players.filter(p => !p.out && !p.folded);
+    }
+
+    function getCanActPlayers(players) {
+      return players.filter(p => !p.out && !p.folded && !p.allIn);
+    }
+
+    function nextIndex(players, fromIndex, predicate) {
+      if (!players.length) return -1;
+      for (let step = 1; step <= players.length; step++) {
+        const idx = (fromIndex + step) % players.length;
+        if (predicate(players[idx], idx)) return idx;
       }
+      return -1;
+    }
+
+    function firstIndexFrom(players, startIndex, predicate) {
+      if (!players.length) return -1;
+      for (let step = 0; step < players.length; step++) {
+        const idx = (startIndex + step) % players.length;
+        if (predicate(players[idx], idx)) return idx;
+      }
+      return -1;
+    }
+
+    function formatPhase(phase) {
+      return PHASE_LABELS[String(phase || "waiting").toLowerCase()] || "Waiting";
+    }
+
+    function getPlayerStartStack(game, player) {
+      const buyIn = Number(game?.buyIn || game?.startingStack || 0);
+      const existing = Number(player?.stack);
+      if (Number.isFinite(existing) && existing > 0) return existing;
+      if (buyIn > 0) return buyIn;
+      return 1000;
+    }
+
+    function clearPerHandFlags(player) {
+      return {
+        ...player,
+        cards: [],
+        bet: 0,
+        totalCommitted: 0,
+        folded: false,
+        allIn: false,
+        actedThisRound: false,
+        handResult: "",
+        winningText: ""
+      };
+    }
+
+    function activeCount(players) {
+      return players.filter(p => !p.out && !p.folded).length;
+    }
+
+    function aliveCount(players) {
+      return players.filter(p => !p.out).length;
+    }
+
+    function removeBustedPlayers(players) {
+      return players.map(p => ({
+        ...p,
+        out: Number(p.stack || 0) <= 0
+      }));
+    }
+
+    function postForcedBet(players, index, amount) {
+      if (index < 0 || !players[index] || players[index].out) return 0;
+      const player = players[index];
+      const post = Math.max(0, Math.min(Number(player.stack || 0), Number(amount || 0)));
+      player.stack = Number(player.stack || 0) - post;
+      player.bet = Number(player.bet || 0) + post;
+      player.totalCommitted = Number(player.totalCommitted || 0) + post;
+      player.allIn = Number(player.stack || 0) <= 0;
+      return post;
+    }
+
+    function roundComplete(game) {
+      const players = game.players;
+      const currentBet = Number(game.currentBet || 0);
+
+      const active = players.filter(p => !p.out && !p.folded);
+      const canAct = active.filter(p => !p.allIn);
+
+      if (active.length <= 1) return true;
+      if (canAct.length === 0) return true;
+
+      for (const p of canAct) {
+        if (!p.actedThisRound) return false;
+        if (Number(p.bet || 0) !== currentBet) return false;
+      }
+      return true;
+    }
+
+    function resetRoundBets(game) {
+      game.currentBet = 0;
+      game.players = game.players.map(p => ({ ...p, bet: 0, actedThisRound: false }));
+      return game;
+    }
+
+    function dealToBoard(game, count) {
+      for (let i = 0; i < count; i++) {
+        const card = game.deck.shift();
+        if (card) game.communityCards.push(card);
+      }
+    }
+
+    function getStreetStartIndex(game, phase) {
+      const players = game.players;
+      if (players.length === 2 && phase === "preflop") {
+        return nextIndex(players, Number(game.dealerIndex), p => !p.out && !p.folded && !p.allIn);
+      }
+
+      if (phase === "preflop") {
+        const bb = Number(game.bigBlindIndex);
+        return nextIndex(players, bb, p => !p.out && !p.folded && !p.allIn);
+      }
+
+      return nextIndex(players, Number(game.dealerIndex), p => !p.out && !p.folded && !p.allIn);
+    }
+
+    function moveToNextStreet(game) {
+      if (activeCount(game.players) <= 1) return finishByLastPlayer(game);
+
+      const currentPhase = String(game.phase || "preflop");
+      resetRoundBets(game);
+
+      if (currentPhase === "preflop") {
+        game.phase = "flop";
+        dealToBoard(game, 3);
+      } else if (currentPhase === "flop") {
+        game.phase = "turn";
+        dealToBoard(game, 1);
+      } else if (currentPhase === "turn") {
+        game.phase = "river";
+        dealToBoard(game, 1);
+      } else {
+        game.phase = "showdown";
+        return resolveShowdown(game);
+      }
+
+      const first = getStreetStartIndex(game, game.phase);
+      game.currentTurnIndex = first;
+      return game;
+    }
+
+    function finishByLastPlayer(game) {
+      const winner = game.players.find(p => !p.out && !p.folded);
+      if (!winner) {
+        game.phase = "finished";
+        game.status = "waiting";
+        game.currentTurnIndex = -1;
+        return game;
+      }
+
+      const pot = Number(game.pot || 0);
+      winner.stack = Number(winner.stack || 0) + pot;
+      winner.handResult = "Won";
+      winner.winningText = `Won ${money(pot)} (everyone folded)`;
+
+      game.players = removeBustedPlayers(game.players);
+      game.phase = "finished";
+      game.status = "waiting";
+      game.currentTurnIndex = -1;
+      game.currentBet = 0;
+      game.minRaise = Number(game.bigBlind || 0);
+      game.lastWinnerUids = [winner.uid];
+      game.lastResultText = `${getPublicName(winner)} won ${money(pot)} (everyone folded).`;
+      game.pot = 0;
+      return game;
+    }
+
+    function buildSidePots(players) {
+      const contributors = players
+        .filter(p => Number(p.totalCommitted || 0) > 0)
+        .map(p => ({ uid: p.uid, amount: Number(p.totalCommitted || 0) }));
+
+      const levels = [...new Set(contributors.map(c => c.amount).filter(v => v > 0))].sort((a, b) => a - b);
+      const pots = [];
+      let prev = 0;
+
+      for (const level of levels) {
+        const eligibleContributors = contributors.filter(c => c.amount >= level);
+        const slice = (level - prev) * eligibleContributors.length;
+        if (slice > 0) {
+          pots.push({
+            amount: slice,
+            eligibleUids: eligibleContributors.map(c => c.uid)
+          });
+        }
+        prev = level;
+      }
+
+      return pots;
+    }
+
+    function resolveShowdown(game) {
+      const live = game.players.filter(p => !p.out && !p.folded);
+      const board = game.communityCards.slice();
+
+      const scoresByUid = {};
+      for (const p of live) {
+        const score = evaluate7([...(p.cards || []), ...board]);
+        scoresByUid[p.uid] = score;
+      }
+
+      const pots = buildSidePots(game.players);
+      const winnings = {};
+      for (const p of game.players) winnings[p.uid] = 0;
+
+      for (const pot of pots) {
+        const eligibleLive = live.filter(p => pot.eligibleUids.includes(p.uid));
+        if (!eligibleLive.length) continue;
+
+        let bestScore = null;
+        let winners = [];
+
+        for (const p of eligibleLive) {
+          const score = scoresByUid[p.uid];
+          if (!bestScore || compareScores(score, bestScore) > 0) {
+            bestScore = score;
+            winners = [p];
+          } else if (compareScores(score, bestScore) === 0) {
+            winners.push(p);
+          }
+        }
+
+        const share = Math.floor(pot.amount / winners.length);
+        let remainder = pot.amount - (share * winners.length);
+
+        const orderedWinners = winners.slice().sort((a, b) => Number(a.seat ?? 999) - Number(b.seat ?? 999));
+        for (const w of orderedWinners) {
+          winnings[w.uid] += share + (remainder > 0 ? 1 : 0);
+          if (remainder > 0) remainder--;
+        }
+      }
+
+      let resultParts = [];
+      let winnerUids = [];
+
+      for (const p of game.players) {
+        const won = Number(winnings[p.uid] || 0);
+        if (won > 0) {
+          p.stack = Number(p.stack || 0) + won;
+          p.handResult = "Won";
+          p.winningText = `${money(won)} with ${describeHand(scoresByUid[p.uid])}`;
+          winnerUids.push(p.uid);
+          resultParts.push(`${getPublicName(p)} won ${money(won)} with ${describeHand(scoresByUid[p.uid])}`);
+        } else if (!p.out && !p.folded && scoresByUid[p.uid]) {
+          p.handResult = "Lost";
+          p.winningText = describeHand(scoresByUid[p.uid]);
+        } else {
+          p.handResult = "";
+          p.winningText = "";
+        }
+      }
+
+      game.players = removeBustedPlayers(game.players);
+      game.phase = "finished";
+      game.status = "waiting";
+      game.currentTurnIndex = -1;
+      game.currentBet = 0;
+      game.minRaise = Number(game.bigBlind || 0);
+      game.lastWinnerUids = winnerUids;
+      game.lastResultText = resultParts.join(" • ") || "Hand complete.";
+      game.pot = 0;
+      return game;
+    }
+
+    function getDefaultDealerIndex(players, previousDealerIndex = -1) {
+      if (!players.length) return -1;
+      const start = previousDealerIndex >= 0 ? previousDealerIndex : players.length - 1;
+      return nextIndex(players, start, p => !p.out);
+    }
+
+    function initializeNewHand(game) {
+      let players = seatOrderPlayers(game).map(p => ({
+        ...clearPerHandFlags(p),
+        stack: getPlayerStartStack(game, p),
+        out: Number(getPlayerStartStack(game, p)) <= 0
+      }));
+
+      players = removeBustedPlayers(players);
+
+      const alive = players.filter(p => !p.out);
+      if (alive.length < 2) {
+        game.players = players;
+        game.status = "waiting";
+        game.phase = "waiting";
+        game.currentTurnIndex = -1;
+        game.lastResultText = "Need at least 2 players with chips.";
+        return game;
+      }
+
+      const dealerIndex = getDefaultDealerIndex(players, Number(game.dealerIndex ?? -1));
+      const sbIndex = nextIndex(players, dealerIndex, p => !p.out);
+      const bbIndex = nextIndex(players, sbIndex, p => !p.out);
+
+      const deck = buildDeck();
+
+      for (let r = 0; r < 2; r++) {
+        for (let i = 0; i < players.length; i++) {
+          if (!players[i].out) players[i].cards.push(deck.shift());
+        }
+      }
+
+      const smallBlind = Math.max(1, Number(game.smallBlind || 10));
+      const bigBlind = Math.max(smallBlind, Number(game.bigBlind || 20));
+
+      const postedSb = postForcedBet(players, sbIndex, smallBlind);
+      const postedBb = postForcedBet(players, bbIndex, bigBlind);
+
+      const headsUp = alive.length === 2;
+      const firstToAct = headsUp
+        ? nextIndex(players, dealerIndex, p => !p.out && !p.folded && !p.allIn)
+        : nextIndex(players, bbIndex, p => !p.out && !p.folded && !p.allIn);
+
+      players = players.map(p => ({ ...p, actedThisRound: false }));
+      if (players[sbIndex] && !players[sbIndex].out && !players[sbIndex].allIn) players[sbIndex].actedThisRound = false;
+      if (players[bbIndex] && !players[bbIndex].out && !players[bbIndex].allIn) players[bbIndex].actedThisRound = false;
+
+      game.players = players;
+      game.deck = deck;
+      game.communityCards = [];
+      game.pot = postedSb + postedBb;
+      game.phase = "preflop";
+      game.status = "active";
+      game.currentTurnIndex = firstToAct;
+      game.dealerIndex = dealerIndex;
+      game.smallBlindIndex = sbIndex;
+      game.bigBlindIndex = bbIndex;
+      game.currentBet = Math.max(postedSb, postedBb);
+      game.minRaise = bigBlind;
+      game.lastAggressorIndex = bbIndex;
+      game.lastResultText = "";
+      game.lastWinnerUids = [];
+      game.handNumber = Number(game.handNumber || 0) + 1;
+      return game;
+    }
+
+    function playerCanCheck(game, player) {
+      return getCallAmount(game, player) === 0;
+    }
+
+    function advanceTurnOrStreet(game) {
+      if (activeCount(game.players) <= 1) return finishByLastPlayer(game);
+      if (roundComplete(game)) return moveToNextStreet(game);
+
+      const next = nextIndex(
+        game.players,
+        Number(game.currentTurnIndex),
+        p => !p.out && !p.folded && !p.allIn
+      );
+
+      game.currentTurnIndex = next;
+      return game;
+    }
+
+    function normalizeGameState(rawGame) {
+      const game = clone(rawGame);
+      game.players = seatOrderPlayers(game).map(p => ({
+        username: "",
+        displayName: "",
+        email: "",
+        uid: "",
+        seat: 0,
+        stack: 0,
+        bet: 0,
+        totalCommitted: 0,
+        folded: false,
+        allIn: false,
+        actedThisRound: false,
+        cards: [],
+        out: false,
+        handResult: "",
+        winningText: "",
+        ...p
+      }));
+      game.communityCards = Array.isArray(game.communityCards) ? game.communityCards : [];
+      game.deck = Array.isArray(game.deck) ? game.deck : [];
+      game.pot = Number(game.pot || 0);
+      game.currentBet = Number(game.currentBet || 0);
+      game.minRaise = Number(game.minRaise || game.bigBlind || 1);
+      game.phase = String(game.phase || "waiting");
+      game.status = String(game.status || "waiting");
+      return game;
+    }
+
+    function applyActionToGame(game, uid, actionType, rawAmount = 0) {
+      game = normalizeGameState(game);
+
+      if (game.status !== "active") throw new Error("Hand is not active.");
+      const index = game.players.findIndex(p => p.uid === uid);
+      if (index < 0) throw new Error("Player not found.");
+      if (index !== Number(game.currentTurnIndex)) throw new Error("Not your turn.");
+
+      const player = game.players[index];
+      if (player.out || player.folded || player.allIn) throw new Error("You cannot act.");
+
+      const currentBet = Number(game.currentBet || 0);
+      const myBet = Number(player.bet || 0);
+      const toCall = Math.max(0, currentBet - myBet);
+      const stack = Number(player.stack || 0);
+      const minRaise = Math.max(1, Number(game.minRaise || game.bigBlind || 1));
+
+      if (actionType === "fold") {
+        player.folded = true;
+        player.actedThisRound = true;
+      } else if (actionType === "check") {
+        if (toCall !== 0) throw new Error("You cannot check.");
+        player.actedThisRound = true;
+      } else if (actionType === "call") {
+        if (toCall <= 0) {
+          player.actedThisRound = true;
+        } else {
+          const pay = Math.min(stack, toCall);
+          player.stack -= pay;
+          player.bet += pay;
+          player.totalCommitted += pay;
+          game.pot += pay;
+          player.allIn = player.stack <= 0;
+          player.actedThisRound = true;
+        }
+      } else if (actionType === "bet") {
+        const entered = Math.max(0, Math.floor(Number(rawAmount || 0)));
+        if (!Number.isFinite(entered) || entered <= 0) throw new Error("Enter a bet.");
+
+        const totalPutIn = Math.min(stack, entered);
+        if (totalPutIn <= 0) throw new Error("Invalid bet.");
+
+        if (toCall === 0) {
+          if (totalPutIn < minRaise && totalPutIn < stack) {
+            throw new Error(`Minimum bet is ${money(minRaise)}.`);
+          }
+          player.stack -= totalPutIn;
+          player.bet += totalPutIn;
+          player.totalCommitted += totalPutIn;
+          game.pot += totalPutIn;
+          player.allIn = player.stack <= 0;
+          player.actedThisRound = true;
+          game.currentBet = Number(player.bet);
+          game.minRaise = Math.max(minRaise, totalPutIn);
+          game.lastAggressorIndex = index;
+
+          for (let i = 0; i < game.players.length; i++) {
+            if (i !== index && !game.players[i].out && !game.players[i].folded && !game.players[i].allIn) {
+              game.players[i].actedThisRound = false;
+            }
+          }
+        } else {
+          if (totalPutIn <= toCall && totalPutIn < stack) {
+            throw new Error(`Need at least ${money(toCall)} to call.`);
+          }
+
+          const finalBet = myBet + totalPutIn;
+          const raiseSize = finalBet - currentBet;
+          const fullRaise = raiseSize >= minRaise;
+
+          if (finalBet < currentBet && totalPutIn < stack) {
+            throw new Error("Bet too small.");
+          }
+
+          if (finalBet > currentBet && !fullRaise && totalPutIn < stack) {
+            throw new Error(`Minimum raise is ${money(toCall + minRaise)} total.`);
+          }
+
+          player.stack -= totalPutIn;
+          player.bet += totalPutIn;
+          player.totalCommitted += totalPutIn;
+          game.pot += totalPutIn;
+          player.allIn = player.stack <= 0;
+          player.actedThisRound = true;
+
+          if (finalBet > currentBet) {
+            game.currentBet = finalBet;
+            if (fullRaise) game.minRaise = raiseSize;
+            game.lastAggressorIndex = index;
+
+            for (let i = 0; i < game.players.length; i++) {
+              if (i !== index && !game.players[i].out && !game.players[i].folded && !game.players[i].allIn) {
+                game.players[i].actedThisRound = false;
+              }
+            }
+          }
+        }
+      } else {
+        throw new Error("Unknown action.");
+      }
+
+      return advanceTurnOrStreet(game);
     }
 
     function updateBetControls(game) {
       const me = findMe(game);
-      const minBet = getMinBet(game);
+      const toCall = getCallAmount(game, me);
+      const minRaise = getMinRaise(game);
       const maxBet = getMaxBet(game, me);
+
+      let minValue = 0;
+      if (toCall === 0) minValue = Math.min(maxBet, minRaise);
+      else minValue = Math.min(maxBet, toCall + minRaise);
+
       let currentValue = Number(betInput.value || 0);
+      if (!Number.isFinite(currentValue)) currentValue = minValue;
 
-      const min = Math.max(0, minBet);
-      const max = Math.max(min, maxBet);
+      const maxValue = Math.max(0, maxBet);
+      if (currentValue < minValue) currentValue = minValue;
+      if (currentValue > maxValue) currentValue = maxValue;
+      if (maxValue === 0) currentValue = 0;
 
-      betSlider.min = String(min);
-      betSlider.max = String(max);
+      betSlider.min = String(Math.max(0, minValue));
+      betSlider.max = String(maxValue);
       betSlider.step = "1";
 
-      betInput.min = String(min);
-      betInput.max = String(max);
+      betInput.min = String(Math.max(0, minValue));
+      betInput.max = String(maxValue);
       betInput.step = "1";
-
-      if (!Number.isFinite(currentValue) || currentValue < min) currentValue = min;
-      if (currentValue > max) currentValue = max;
 
       betSlider.value = String(currentValue);
       betInput.value = String(currentValue);
       betSizeText.textContent = money(currentValue);
 
-      const disabled = !me || max <= 0;
+      const disabled = !me || maxValue <= 0 || String(game?.status || "") !== "active";
       betSlider.disabled = disabled;
       betInput.disabled = disabled;
     }
@@ -866,8 +1533,7 @@
     }
 
     function renderPlayers(game) {
-      const players = Array.isArray(game?.players) ? [...game.players] : [];
-      players.sort((a, b) => Number(a.seat || 999) - Number(b.seat || 999));
+      const players = getSortedPlayers(game);
 
       if (!players.length) {
         playersList.innerHTML = `
@@ -880,13 +1546,30 @@
         return;
       }
 
+      const dealerIndex = getDealerIndex(game);
+      const sbIndex = Number(game?.smallBlindIndex ?? -1);
+      const bbIndex = Number(game?.bigBlindIndex ?? -1);
+      const lastWinners = Array.isArray(game?.lastWinnerUids) ? game.lastWinnerUids : [];
+
       playersList.innerHTML = players.map(player => {
         const me = currentUser && player.uid === currentUser.uid;
         const turn = isCurrentTurn(player, game);
-        const folded = !!player.folded || player.status === "folded";
-        const allIn = !!player.allIn || player.status === "all-in";
+        const folded = !!player.folded;
+        const allIn = !!player.allIn;
+        const out = !!player.out;
         const bet = Number(player.bet || 0);
         const stack = Number(player.stack || 0);
+
+        let badges = "";
+        if (turn) badges += '<span class="pill accent">Turn</span>';
+        if (Number(player.seatIndex) === dealerIndex) badges += '<span class="pill">Dealer</span>';
+        if (Number(player.seatIndex) === sbIndex) badges += '<span class="pill warning">SB</span>';
+        if (Number(player.seatIndex) === bbIndex) badges += '<span class="pill warning">BB</span>';
+        if (allIn) badges += '<span class="pill warning">All In</span>';
+        if (folded) badges += '<span class="pill">Folded</span>';
+        if (out) badges += '<span class="pill danger">Busted</span>';
+        if (lastWinners.includes(player.uid)) badges += '<span class="pill success">Won</span>';
+        if (me) badges += '<span class="pill success">You</span>';
 
         return `
           <div class="player ${me ? "me" : ""} ${turn ? "current-turn" : ""}">
@@ -896,23 +1579,26 @@
                 <span>Stack ${money(stack)}</span>
                 <span>Bet ${money(bet)}</span>
                 <span>Seat ${escapeHtml(player.seat ?? "—")}</span>
+                ${player.winningText ? `<span>${escapeHtml(player.winningText)}</span>` : ""}
               </div>
             </div>
-            <div>
-              ${turn ? '<span class="pill accent">Turn</span>' : ""}
-              ${allIn ? '<span class="pill warning">All In</span>' : ""}
-              ${folded ? '<span class="pill">Folded</span>' : ""}
-              ${me ? '<span class="pill success">You</span>' : ""}
-            </div>
+            <div>${badges}</div>
           </div>
         `;
       }).join("");
     }
 
+    function clearStartInterval() {
+      if (startCountdownInterval) {
+        clearInterval(startCountdownInterval);
+        startCountdownInterval = null;
+      }
+    }
+
     function updateStartDisplay(game) {
       clearStartInterval();
 
-      const started = getGameStarted(game);
+      const started = String(game?.status || "") === "active";
       const host = isHost(game, currentUser?.uid);
       const count = getPlayerCount(game);
       const autoStartAtMs = toMillis(game?.autoStartAt);
@@ -920,8 +1606,11 @@
       startBtn.classList.toggle("hidden", !(host && !started && count >= 2));
       startBtn.disabled = !(host && !started && count >= 2);
 
+      nextHandBtn.classList.toggle("hidden", !(host && !started && String(game?.phase || "") === "finished"));
+      nextHandBtn.disabled = !(host && !started && String(game?.phase || "") === "finished" && count >= 2);
+
       if (started) {
-        startInfoPill.textContent = "Started";
+        startInfoPill.textContent = "Hand Live";
         startInfoPill.className = "pill success";
         return;
       }
@@ -940,14 +1629,12 @@
 
       const tick = () => {
         const diff = autoStartAtMs - Date.now();
-
         if (diff <= 0) {
           startInfoPill.textContent = "Starting...";
           startInfoPill.className = "pill success";
           clearStartInterval();
           return;
         }
-
         const seconds = Math.ceil(diff / 1000);
         startInfoPill.textContent = `Starts in ${seconds}s`;
         startInfoPill.className = "pill warning";
@@ -961,7 +1648,7 @@
       try {
         if (!currentUser || !game) return;
         if (!isHost(game, currentUser.uid)) return;
-        if (getGameStarted(game)) return;
+        if (String(game.status || "") === "active") return;
 
         const players = getPlayerCount(game);
 
@@ -973,7 +1660,7 @@
               updatedAt: serverTimestamp()
             });
           } else if (autoStartAtMs <= Date.now()) {
-            await startGame("auto");
+            await startHand("auto");
           }
         } else if (toMillis(game?.autoStartAt)) {
           await updateDoc(doc(db, "pokerGames", gameId), {
@@ -987,117 +1674,166 @@
     }
 
     function renderGame(game) {
-      currentGame = game;
+      currentGame = normalizeGameState(game);
 
-      const me = findMe(game);
-      const community = getCommunityCards(game);
-      const myHoleCards = getMyCards(game);
+      const me = findMe(currentGame);
+      const community = getCommunityCards(currentGame);
+      const myHoleCards = getMyCards(currentGame);
 
-      gameNamePill.textContent = game?.name || "Poker";
-      blindsText.textContent = `Blinds ${money(game?.smallBlind || 0)} / ${money(game?.bigBlind || 0)}`;
+      gameNamePill.textContent = currentGame?.name || "Poker";
+      blindsText.textContent = `Blinds ${money(currentGame?.smallBlind || 0)} / ${money(currentGame?.bigBlind || 0)}`;
+      phasePill.textContent = formatPhase(currentGame.phase);
+      phasePill.className = `pill ${String(currentGame.status || "") === "active" ? "accent" : "warning"}`;
 
-      const turnPlayer = Array.isArray(game?.players)
-        ? game.players.find(player => isCurrentTurn(player, game))
-        : null;
-
+      const turnPlayer = seatOrderPlayers(currentGame)[Number(currentGame?.currentTurnIndex ?? -1)] || null;
       turnText.textContent = `Turn ${turnPlayer ? getPublicName(turnPlayer) : "—"}`;
-      potValue.textContent = money(getPot(game));
+      potValue.textContent = money(getPot(currentGame));
+      toCallValue.textContent = money(me ? getCallAmount(currentGame, me) : 0);
 
-      renderPlayers(game);
+      renderPlayers(currentGame);
       renderCardRow(communityCards, community, { count: 5 });
-      renderCardRow(myCards, myHoleCards, { count: 2 });
-      updateBetControls(game);
-      updateStartDisplay(game);
 
-      const started = getGameStarted(game);
-      const itIsMyTurn = !!me && isCurrentTurn(me, game);
-      const myFolded = !!me?.folded || me?.status === "folded";
-      const handDone = ["finished", "ended", "complete"].includes(String(game?.status || "").toLowerCase());
+      const showAllCards = String(currentGame.phase || "") === "finished";
+      const myIndex = getMySortedIndex(currentGame);
+      const cardsToShow = myHoleCards;
+      renderCardRow(myCards, cardsToShow, { count: 2 });
 
-      const callAmount = getCallAmount(game, me);
-      const minBet = getMinBet(game);
+      updateBetControls(currentGame);
+      updateStartDisplay(currentGame);
+
+      const started = String(currentGame.status || "") === "active";
+      const itIsMyTurn = !!me && Number(myIndex) === Number(currentGame.currentTurnIndex);
+      const myFolded = !!me?.folded;
+      const handDone = String(currentGame.phase || "") === "finished";
+      const callAmount = getCallAmount(currentGame, me);
+      const canCheck = !!me && playerCanCheck(currentGame, me);
+      const minRaise = getMinRaise(currentGame);
 
       checkBtn.textContent = "Check";
       callBtn.textContent = callAmount > 0 ? `Call ${money(callAmount)}` : "Call";
-      betBtn.textContent = minBet > 0 ? `Bet ${money(Number(betInput.value || minBet))}` : "Bet";
+      betBtn.textContent = callAmount > 0 ? `Raise ${money(Number(betInput.value || 0))}` : `Bet ${money(Number(betInput.value || minRaise))}`;
 
-      const disableActions = !started || !itIsMyTurn || myFolded || handDone;
-
-      checkBtn.disabled = disableActions;
-      callBtn.disabled = disableActions;
-      betBtn.disabled = disableActions;
+      const disableActions = actionBusy || !started || !itIsMyTurn || myFolded || handDone || !!me?.allIn || !!me?.out;
+      checkBtn.disabled = disableActions || !canCheck;
+      callBtn.disabled = disableActions || canCheck;
+      betBtn.disabled = disableActions || Number(me?.stack || 0) <= 0;
       foldBtn.disabled = disableActions;
 
       if (!me) {
         statusLine.textContent = "You are not in this game.";
       } else if (!started) {
-        statusLine.textContent = getPlayerCount(game) < 2
-          ? "Waiting for another player."
-          : (isHost(game, currentUser?.uid) ? "You can start now or wait for auto-start." : "Waiting for host or auto-start.");
-      } else if (handDone) {
-        statusLine.textContent = "Hand finished.";
+        statusLine.textContent = currentGame.lastResultText || (
+          getPlayerCount(currentGame) < 2
+            ? "Waiting for another player."
+            : (isHost(currentGame, currentUser?.uid) ? "Start the hand when ready." : "Waiting for host or auto-start.")
+        );
       } else if (myFolded) {
         statusLine.textContent = "You folded.";
       } else if (itIsMyTurn) {
-        statusLine.textContent = "Your turn.";
+        statusLine.textContent = callAmount > 0
+          ? `Your turn. ${money(callAmount)} to call.`
+          : "Your turn.";
       } else {
         statusLine.textContent = turnPlayer ? `${getPublicName(turnPlayer)} to act.` : "Waiting...";
       }
+
+      if (showAllCards) {
+        const sorted = seatOrderPlayers(currentGame);
+        const cardsHtml = sorted.map((p, idx) => {
+          if (!Array.isArray(p.cards) || p.cards.length < 2) return "";
+          return `
+            <div class="player" style="margin-top:8px;">
+              <div class="player-main">
+                <div class="player-name">${escapeHtml(getPublicName(p))}</div>
+                <div class="player-sub">
+                  <span>${escapeHtml(p.winningText || "")}</span>
+                </div>
+              </div>
+              <div style="display:flex;gap:6px;">
+                ${renderCard(p.cards[0], false)}
+                ${renderCard(p.cards[1], false)}
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        if (cardsHtml) {
+          playersList.innerHTML += cardsHtml;
+        }
+      }
     }
 
-    async function startGame(source = "manual") {
-      if (!currentUser || !currentGame) return;
-      if (!isHost(currentGame, currentUser.uid)) return;
-      if (getPlayerCount(currentGame) < 2) {
-        statusLine.textContent = "Need at least 2 players.";
-        return;
-      }
+    async function startHand(source = "manual") {
+      if (!currentUser) return;
+      actionBusy = true;
+      statusLine.textContent = "Starting hand...";
 
       try {
-        statusLine.textContent = "Starting game...";
-        await updateDoc(doc(db, "pokerGames", gameId), {
-          status: "active",
-          startedAt: serverTimestamp(),
-          autoStartAt: null,
-          startedByUid: currentUser.uid,
-          startSource: source,
-          updatedAt: serverTimestamp()
+        await runTransaction(db, async (tx) => {
+          const ref = doc(db, "pokerGames", gameId);
+          const snap = await tx.get(ref);
+          if (!snap.exists()) throw new Error("Game not found.");
+
+          const game = normalizeGameState({ id: snap.id, ...snap.data() });
+          if (!isHost(game, currentUser.uid)) throw new Error("Only the host can start.");
+          if (getPlayerCount(game) < 2) throw new Error("Need at least 2 players.");
+          if (String(game.status || "") === "active") throw new Error("Hand already active.");
+
+          const next = initializeNewHand(game);
+          next.autoStartAt = null;
+          next.startedAt = serverTimestamp();
+          next.startedByUid = currentUser.uid;
+          next.startSource = source;
+          next.updatedAt = serverTimestamp();
+
+          tx.update(ref, next);
         });
       } catch (error) {
         console.error(error);
-        statusLine.textContent = "Could not start game.";
+        statusLine.textContent = error?.message || "Could not start hand.";
+      } finally {
+        actionBusy = false;
       }
     }
 
     async function act(type) {
-      if (!currentUser || !currentGame) return;
-      const me = findMe(currentGame);
-      if (!me) return;
+      if (!currentUser || !currentGame || actionBusy) return;
 
-      const amount = Math.max(0, Number(betInput.value || 0));
-
+      actionBusy = true;
       statusLine.textContent = `${type}...`;
 
       try {
-        const payload = {
-          lastActionType: type,
-          lastActionByUid: currentUser.uid,
-          updatedAt: serverTimestamp()
-        };
+        const enteredAmount = Math.max(0, Number(betInput.value || 0));
 
-        if (type === "bet") {
-          payload.lastBetAmount = amount;
-        }
+        await runTransaction(db, async (tx) => {
+          const ref = doc(db, "pokerGames", gameId);
+          const snap = await tx.get(ref);
+          if (!snap.exists()) throw new Error("Game not found.");
 
-        await updateDoc(doc(db, "pokerGames", gameId), payload);
+          const game = normalizeGameState({ id: snap.id, ...snap.data() });
+          const next = applyActionToGame(game, currentUser.uid, type, enteredAmount);
+          next.lastActionType = type;
+          next.lastActionByUid = currentUser.uid;
+          next.lastBetAmount = type === "bet" ? enteredAmount : 0;
+          next.updatedAt = serverTimestamp();
+
+          tx.update(ref, next);
+        });
       } catch (error) {
         console.error(error);
-        statusLine.textContent = "Could not send action.";
+        statusLine.textContent = error?.message || "Could not send action.";
+      } finally {
+        actionBusy = false;
       }
     }
 
     async function leaveGame() {
       if (!currentUser || !currentGame) return;
+
+      if (String(currentGame.status || "") === "active") {
+        statusLine.textContent = "You can only leave between hands.";
+        return;
+      }
 
       const confirmed = window.confirm("Leave this game?");
       if (!confirmed) return;
@@ -1170,13 +1906,17 @@
     betSlider.addEventListener("input", () => {
       syncBetFromSlider();
       const currentValue = Number(betInput.value || 0);
-      betBtn.textContent = currentValue > 0 ? `Bet ${money(currentValue)}` : "Bet";
+      const me = currentGame ? findMe(currentGame) : null;
+      const toCall = currentGame && me ? getCallAmount(currentGame, me) : 0;
+      betBtn.textContent = toCall > 0 ? `Raise ${money(currentValue)}` : `Bet ${money(currentValue)}`;
     });
 
     betInput.addEventListener("input", () => {
       syncBetFromInput();
       const currentValue = Number(betInput.value || 0);
-      betBtn.textContent = currentValue > 0 ? `Bet ${money(currentValue)}` : "Bet";
+      const me = currentGame ? findMe(currentGame) : null;
+      const toCall = currentGame && me ? getCallAmount(currentGame, me) : 0;
+      betBtn.textContent = toCall > 0 ? `Raise ${money(currentValue)}` : `Bet ${money(currentValue)}`;
     });
 
     checkBtn.addEventListener("click", () => act("check"));
@@ -1184,7 +1924,8 @@
     betBtn.addEventListener("click", () => act("bet"));
     foldBtn.addEventListener("click", () => act("fold"));
     leaveBtn.addEventListener("click", leaveGame);
-    startBtn.addEventListener("click", () => startGame("manual"));
+    startBtn.addEventListener("click", () => startHand("manual"));
+    nextHandBtn.addEventListener("click", () => startHand("next-hand"));
 
     window.addEventListener("beforeunload", clearStartInterval);
   </script>
