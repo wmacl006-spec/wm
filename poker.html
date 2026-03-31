@@ -1192,7 +1192,7 @@
               <td><span class="pill ${game.status === "waiting" ? "warning" : "success"}">${escapeHtml(game.status || "waiting")}</span></td>
               <td>
                 <div class="inline-actions">
-                  <a class="small-btn ghost-btn" href="game.html?game=${encodeURIComponent(game.id)}">Open</a>
+                  <a class="small-btn ghost-btn" href="pokergame.html?game=${encodeURIComponent(game.id)}">Open</a>
                   ${isMine ? `<button class="small-btn danger-btn" data-delete-game="${game.id}">Delete</button>` : ``}
                 </div>
               </td>
@@ -1219,7 +1219,7 @@
               </td>
               <td>
                 <div class="inline-actions">
-                  <a class="small-btn ghost-btn" href="game.html?game=${encodeURIComponent(game.id)}">Open</a>
+                  <a class="small-btn ghost-btn" href="pokergame.html?game=${encodeURIComponent(game.id)}">Open</a>
                   <button class="small-btn danger-btn" data-delete-game="${game.id}">Delete</button>
                 </div>
               </td>
