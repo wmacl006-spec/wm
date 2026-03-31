@@ -15,14 +15,15 @@
       --text:#fff;
       --muted:#8d8d8d;
       --line:rgba(255,255,255,0.08);
-      --line-strong:rgba(255,255,255,0.14);
       --accent:#b00b55;
-      --danger:#ff6b81;
+      --accent-soft:rgba(176,11,85,0.16);
       --success:#57d38c;
+      --danger:#ff6b81;
       --warning:#ffd166;
       --header-h:64px;
-      --max-w:1180px;
+      --max-w:980px;
       --shadow:0 18px 40px rgba(0,0,0,0.24);
+      --player-h:72px;
     }
 
     *{
@@ -31,7 +32,7 @@
       box-sizing:border-box;
     }
 
-    html,body{
+    html, body{
       min-height:100%;
     }
 
@@ -47,8 +48,13 @@
       text-decoration:none;
     }
 
-    button,input,select{
+    button,input{
       font:inherit;
+    }
+
+    img{
+      display:block;
+      max-width:100%;
     }
 
     header{
@@ -58,7 +64,7 @@
       display:flex;
       align-items:center;
       justify-content:space-between;
-      padding:0 16px;
+      padding:0 18px;
       background:rgba(0,0,0,0.72);
       backdrop-filter:blur(10px);
       border-bottom:1px solid rgba(255,255,255,0.05);
@@ -75,7 +81,6 @@
     .logo img{
       width:28px;
       height:28px;
-      display:block;
     }
 
     .logo span{
@@ -87,12 +92,12 @@
     nav{
       display:flex;
       align-items:center;
-      gap:12px;
+      gap:14px;
       flex-wrap:wrap;
     }
 
     nav a{
-      font-size:0.82rem;
+      font-size:0.84rem;
       color:#cfcfcf;
       transition:0.2s;
     }
@@ -102,8 +107,8 @@
     }
 
     .status-pill{
-      font-size:0.7rem;
-      padding:7px 9px;
+      font-size:0.72rem;
+      padding:7px 10px;
       border:1px solid rgba(255,255,255,0.1);
       color:#fff;
       background:rgba(255,255,255,0.04);
@@ -112,43 +117,6 @@
     .page{
       min-height:100vh;
       padding-top:var(--header-h);
-    }
-
-    .hero-wrap{
-      width:100%;
-      border-bottom:1px solid rgba(255,255,255,0.05);
-      background:
-        radial-gradient(circle at top left, rgba(176,11,85,0.15), transparent 32%),
-        radial-gradient(circle at top right, rgba(255,255,255,0.04), transparent 28%),
-        linear-gradient(180deg, rgba(255,255,255,0.015), transparent);
-    }
-
-    .hero{
-      width:min(var(--max-w), calc(100% - 16px));
-      margin:0 auto;
-      padding:28px 0 18px;
-    }
-
-    .hero h1{
-      font-size:clamp(2rem, 9vw, 4rem);
-      line-height:0.95;
-      letter-spacing:-0.05em;
-      margin-bottom:10px;
-    }
-
-    .hero p{
-      color:var(--muted);
-      font-size:0.9rem;
-      line-height:1.5;
-      max-width:700px;
-    }
-
-    .app-shell{
-      width:min(var(--max-w), calc(100% - 16px));
-      margin:0 auto;
-      padding:14px 0 28px;
-      display:grid;
-      gap:12px;
     }
 
     #authGate{
@@ -177,83 +145,83 @@
       line-height:1.5;
     }
 
-    .panel,
-    .card{
+    .hero-wrap{
+      width:100%;
+      border-bottom:1px solid rgba(255,255,255,0.05);
+      background:
+        radial-gradient(circle at top left, rgba(176,11,85,0.14), transparent 32%),
+        radial-gradient(circle at top right, rgba(255,255,255,0.04), transparent 28%),
+        linear-gradient(180deg, rgba(255,255,255,0.015), transparent);
+    }
+
+    .hero{
+      width:min(var(--max-w), calc(100% - 24px));
+      margin:0 auto;
+      padding:28px 0 18px;
+    }
+
+    .hero h1{
+      font-size:clamp(2rem, 8vw, 3.7rem);
+      line-height:0.95;
+      letter-spacing:-0.05em;
+      margin-bottom:8px;
+    }
+
+    .hero p{
+      color:var(--muted);
+      font-size:0.88rem;
+      line-height:1.45;
+    }
+
+    .shell{
+      width:min(var(--max-w), calc(100% - 24px));
+      margin:0 auto;
+      padding:14px 0 18px;
+      display:grid;
+      gap:12px;
+    }
+
+    .panel{
       border:1px solid var(--line);
       background:var(--panel-2);
       box-shadow:var(--shadow);
     }
 
-    .panel{
-      padding:14px;
-    }
-
-    .card{
-      padding:14px;
-      min-height:94px;
-    }
-
-    .topbar{
+    .section-head{
+      padding:12px 14px 0;
       display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:12px;
+      flex-direction:column;
+      gap:6px;
     }
 
     .tag{
-      font-size:0.7rem;
+      font-size:0.68rem;
       text-transform:uppercase;
       letter-spacing:0.1em;
       color:var(--accent);
       font-weight:700;
-      margin-bottom:6px;
     }
 
-    .topbar h2{
-      font-size:1.2rem;
-      letter-spacing:-0.04em;
-    }
-
-    .panel-subtle{
-      color:var(--muted);
-      font-size:0.8rem;
-      font-weight:600;
-      text-align:right;
-      line-height:1.4;
-    }
-
-    .stats-grid{
-      display:grid;
-      grid-template-columns:repeat(2, 1fr);
-      gap:10px;
-    }
-
-    .label{
-      color:var(--muted);
-      font-size:0.72rem;
-      text-transform:uppercase;
-      letter-spacing:0.08em;
-      margin-bottom:10px;
+    .section-title{
+      font-size:1.02rem;
       font-weight:700;
+      letter-spacing:-0.03em;
     }
 
-    .value{
-      font-size:clamp(1.05rem, 4.8vw, 1.9rem);
-      font-weight:800;
-      letter-spacing:-0.04em;
-      line-height:1.1;
-      word-break:break-word;
+    .section-sub{
+      color:var(--muted);
+      font-size:0.78rem;
+      line-height:1.35;
     }
 
-    .main-layout{
-      display:grid;
-      gap:12px;
+    .panel-body{
+      padding:12px 14px 14px;
     }
 
-    .left-stack,
-    .right-stack{
-      display:grid;
-      gap:12px;
+    .signed-in{
+      color:var(--muted);
+      font-size:0.82rem;
+      line-height:1.4;
     }
 
     form{
@@ -261,25 +229,21 @@
       gap:10px;
     }
 
-    .form-row,
-    .button-row,
-    .mini-grid{
+    .form-grid{
       display:grid;
       grid-template-columns:1fr;
       gap:10px;
     }
 
-    label.input-label{
+    .input-label{
       display:grid;
       gap:8px;
-      font-size:0.84rem;
+      font-size:0.82rem;
       color:var(--muted);
       font-weight:600;
     }
 
-    input,
-    select,
-    button{
+    input{
       width:100%;
       border:1px solid var(--line);
       background:#0a0a0a;
@@ -287,17 +251,28 @@
       padding:12px 13px;
     }
 
-    input:focus,
-    select:focus{
+    input:focus{
       outline:none;
       border-color:rgba(176,11,85,0.7);
-      box-shadow:inset 0 0 0 1px rgba(176,11,85,0.5);
+      box-shadow:inset 0 0 0 1px rgba(176,11,85,0.45);
+    }
+
+    .button-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
     }
 
     button{
+      width:100%;
+      min-height:48px;
+      border:1px solid var(--line);
+      background:#0a0a0a;
+      color:var(--text);
+      padding:12px 10px;
       font-weight:700;
       cursor:pointer;
-      transition:transform 0.14s ease, background 0.14s ease, border-color 0.14s ease;
+      transition:0.14s ease;
     }
 
     button:hover{
@@ -305,13 +280,13 @@
     }
 
     button:disabled{
-      opacity:0.6;
+      opacity:0.5;
       cursor:not-allowed;
       transform:none;
     }
 
     .primary-btn{
-      border:1px solid rgba(176,11,85,0.75);
+      border-color:rgba(176,11,85,0.75);
       background:rgba(176,11,85,0.16);
     }
 
@@ -320,79 +295,82 @@
     }
 
     .danger-btn{
-      border:1px solid rgba(255,107,129,0.45);
+      border-color:rgba(255,107,129,0.45);
       background:rgba(255,107,129,0.10);
     }
 
-    .success-btn{
-      border:1px solid rgba(87,211,140,0.45);
-      background:rgba(87,211,140,0.10);
-    }
-
-    .status{
+    .status-line{
       min-height:1.2em;
-      margin-top:2px;
       color:var(--muted);
-      font-size:0.88rem;
+      font-size:0.85rem;
+      line-height:1.35;
     }
 
-    .mini-stat{
-      padding:14px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,0.02);
-    }
-
-    .mini-label{
-      color:var(--muted);
-      font-size:0.72rem;
-      text-transform:uppercase;
-      letter-spacing:0.08em;
-      font-weight:700;
-      margin-bottom:8px;
-    }
-
-    .mini-value{
-      font-size:1rem;
-      font-weight:800;
-      letter-spacing:-0.02em;
-      line-height:1.2;
-    }
-
-    .games-mobile{
+    .games-list{
       display:grid;
-      gap:10px;
+      gap:8px;
     }
 
     .game-card{
+      min-height:var(--player-h);
       border:1px solid var(--line);
       background:rgba(255,255,255,0.02);
-      padding:12px;
+      padding:10px 12px;
       display:grid;
       gap:10px;
     }
 
-    .game-card-top{
-      display:flex;
-      justify-content:space-between;
+    .game-top{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
       gap:10px;
-      align-items:flex-start;
+      align-items:start;
     }
 
-    .game-card-title{
-      font-size:0.98rem;
+    .game-name{
+      font-size:0.95rem;
       font-weight:700;
       line-height:1.2;
-      margin-bottom:5px;
+      margin-bottom:6px;
       word-break:break-word;
     }
 
-    .game-card-sub{
-      font-size:0.76rem;
+    .game-sub{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
       color:var(--muted);
-      line-height:1.45;
+      font-size:0.75rem;
+      line-height:1.35;
     }
 
-    .game-meta-grid{
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      padding:5px 8px;
+      border:1px solid rgba(255,255,255,0.1);
+      font-size:0.72rem;
+      white-space:nowrap;
+      background:rgba(255,255,255,0.03);
+      height:fit-content;
+    }
+
+    .pill.accent{
+      border-color:rgba(176,11,85,0.5);
+      background:rgba(176,11,85,0.12);
+    }
+
+    .pill.success{
+      border-color:rgba(87,211,140,0.4);
+      background:rgba(87,211,140,0.1);
+    }
+
+    .pill.warning{
+      border-color:rgba(255,209,102,0.4);
+      background:rgba(255,209,102,0.1);
+    }
+
+    .meta-grid{
       display:grid;
       grid-template-columns:1fr 1fr;
       gap:8px;
@@ -420,125 +398,68 @@
       word-break:break-word;
     }
 
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      padding:6px 10px;
-      border:1px solid rgba(176,11,85,0.34);
-      background:rgba(176,11,85,0.12);
-      font-size:0.76rem;
-      white-space:nowrap;
-      height:fit-content;
-    }
-
-    .pill.success{
-      border-color:rgba(87,211,140,0.34);
-      background:rgba(87,211,140,0.12);
-    }
-
-    .pill.warning{
-      border-color:rgba(255,209,102,0.34);
-      background:rgba(255,209,102,0.12);
-    }
-
-    .game-actions,
-    .inline-actions{
-      display:flex;
+    .game-actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
       gap:8px;
-      flex-wrap:wrap;
-    }
-
-    .small-btn{
-      width:auto;
-      padding:9px 12px;
-      font-size:0.82rem;
-      line-height:1;
-    }
-
-    .desktop-table-wrap{
-      display:none;
-      overflow:auto;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,0.015);
-    }
-
-    table{
-      width:100%;
-      border-collapse:collapse;
-      min-width:760px;
-      font-size:0.9rem;
-    }
-
-    th, td{
-      padding:14px;
-      text-align:left;
-      border-bottom:1px solid rgba(255,255,255,0.06);
-      vertical-align:middle;
-    }
-
-    th{
-      color:var(--muted);
-      font-size:0.79rem;
-      text-transform:uppercase;
-      letter-spacing:0.08em;
-      font-weight:700;
-      background:#090909;
-      position:sticky;
-      top:0;
-      z-index:1;
     }
 
     .empty{
-      color:var(--muted);
-      padding:12px;
       border:1px solid var(--line);
       background:rgba(255,255,255,0.02);
+      padding:14px 12px;
+      color:var(--muted);
+      font-size:0.85rem;
     }
 
     .footer-space{
       height:6px;
     }
 
-    @media (min-width:700px){
-      .stats-grid{
+    @media (min-width: 720px){
+      .form-grid.two{
+        grid-template-columns:1fr 1fr;
+      }
+
+      .game-actions{
         grid-template-columns:repeat(3, 1fr);
-      }
-
-      .mini-grid{
-        grid-template-columns:1fr 1fr;
-      }
-
-      .form-row,
-      .button-row{
-        grid-template-columns:1fr 1fr;
       }
     }
 
-    @media (min-width:980px){
+    @media (max-width: 560px){
+      header{
+        padding:0 14px;
+      }
+
+      .logo span{
+        font-size:0.88rem;
+      }
+
+      nav{
+        gap:10px;
+      }
+
+      nav a{
+        font-size:0.78rem;
+      }
+
+      .hero,
+      .shell{
+        width:min(100% - 16px, var(--max-w));
+      }
+
       .hero{
-        width:min(var(--max-w), calc(100% - 32px));
-        padding:38px 0 24px;
+        padding:22px 0 14px;
       }
 
-      .app-shell{
-        width:min(var(--max-w), calc(100% - 32px));
+      .button-row,
+      .game-actions{
+        grid-template-columns:1fr;
       }
 
-      .main-layout{
-        grid-template-columns:minmax(0, 1.3fr) minmax(300px, 0.9fr);
-        align-items:start;
-      }
-
-      .stats-grid{
-        grid-template-columns:repeat(5, 1fr);
-      }
-
-      .games-mobile{
-        display:none;
-      }
-
-      .desktop-table-wrap{
-        display:block;
+      button{
+        min-height:46px;
+        font-size:0.9rem;
       }
     }
   </style>
@@ -565,272 +486,120 @@
     <section class="hero-wrap">
       <div class="hero">
         <h1>Poker Lobby</h1>
-        <p>Create a game, join active games, and track player stats and debts.</p>
+        <p>Create a game or join one. Built for phones first.</p>
       </div>
     </section>
 
-    <section class="app-shell">
-      <section class="panel topbar">
-        <div>
-          <div class="tag">Game</div>
-          <h2>Lobby</h2>
+    <section class="shell">
+      <section class="panel">
+        <div class="section-head">
+          <div class="tag">You</div>
+          <div class="section-title">Profile</div>
+          <div class="signed-in" id="signedInAs">Not signed in</div>
         </div>
-        <div class="panel-subtle" id="signedInAs">Not signed in</div>
-      </section>
 
-      <section class="stats-grid">
-        <div class="card">
-          <div class="label">Active Games</div>
-          <div class="value" id="activeGamesValue">0</div>
-        </div>
-        <div class="card">
-          <div class="label">Your Games</div>
-          <div class="value" id="myGamesValue">0</div>
-        </div>
-        <div class="card">
-          <div class="label">You Owe</div>
-          <div class="value" id="youOweValue">$0.00</div>
-        </div>
-        <div class="card">
-          <div class="label">Owed To You</div>
-          <div class="value" id="owedToYouValue">$0.00</div>
-        </div>
-        <div class="card">
-          <div class="label">Balance</div>
-          <div class="value" id="myBalanceValue">$0.00</div>
-        </div>
-      </section>
+        <div class="panel-body">
+          <form id="usernameForm">
+            <label class="input-label">
+              Username
+              <input type="text" id="usernameInput" maxlength="20" placeholder="pick a username" />
+            </label>
 
-      <section class="main-layout">
-        <div class="left-stack">
-          <section class="panel">
-            <div class="tag">Create</div>
-            <div style="font-size:1rem;font-weight:700;margin-bottom:12px;">New Game</div>
-
-            <form id="createGameForm">
-              <label class="input-label">
-                Game Name
-                <input type="text" id="gameNameInput" maxlength="40" placeholder="Friday Night Poker" required />
-              </label>
-
-              <div class="form-row">
-                <label class="input-label">
-                  Turn Time
-                  <input type="number" id="turnTimeInput" min="10" max="300" step="5" value="30" required />
-                </label>
-
-                <label class="input-label">
-                  Buy In
-                  <input type="number" id="buyInInput" min="0" step="1" value="20" required />
-                </label>
-              </div>
-
-              <div class="form-row">
-                <label class="input-label">
-                  Small Blind
-                  <input type="number" id="smallBlindInput" min="0" step="1" value="1" required />
-                </label>
-
-                <label class="input-label">
-                  Big Blind
-                  <input type="number" id="bigBlindInput" min="0" step="1" value="2" required />
-                </label>
-              </div>
-
-              <div class="form-row">
-                <label class="input-label">
-                  Max Players
-                  <input type="number" id="maxPlayersInput" min="2" max="12" step="1" value="8" required />
-                </label>
-
-                <label class="input-label">
-                  Starting Stack
-                  <input type="number" id="startingStackInput" min="1" step="1" value="1000" required />
-                </label>
-              </div>
-
-              <label class="input-label">
-                Visibility
-                <select id="visibilityInput">
-                  <option value="public">Public</option>
-                  <option value="private">Private</option>
-                </select>
-              </label>
-
-              <div class="button-row">
-                <button type="submit" class="primary-btn">Create Game</button>
-                <button type="button" class="ghost-btn" id="resetGameFormBtn">Reset</button>
-              </div>
-            </form>
-
-            <div class="status" id="createStatus"></div>
-          </section>
-
-          <section class="panel">
-            <div class="tag">Games</div>
-            <div style="font-size:1rem;font-weight:700;margin-bottom:12px;">Active Games</div>
-
-            <div class="games-mobile" id="gamesMobileList">
-              <div class="empty">No active games.</div>
+            <div class="button-row">
+              <button type="submit" class="primary-btn">Save Username</button>
+              <button type="button" class="ghost-btn" id="clearUsernameBtn">Clear</button>
             </div>
+          </form>
 
-            <div class="desktop-table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Game</th>
-                    <th>Host</th>
-                    <th>Blinds</th>
-                    <th>Buy In</th>
-                    <th>Players</th>
-                    <th>Turn</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="gamesTableBody">
-                  <tr><td colspan="8" style="color:var(--muted);">No active games.</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
-
-          <section class="panel">
-            <div class="tag">Your Games</div>
-            <div class="games-mobile" id="myGamesMobileList">
-              <div class="empty">No games created by you.</div>
-            </div>
-
-            <div class="desktop-table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Game</th>
-                    <th>Created</th>
-                    <th>Players</th>
-                    <th>Settings</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="myGamesTableBody">
-                  <tr><td colspan="5" style="color:var(--muted);">No games created by you.</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
-        </div>
-
-        <div class="right-stack">
-          <section class="panel">
-            <div class="tag">Username</div>
-
-            <form id="usernameForm">
-              <label class="input-label">
-                Username
-                <input type="text" id="usernameInput" maxlength="20" placeholder="pick a username" />
-              </label>
-
-              <div class="button-row">
-                <button type="submit" class="primary-btn">Save Username</button>
-                <button type="button" class="ghost-btn" id="clearUsernameBtn">Clear</button>
-              </div>
-            </form>
-
-            <div class="status" id="usernameStatus"></div>
-          </section>
-
-          <section class="panel">
-            <div class="tag">Your Stats</div>
-
-            <div class="mini-grid">
-              <div class="mini-stat">
-                <div class="mini-label">Hands Played</div>
-                <div class="mini-value" id="handsPlayedValue">0</div>
-              </div>
-              <div class="mini-stat">
-                <div class="mini-label">Hands Won</div>
-                <div class="mini-value" id="handsWonValue">0</div>
-              </div>
-              <div class="mini-stat">
-                <div class="mini-label">Win Rate</div>
-                <div class="mini-value" id="winRateValue">0%</div>
-              </div>
-              <div class="mini-stat">
-                <div class="mini-label">Net Result</div>
-                <div class="mini-value" id="netResultValue">$0.00</div>
-              </div>
-            </div>
-          </section>
+          <div class="status-line" id="usernameStatus"></div>
         </div>
       </section>
 
       <section class="panel">
-        <div class="tag">Debts</div>
-        <div style="font-size:1rem;font-weight:700;margin-bottom:12px;">Debts You Owe</div>
+        <div class="section-head">
+          <div class="tag">Create</div>
+          <div class="section-title">New Game</div>
+          <div class="section-sub">Fast setup, mobile friendly.</div>
+        </div>
 
-        <div class="desktop-table-wrap" style="display:block;">
-          <table>
-            <thead>
-              <tr>
-                <th>To</th>
-                <th>Amount</th>
-                <th>Note</th>
-                <th>Created</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="debtsIOweBody">
-              <tr><td colspan="5" style="color:var(--muted);">No debts.</td></tr>
-            </tbody>
-          </table>
+        <div class="panel-body">
+          <form id="createGameForm">
+            <label class="input-label">
+              Game Name
+              <input type="text" id="gameNameInput" maxlength="40" placeholder="Friday Night Poker" required />
+            </label>
+
+            <div class="form-grid two">
+              <label class="input-label">
+                Turn Time
+                <input type="number" id="turnTimeInput" min="10" max="300" step="5" value="30" required />
+              </label>
+
+              <label class="input-label">
+                Buy In
+                <input type="number" id="buyInInput" min="0" step="1" value="20" required />
+              </label>
+            </div>
+
+            <div class="form-grid two">
+              <label class="input-label">
+                Small Blind
+                <input type="number" id="smallBlindInput" min="0" step="1" value="1" required />
+              </label>
+
+              <label class="input-label">
+                Big Blind
+                <input type="number" id="bigBlindInput" min="0" step="1" value="2" required />
+              </label>
+            </div>
+
+            <div class="form-grid two">
+              <label class="input-label">
+                Max Players
+                <input type="number" id="maxPlayersInput" min="2" max="12" step="1" value="8" required />
+              </label>
+
+              <label class="input-label">
+                Starting Stack
+                <input type="number" id="startingStackInput" min="1" step="1" value="1000" required />
+              </label>
+            </div>
+
+            <div class="button-row">
+              <button type="submit" class="primary-btn">Create Game</button>
+              <button type="button" class="ghost-btn" id="resetGameFormBtn">Reset</button>
+            </div>
+          </form>
+
+          <div class="status-line" id="createStatus"></div>
         </div>
       </section>
 
       <section class="panel">
-        <div class="tag">Debts</div>
-        <div style="font-size:1rem;font-weight:700;margin-bottom:12px;">Debts Owed To You</div>
+        <div class="section-head">
+          <div class="tag">Games</div>
+          <div class="section-title">Join Game</div>
+          <div class="section-sub">Open games you can hop into right now.</div>
+        </div>
 
-        <div class="desktop-table-wrap" style="display:block;">
-          <table>
-            <thead>
-              <tr>
-                <th>From</th>
-                <th>Amount</th>
-                <th>Note</th>
-                <th>Created</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="debtsOwedToMeBody">
-              <tr><td colspan="6" style="color:var(--muted);">No debts owed to you.</td></tr>
-            </tbody>
-          </table>
+        <div class="panel-body">
+          <div class="games-list" id="gamesMobileList">
+            <div class="empty">No active games.</div>
+          </div>
         </div>
       </section>
 
       <section class="panel">
-        <div class="tag">Players</div>
-        <div style="font-size:1rem;font-weight:700;margin-bottom:12px;">All Player Stats</div>
+        <div class="section-head">
+          <div class="tag">Host</div>
+          <div class="section-title">Your Games</div>
+          <div class="section-sub">Games you created.</div>
+        </div>
 
-        <div class="desktop-table-wrap" style="display:block;">
-          <table>
-            <thead>
-              <tr>
-                <th>Player</th>
-                <th>Hands Played</th>
-                <th>Hands Won</th>
-                <th>Win Rate</th>
-                <th>Games Played</th>
-                <th>Games Won</th>
-                <th>Balance</th>
-                <th>Net</th>
-              </tr>
-            </thead>
-            <tbody id="playerStatsBody">
-              <tr><td colspan="8" style="color:var(--muted);">No player stats yet.</td></tr>
-            </tbody>
-          </table>
+        <div class="panel-body">
+          <div class="games-list" id="myGamesMobileList">
+            <div class="empty">No games created by you.</div>
+          </div>
         </div>
       </section>
 
@@ -894,32 +663,14 @@
     const bigBlindInput = document.getElementById("bigBlindInput");
     const maxPlayersInput = document.getElementById("maxPlayersInput");
     const startingStackInput = document.getElementById("startingStackInput");
-    const visibilityInput = document.getElementById("visibilityInput");
 
     const usernameForm = document.getElementById("usernameForm");
     const usernameInput = document.getElementById("usernameInput");
     const usernameStatus = document.getElementById("usernameStatus");
     const clearUsernameBtn = document.getElementById("clearUsernameBtn");
 
-    const gamesTableBody = document.getElementById("gamesTableBody");
-    const myGamesTableBody = document.getElementById("myGamesTableBody");
-    const debtsIOweBody = document.getElementById("debtsIOweBody");
-    const debtsOwedToMeBody = document.getElementById("debtsOwedToMeBody");
-    const playerStatsBody = document.getElementById("playerStatsBody");
-
     const gamesMobileList = document.getElementById("gamesMobileList");
     const myGamesMobileList = document.getElementById("myGamesMobileList");
-
-    const activeGamesValue = document.getElementById("activeGamesValue");
-    const myGamesValue = document.getElementById("myGamesValue");
-    const youOweValue = document.getElementById("youOweValue");
-    const owedToYouValue = document.getElementById("owedToYouValue");
-    const myBalanceValue = document.getElementById("myBalanceValue");
-
-    const handsPlayedValue = document.getElementById("handsPlayedValue");
-    const handsWonValue = document.getElementById("handsWonValue");
-    const winRateValue = document.getElementById("winRateValue");
-    const netResultValue = document.getElementById("netResultValue");
 
     const statusRank = {
       default: 0,
@@ -930,7 +681,6 @@
     let currentUser = null;
     let currentUserStatus = "default";
     let currentGames = [];
-    let currentStats = [];
     let currentPlayerProfile = null;
 
     function normalizeStatus(status) {
@@ -1014,19 +764,6 @@
       return fallback;
     }
 
-    function getDebtDisplayName(data, kind) {
-      if (kind === "creditor") {
-        return getPublicName(
-          { username: data?.creditorUsername, displayName: data?.creditorDisplayName },
-          "Player"
-        );
-      }
-      return getPublicName(
-        { username: data?.debtorUsername, displayName: data?.debtorDisplayName },
-        "Player"
-      );
-    }
-
     async function getUserStatus(uid) {
       try {
         const userRef = doc(db, "users", uid);
@@ -1105,13 +842,6 @@
       return true;
     }
 
-    function getWinRate(stats) {
-      const played = Number(stats?.handsPlayed || 0);
-      const won = Number(stats?.handsWon || 0);
-      if (!played) return "0%";
-      return `${((won / played) * 100).toFixed(1)}%`;
-    }
-
     function isAlreadyInGame(game) {
       if (!currentUser || !Array.isArray(game?.players)) return false;
       return game.players.some(player => player.uid === currentUser.uid);
@@ -1129,55 +859,59 @@
 
     function renderJoinButton(game) {
       if (isAlreadyInGame(game)) {
-        return `<a class="small-btn ghost-btn" href="pokergame.html?game=${encodeURIComponent(game.id)}">In Game</a>`;
+        return `<a class="primary-btn" style="display:flex;align-items:center;justify-content:center;min-height:48px;border:1px solid rgba(176,11,85,0.75);background:rgba(176,11,85,0.16);" href="pokergame.html?game=${encodeURIComponent(game.id)}">Open</a>`;
       }
 
       if (!canJoinGame(game)) {
-        return `<button class="small-btn ghost-btn" disabled>Full</button>`;
+        return `<button disabled class="ghost-btn">Full</button>`;
       }
 
-      return `<button class="small-btn primary-btn" data-join-game="${game.id}">Join</button>`;
+      return `<button class="primary-btn" data-join-game="${game.id}">Join</button>`;
     }
 
-    async function loadPlayerStats() {
-      const snap = await getDocs(query(collection(db, "pokerPlayers"), orderBy("handsWon", "desc"), limit(100)));
-      currentStats = snap.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+    function renderGameCard(game, isMine = false) {
+      const playerCount = Array.isArray(game?.players) ? game.players.length : 0;
+      const hostName = game.hostUsername || game.hostDisplayName || "Player";
+      const isWaiting = String(game.status || "").toLowerCase() === "waiting";
 
-      if (!currentStats.length) {
-        playerStatsBody.innerHTML = `<tr><td colspan="8" style="color:var(--muted);">No player stats yet.</td></tr>`;
-        handsPlayedValue.textContent = "0";
-        handsWonValue.textContent = "0";
-        winRateValue.textContent = "0%";
-        netResultValue.textContent = money(0);
-        myBalanceValue.textContent = money(0);
-        return;
-      }
+      return `
+        <div class="game-card">
+          <div class="game-top">
+            <div>
+              <div class="game-name">${escapeHtml(game.name || "Untitled Game")}</div>
+              <div class="game-sub">
+                <span>Host ${escapeHtml(hostName)}</span>
+                <span>${formatDate(game.createdAt)}</span>
+              </div>
+            </div>
+            <span class="pill ${isWaiting ? "warning" : "success"}">${escapeHtml(game.status || "waiting")}</span>
+          </div>
 
-      playerStatsBody.innerHTML = currentStats.map(player => `
-        <tr>
-          <td>${escapeHtml(getPublicName(player))}</td>
-          <td>${Number(player.handsPlayed || 0)}</td>
-          <td>${Number(player.handsWon || 0)}</td>
-          <td>${getWinRate(player)}</td>
-          <td>${Number(player.gamesPlayed || 0)}</td>
-          <td>${Number(player.gamesWon || 0)}</td>
-          <td>${money(player.balance || 0)}</td>
-          <td>${money(player.netResult || 0)}</td>
-        </tr>
-      `).join("");
+          <div class="meta-grid">
+            <div class="meta-box">
+              <div class="meta-box-label">Blinds</div>
+              <div class="meta-box-value">${Number(game.smallBlind || 0)} / ${Number(game.bigBlind || 0)}</div>
+            </div>
+            <div class="meta-box">
+              <div class="meta-box-label">Buy In</div>
+              <div class="meta-box-value">${money(game.buyIn || 0)}</div>
+            </div>
+            <div class="meta-box">
+              <div class="meta-box-label">Players</div>
+              <div class="meta-box-value">${playerCount} / ${Number(game.maxPlayers || 0)}</div>
+            </div>
+            <div class="meta-box">
+              <div class="meta-box-label">Turn Time</div>
+              <div class="meta-box-value">${Number(game.turnTime || 0)}s</div>
+            </div>
+          </div>
 
-      const mine = currentUser ? currentStats.find(player => player.id === currentUser.uid) : null;
-      handsPlayedValue.textContent = String(Number(mine?.handsPlayed || 0));
-      handsWonValue.textContent = String(Number(mine?.handsWon || 0));
-      winRateValue.textContent = getWinRate(mine || {});
-      netResultValue.textContent = money(mine?.netResult || 0);
-      myBalanceValue.textContent = money(mine?.balance || 0);
-
-      if (mine) {
-        currentPlayerProfile = mine;
-        usernameInput.value = mine.username || "";
-        signedInAs.textContent = `Signed in as ${getPublicName(mine, fallbackNameFromUser(currentUser))}`;
-      }
+          <div class="game-actions">
+            ${renderJoinButton(game)}
+            ${isMine ? `<button class="danger-btn" data-delete-game="${game.id}">Delete</button>` : ``}
+          </div>
+        </div>
+      `;
     }
 
     async function loadGames() {
@@ -1187,221 +921,17 @@
       const activeGames = currentGames.filter(game => game.status !== "deleted" && game.status !== "finished");
       const myGames = currentUser ? activeGames.filter(game => game.hostUid === currentUser.uid) : [];
 
-      activeGamesValue.textContent = String(activeGames.length);
-      myGamesValue.textContent = String(myGames.length);
+      gamesMobileList.innerHTML = activeGames.length
+        ? activeGames.map(game => renderGameCard(game, false)).join("")
+        : `<div class="empty">No active games.</div>`;
 
-      if (!activeGames.length) {
-        gamesTableBody.innerHTML = `<tr><td colspan="8" style="color:var(--muted);">No active games.</td></tr>`;
-        gamesMobileList.innerHTML = `<div class="empty">No active games.</div>`;
-      } else {
-        gamesTableBody.innerHTML = activeGames.map(game => {
-          const playerCount = Array.isArray(game.players) ? game.players.length : 0;
-          const isMine = currentUser && game.hostUid === currentUser.uid;
-          const hostName = game.hostUsername || game.hostDisplayName || "Player";
-          return `
-            <tr>
-              <td>
-                <strong>${escapeHtml(game.name || "Untitled Game")}</strong><br>
-                <span style="color:var(--muted);font-size:0.82rem;">${escapeHtml(game.visibility || "public")}</span>
-              </td>
-              <td>${escapeHtml(hostName)}</td>
-              <td>${Number(game.smallBlind || 0)} / ${Number(game.bigBlind || 0)}</td>
-              <td>${money(game.buyIn || 0)}</td>
-              <td>${playerCount} / ${Number(game.maxPlayers || 0)}</td>
-              <td>${Number(game.turnTime || 0)}s</td>
-              <td><span class="pill ${game.status === "waiting" ? "warning" : "success"}">${escapeHtml(game.status || "waiting")}</span></td>
-              <td>
-                <div class="inline-actions">
-                  ${renderJoinButton(game)}
-                  ${isMine ? `<button class="small-btn danger-btn" data-delete-game="${game.id}">Delete</button>` : ``}
-                </div>
-              </td>
-            </tr>
-          `;
-        }).join("");
-
-        gamesMobileList.innerHTML = activeGames.map(game => {
-          const playerCount = Array.isArray(game.players) ? game.players.length : 0;
-          const isMine = currentUser && game.hostUid === currentUser.uid;
-          const hostName = game.hostUsername || game.hostDisplayName || "Player";
-
-          return `
-            <div class="game-card">
-              <div class="game-card-top">
-                <div>
-                  <div class="game-card-title">${escapeHtml(game.name || "Untitled Game")}</div>
-                  <div class="game-card-sub">Host ${escapeHtml(hostName)} • ${escapeHtml(game.visibility || "public")}</div>
-                </div>
-                <span class="pill ${game.status === "waiting" ? "warning" : "success"}">${escapeHtml(game.status || "waiting")}</span>
-              </div>
-
-              <div class="game-meta-grid">
-                <div class="meta-box">
-                  <div class="meta-box-label">Blinds</div>
-                  <div class="meta-box-value">${Number(game.smallBlind || 0)} / ${Number(game.bigBlind || 0)}</div>
-                </div>
-                <div class="meta-box">
-                  <div class="meta-box-label">Buy In</div>
-                  <div class="meta-box-value">${money(game.buyIn || 0)}</div>
-                </div>
-                <div class="meta-box">
-                  <div class="meta-box-label">Players</div>
-                  <div class="meta-box-value">${playerCount} / ${Number(game.maxPlayers || 0)}</div>
-                </div>
-                <div class="meta-box">
-                  <div class="meta-box-label">Turn Time</div>
-                  <div class="meta-box-value">${Number(game.turnTime || 0)}s</div>
-                </div>
-              </div>
-
-              <div class="game-actions">
-                ${renderJoinButton(game)}
-                ${isMine ? `<button class="small-btn danger-btn" data-delete-game="${game.id}">Delete</button>` : ``}
-              </div>
-            </div>
-          `;
-        }).join("");
-      }
-
-      if (!myGames.length) {
-        myGamesTableBody.innerHTML = `<tr><td colspan="5" style="color:var(--muted);">No games created by you.</td></tr>`;
-        myGamesMobileList.innerHTML = `<div class="empty">No games created by you.</div>`;
-      } else {
-        myGamesTableBody.innerHTML = myGames.map(game => {
-          const playerCount = Array.isArray(game.players) ? game.players.length : 0;
-          return `
-            <tr>
-              <td>${escapeHtml(game.name || "Untitled Game")}</td>
-              <td>${formatDate(game.createdAt)}</td>
-              <td>${playerCount} / ${Number(game.maxPlayers || 0)}</td>
-              <td>
-                Buy-in ${money(game.buyIn || 0)}<br>
-                <span style="color:var(--muted);font-size:0.82rem;">
-                  ${Number(game.smallBlind || 0)}/${Number(game.bigBlind || 0)} • ${Number(game.turnTime || 0)}s
-                </span>
-              </td>
-              <td>
-                <div class="inline-actions">
-                  ${renderJoinButton(game)}
-                  <button class="small-btn danger-btn" data-delete-game="${game.id}">Delete</button>
-                </div>
-              </td>
-            </tr>
-          `;
-        }).join("");
-
-        myGamesMobileList.innerHTML = myGames.map(game => {
-          const playerCount = Array.isArray(game.players) ? game.players.length : 0;
-          return `
-            <div class="game-card">
-              <div class="game-card-top">
-                <div>
-                  <div class="game-card-title">${escapeHtml(game.name || "Untitled Game")}</div>
-                  <div class="game-card-sub">${formatDate(game.createdAt)}</div>
-                </div>
-                <span class="pill warning">${escapeHtml(game.status || "waiting")}</span>
-              </div>
-
-              <div class="game-meta-grid">
-                <div class="meta-box">
-                  <div class="meta-box-label">Players</div>
-                  <div class="meta-box-value">${playerCount} / ${Number(game.maxPlayers || 0)}</div>
-                </div>
-                <div class="meta-box">
-                  <div class="meta-box-label">Buy In</div>
-                  <div class="meta-box-value">${money(game.buyIn || 0)}</div>
-                </div>
-                <div class="meta-box">
-                  <div class="meta-box-label">Blinds</div>
-                  <div class="meta-box-value">${Number(game.smallBlind || 0)} / ${Number(game.bigBlind || 0)}</div>
-                </div>
-                <div class="meta-box">
-                  <div class="meta-box-label">Turn Time</div>
-                  <div class="meta-box-value">${Number(game.turnTime || 0)}s</div>
-                </div>
-              </div>
-
-              <div class="game-actions">
-                ${renderJoinButton(game)}
-                <button class="small-btn danger-btn" data-delete-game="${game.id}">Delete</button>
-              </div>
-            </div>
-          `;
-        }).join("");
-      }
-    }
-
-    async function loadDebts() {
-      if (!currentUser) return;
-
-      const iOweQuery = query(
-        collection(db, "pokerDebts"),
-        where("debtorUid", "==", currentUser.uid),
-        where("status", "==", "open")
-      );
-
-      const owedToMeQuery = query(
-        collection(db, "pokerDebts"),
-        where("creditorUid", "==", currentUser.uid),
-        where("status", "==", "open")
-      );
-
-      const [iOweSnap, owedToMeSnap] = await Promise.all([
-        getDocs(iOweQuery),
-        getDocs(owedToMeQuery)
-      ]);
-
-      const iOwe = iOweSnap.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-      const owedToMe = owedToMeSnap.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-
-      const iOweTotal = iOwe.reduce((sum, debt) => sum + Number(debt.amount || 0), 0);
-      const owedToMeTotal = owedToMe.reduce((sum, debt) => sum + Number(debt.amount || 0), 0);
-
-      youOweValue.textContent = money(iOweTotal);
-      owedToYouValue.textContent = money(owedToMeTotal);
-
-      if (!iOwe.length) {
-        debtsIOweBody.innerHTML = `<tr><td colspan="5" style="color:var(--muted);">No debts.</td></tr>`;
-      } else {
-        debtsIOweBody.innerHTML = iOwe
-          .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
-          .map(debt => `
-            <tr>
-              <td>${escapeHtml(getDebtDisplayName(debt, "creditor"))}</td>
-              <td>${money(debt.amount || 0)}</td>
-              <td>${escapeHtml(debt.note || "—")}</td>
-              <td>${formatDate(debt.createdAt)}</td>
-              <td><span class="pill warning">${escapeHtml(debt.status || "open")}</span></td>
-            </tr>
-          `).join("");
-      }
-
-      if (!owedToMe.length) {
-        debtsOwedToMeBody.innerHTML = `<tr><td colspan="6" style="color:var(--muted);">No debts owed to you.</td></tr>`;
-      } else {
-        debtsOwedToMeBody.innerHTML = owedToMe
-          .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
-          .map(debt => `
-            <tr>
-              <td>${escapeHtml(getDebtDisplayName(debt, "debtor"))}</td>
-              <td>${money(debt.amount || 0)}</td>
-              <td>${escapeHtml(debt.note || "—")}</td>
-              <td>${formatDate(debt.createdAt)}</td>
-              <td><span class="pill warning">${escapeHtml(debt.status || "open")}</span></td>
-              <td>
-                <button class="small-btn success-btn" data-forgive-debt="${debt.id}">Forgive</button>
-              </td>
-            </tr>
-          `).join("");
-      }
+      myGamesMobileList.innerHTML = myGames.length
+        ? myGames.map(game => renderGameCard(game, true)).join("")
+        : `<div class="empty">No games created by you.</div>`;
     }
 
     async function refreshLobby() {
-      await Promise.all([
-        loadGames(),
-        loadDebts(),
-        loadPlayerStats()
-      ]);
+      await loadGames();
     }
 
     function resetGameForm() {
@@ -1412,7 +942,6 @@
       bigBlindInput.value = 2;
       maxPlayersInput.value = 8;
       startingStackInput.value = 1000;
-      visibilityInput.value = "public";
     }
 
     async function saveUsername(nextUsername) {
@@ -1508,7 +1037,6 @@
       const bigBlind = Number(bigBlindInput.value);
       const maxPlayers = Number(maxPlayersInput.value);
       const startingStack = Number(startingStackInput.value);
-      const visibility = visibilityInput.value;
 
       if (!gameName) {
         showCreateStatus("Enter a game name.", true);
@@ -1539,7 +1067,6 @@
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
           status: "waiting",
-          visibility,
           turnTime,
           buyIn,
           smallBlind,
@@ -1606,7 +1133,6 @@
 
     document.addEventListener("click", async (event) => {
       const deleteBtn = event.target.closest("[data-delete-game]");
-      const forgiveBtn = event.target.closest("[data-forgive-debt]");
       const joinBtn = event.target.closest("[data-join-game]");
 
       if (joinBtn) {
@@ -1635,23 +1161,6 @@
         } catch (error) {
           console.error(error);
           showCreateStatus("Could not delete game.", true);
-        }
-      }
-
-      if (forgiveBtn) {
-        const debtId = forgiveBtn.dataset.forgiveDebt;
-        const confirmed = window.confirm("Mark this debt as forgiven?");
-        if (!confirmed) return;
-
-        try {
-          await updateDoc(doc(db, "pokerDebts", debtId), {
-            status: "forgiven",
-            updatedAt: serverTimestamp(),
-            forgivenByUid: currentUser?.uid || ""
-          });
-          await loadDebts();
-        } catch (error) {
-          console.error(error);
         }
       }
     });
