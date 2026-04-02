@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blackjack Game | William MacLean</title>
+  <link rel="icon" href="logo.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --bg:#000;--panel:#050505;--panel-2:rgba(255,255,255,.03);--text:#fff;--muted:#8d8d8d;--line:rgba(255,255,255,.08);--accent:#b00b55;--success:#57d38c;--danger:#ff6b81;--warning:#ffd166;--header-h:64px;--max-w:1100px;--shadow:0 18px 40px rgba(0,0,0,.24);--card-w:72px;--card-h:104px;--player-h:86px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box} html,body{min-height:100%}
+    body{font-family:"Comfortaa",sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+    a{color:inherit;text-decoration:none} button,input{font:inherit} img{display:block;max-width:100%}
+    header{position:fixed;inset:0 0 auto 0;height:var(--header-h);display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:rgba(0,0,0,.72);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.05);z-index:200;gap:12px}
+    .logo{display:flex;align-items:center;gap:10px;min-width:0}.logo img{width:28px;height:28px}.logo span{font-size:.95rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .header-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+    .header-btn{min-width:92px;min-height:40px;padding:10px 14px;border:1px solid var(--line);background:#050505;color:#fff;font-weight:700;cursor:pointer;transition:.14s ease}
+    .header-btn:hover{transform:translateY(-1px)} .header-btn:disabled{background:#050505;border-color:var(--line);color:#676767;cursor:not-allowed;transform:none;opacity:1}
+    .header-btn.live-start{border-color:rgba(87,211,140,.65);background:rgba(87,211,140,.14)} .header-btn.live-leave{border-color:rgba(255,107,129,.45);background:rgba(255,107,129,.10)}
+    .page{min-height:100vh;padding-top:calc(var(--header-h) + 12px)}
+    #authGate{position:fixed;inset:var(--header-h) 0 0 0;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;z-index:150;backdrop-filter:blur(8px)} #authGate.hidden{display:none}
+    .gate-card{border:1px solid var(--line);background:rgba(255,255,255,.03);padding:24px 26px;color:#d8d8d8;font-size:.92rem;text-align:center;max-width:420px;line-height:1.5}
+    .shell{width:min(var(--max-w), calc(100% - 24px));margin:0 auto;padding:0 0 18px;display:grid;gap:12px}
+    .panel{border:1px solid var(--line);background:var(--panel-2);box-shadow:var(--shadow)}
+    .layout{display:grid;grid-template-rows:auto auto auto;gap:12px;min-height:calc(100vh - var(--header-h) - 48px)}
+    .players-panel{padding:10px;max-height:250px;overflow:auto}.players-list{display:grid;gap:8px}
+    .player{min-height:var(--player-h);border:1px solid var(--line);background:rgba(255,255,255,.02);padding:10px 12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
+    .player.current-turn{border-color:rgba(176,11,85,.65);background:rgba(176,11,85,.10)} .player.winner{border-color:rgba(87,211,140,.65);box-shadow:inset 0 0 0 1px rgba(87,211,140,.32);background:rgba(87,211,140,.09)} .player.me{box-shadow:inset 0 0 0 1px rgba(255,255,255,.07)}
+    .player-main{min-width:0}.player-name{font-size:.92rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px}.player-sub{display:flex;flex-wrap:wrap;gap:10px;color:var(--muted);font-size:.76rem;line-height:1.35}
+    .center-panel{padding:14px 10px 16px;display:grid;gap:14px;align-content:start}
+    .dealer-head,.board-top{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;text-align:center}
+    .pot-box{border:1px solid rgba(176,11,85,.5);background:rgba(176,11,85,.12);padding:10px 14px;min-width:130px}
+    .pot-label{color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}.pot-value{font-size:1.25rem;font-weight:800;letter-spacing:-.04em}
+    .card-row{display:flex;justify-content:center;gap:8px;flex-wrap:nowrap;overflow:hidden}
+    .card,.card-slot{width:var(--card-w);height:var(--card-h);border:1px solid var(--line);background:#090909;flex:0 0 auto;position:relative;display:flex;align-items:center;justify-content:center}
+    .card img{width:100%;height:100%;object-fit:cover}.card-slot{color:#5e5e5e;font-size:.72rem;letter-spacing:.12em}
+    .bottom-panel{padding:12px 10px 14px;display:grid;gap:12px;position:sticky;bottom:0;background:linear-gradient(180deg, rgba(5,5,5,.95), rgba(5,5,5,1));z-index:5}
+    .my-cards-wrap{display:flex;justify-content:center;gap:10px}.my-cards-wrap .card,.my-cards-wrap .card-slot{width:84px;height:122px}
+    .bet-panel,.controls-panel{border:1px solid var(--line);background:rgba(255,255,255,.02);padding:12px;display:grid;gap:10px}
+    .bet-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.bet-label{color:#fff;font-size:.85rem;font-weight:700}.bet-value{color:var(--accent);font-size:.95rem;font-weight:700}
+    .bet-controls{display:grid;grid-template-columns:1fr 110px 1fr;gap:10px;align-items:center} input[type="range"]{width:100%;accent-color:var(--accent);cursor:pointer}
+    input[type="number"]{width:100%;min-height:44px;border:1px solid var(--line);background:#0a0a0a;color:#fff;padding:10px 12px;outline:none}
+    .controls{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+    .action-btn{width:100%;min-height:48px;border:1px solid var(--line);background:#050505;color:#696969;padding:12px 10px;font-weight:700;cursor:pointer;transition:.14s ease}.action-btn:hover{transform:translateY(-1px)} .action-btn:disabled{background:#050505;color:#696969;border-color:var(--line);cursor:not-allowed;transform:none;opacity:1}
+    .action-btn.live-check{border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff}.action-btn.live-call{border-color:rgba(176,11,85,.75);background:rgba(176,11,85,.16);color:#fff}.action-btn.live-bet{border-color:rgba(87,211,140,.58);background:rgba(87,211,140,.12);color:#fff}.action-btn.live-fold{border-color:rgba(255,107,129,.45);background:rgba(255,107,129,.10);color:#fff}
+    .status-line{min-height:1.2em;color:var(--muted);font-size:.85rem;text-align:center;line-height:1.4}.tiny{font-size:.75rem;color:var(--muted);text-align:center}
+    @media (min-width:880px){.layout{grid-template-rows:auto 1fr auto}.players-panel{max-height:280px}.my-cards-wrap .card,.my-cards-wrap .card-slot{width:92px;height:134px}}
+    @media (max-width:560px){:root{--card-w:60px;--card-h:88px}header{padding:0 12px}.logo span{font-size:.82rem}.header-actions{gap:6px}.header-btn{min-width:78px;min-height:38px;padding:8px 10px;font-size:.82rem}.shell{width:min(100% - 16px,var(--max-w))}.player{padding:9px 10px}.player-sub{gap:8px;font-size:.72rem}.card-row{gap:6px}.my-cards-wrap .card,.my-cards-wrap .card-slot{width:76px;height:110px}.bet-controls{grid-template-columns:1fr}.controls{grid-template-columns:1fr 1fr}.action-btn{min-height:46px;font-size:.9rem}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo"><img src="logo.png" alt="Logo" /><span id="headerTitle">Blackjack</span></div>
+    <div class="header-actions">
+      <button type="button" class="header-btn" id="startBtn">Start</button>
+      <button type="button" class="header-btn live-leave" id="leaveBtn">Leave</button>
+    </div>
+  </header>
+
+  <div id="authGate"><div class="gate-card" id="gateCard">Checking access...</div></div>
+
+  <main class="page">
+    <section class="shell">
+      <section class="panel players-panel">
+        <div class="players-list" id="playersList"><div class="player"><div class="player-main"><div class="player-name">Loading players...</div></div></div></div>
+      </section>
+
+      <section class="panel center-panel">
+        <div class="dealer-head">
+          <div class="pot-box"><div class="pot-label">Dealer</div><div class="pot-value" id="dealerValue">0</div></div>
+          <div class="pot-box"><div class="pot-label">Table Min Bet</div><div class="pot-value" id="minBetValue">$0</div></div>
+          <div class="pot-box"><div class="pot-label">Round</div><div class="pot-value" id="roundValue">0</div></div>
+        </div>
+        <div class="card-row" id="dealerCards"></div>
+        <div class="tiny" id="dealerText">Dealer waiting...</div>
+      </section>
+
+      <section class="panel bottom-panel">
+        <div class="my-cards-wrap" id="myCards"></div>
+
+        <div class="bet-panel">
+          <div class="bet-row"><div class="bet-label">Your Bet</div><div class="bet-value" id="betSizeText">$0</div></div>
+          <div class="bet-controls">
+            <input type="range" id="betSlider" min="0" max="100" step="1" value="0" />
+            <input type="number" id="betInput" min="0" step="1" value="0" />
+            <button type="button" class="action-btn live-bet" id="placeBetBtn">Place Bet</button>
+          </div>
+          <div class="tiny">Set your bet while the table is waiting. The host starts the round after bets are in.</div>
+        </div>
+
+        <div class="controls-panel">
+          <div class="controls">
+            <button type="button" class="action-btn" id="hitBtn">Hit</button>
+            <button type="button" class="action-btn" id="standBtn">Stand</button>
+            <button type="button" class="action-btn" id="doubleBtn">Double</button>
+            <button type="button" class="action-btn" id="newRoundBtn">Next</button>
+          </div>
+        </div>
+
+        <div class="status-line" id="statusLine">Loading table...</div>
+      </section>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getAnalytics, isSupported as analyticsSupported } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-analytics.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import { getFirestore, doc, getDoc, updateDoc, onSnapshot, serverTimestamp, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBLQmCVdVkz_sxxdfvXshDmoe3PeYIUMAY",
+      authDomain: "site-78972.firebaseapp.com",
+      projectId: "site-78972",
+      storageBucket: "site-78972.firebasestorage.app",
+      messagingSenderId: "519857042562",
+      appId: "1:519857042562:web:64ff26e5f795208081f09b",
+      measurementId: "G-TSQ1FNH5W1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    if (await analyticsSupported()) getAnalytics(app);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const queryParams = new URLSearchParams(window.location.search);
+    const tableId = queryParams.get("table") || "";
+
+    const authGate = document.getElementById("authGate");
+    const gateCard = document.getElementById("gateCard");
+    const headerTitle = document.getElementById("headerTitle");
+    const dealerValue = document.getElementById("dealerValue");
+    const minBetValue = document.getElementById("minBetValue");
+    const roundValue = document.getElementById("roundValue");
+    const dealerCardsEl = document.getElementById("dealerCards");
+    const dealerText = document.getElementById("dealerText");
+    const playersList = document.getElementById("playersList");
+    const myCards = document.getElementById("myCards");
+    const statusLine = document.getElementById("statusLine");
+    const betSlider = document.getElementById("betSlider");
+    const betInput = document.getElementById("betInput");
+    const betSizeText = document.getElementById("betSizeText");
+    const placeBetBtn = document.getElementById("placeBetBtn");
+    const hitBtn = document.getElementById("hitBtn");
+    const standBtn = document.getElementById("standBtn");
+    const doubleBtn = document.getElementById("doubleBtn");
+    const newRoundBtn = document.getElementById("newRoundBtn");
+    const startBtn = document.getElementById("startBtn");
+    const leaveBtn = document.getElementById("leaveBtn");
+
+    let currentUser = null;
+    let currentTable = null;
+    let actionBusy = false;
+    let unsubscribeTable = null;
+
+    function setGateMessage(message){ gateCard.textContent = message; }
+    function money(value){ return new Intl.NumberFormat("en-CA",{ style:"currency", currency:"CAD", maximumFractionDigits:0 }).format(Number(value || 0)); }
+    function escapeHtml(value){ return String(value ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
+    function clone(value){ return JSON.parse(JSON.stringify(value)); }
+    function getPublicName(player, fallback="Player"){ return String(player?.username || "").trim() || String(player?.displayName || "").trim() || String(player?.email || "").trim() || fallback; }
+    function isHost(table, uid){ return !!table && !!uid && table.hostUid === uid; }
+    function cardUrl(code){ return code ? `/cards/${code}.png` : ""; }
+    function renderCard(code, hidden=false){ if (!code) return `<div class="card-slot"></div>`; if (hidden) return `<div class="card-slot">??</div>`; return `<div class="card"><img src="${cardUrl(code)}" alt="${escapeHtml(code)}"></div>`; }
+    function renderCardRow(container, cards, { hiddenIndex = -1, minSlots = 0 } = {}) { const total = Math.max(minSlots, cards?.length || 0); const html = []; for (let i = 0; i < total; i++) { const code = cards?.[i] || ""; html.push(renderCard(code, i === hiddenIndex && !!code)); } container.innerHTML = html.join(""); }
+    function getSortedPlayers(table){ const players = Array.isArray(table?.players) ? clone(table.players) : []; players.sort((a,b) => Number(a.seat ?? 999) - Number(b.seat ?? 999)); return players; }
+    function findMe(table){ return getSortedPlayers(table).find(player => player.uid === currentUser?.uid && !player.left) || null; }
+    function isTurn(table, player){ return !!player && String(table?.currentTurnUid || "") === String(player.uid || ""); }
+    function normalizeTable(raw){ const table = clone(raw); table.players = getSortedPlayers(table).map(p => ({ uid:"", username:"", displayName:"", email:"", seat:0, bank:0, pendingBet:Number(table.minBet || 0), currentBet:0, cards:[], result:"", status:"waiting", left:false, isHost:false, ...p })); table.dealerCards = Array.isArray(table.dealerCards) ? table.dealerCards : []; table.deck = Array.isArray(table.deck) ? table.deck : []; table.discard = Array.isArray(table.discard) ? table.discard : []; table.status = String(table.status || "waiting"); table.phase = String(table.phase || "waiting"); table.dealerReveal = !!table.dealerReveal; table.roundNumber = Number(table.roundNumber || 0); return table; }
+
+    const SUITS = ["S","C","H","D"];
+    const VALUES = ["2","3","4","5","6","7","8","9","10","J","Q","K","A"];
+    function buildShoe(deckCount=4){ const deck=[]; for(let d=0; d<deckCount; d++){ for(const v of VALUES){ for(const s of SUITS) deck.push(`${v}${s}`); } } for(let i=deck.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; } return deck; }
+    function handTotals(cards=[]){ let total=0, aces=0; for(const c of cards){ const value=String(c).slice(0,-1); if (["J","Q","K"].includes(value)) total += 10; else if (value === "A") { total += 11; aces++; } else total += Number(value || 0); } while (total > 21 && aces > 0) { total -= 10; aces--; } return { total, soft: aces > 0 }; }
+    function isBlackjack(cards=[]){ return cards.length === 2 && handTotals(cards).total === 21; }
+    function drawCard(table){ if (!table.deck.length) table.deck = buildShoe(Number(table.deckCount || 4)); return table.deck.shift(); }
+
+    function eligiblePlayers(table){ return table.players.filter(p => !p.left && Number(p.bank || 0) > 0); }
+    function roundPlayers(table){ return table.players.filter(p => !p.left && Number(p.currentBet || 0) > 0); }
+    function nextTurnUid(table){ const players = getSortedPlayers(table).filter(p => !p.left && Number(p.currentBet || 0) > 0 && !["busted","stood","blackjack"].includes(String(p.status || ""))); return players[0]?.uid || ""; }
+    function reorderCurrentFirst(table){ const sorted = getSortedPlayers(table); const idx = sorted.findIndex(p => p.uid === table.currentTurnUid); if (idx <= 0) return sorted; return [...sorted.slice(idx), ...sorted.slice(0, idx)]; }
+    function setActionButtonState(button, enabled, liveClass){ button.disabled = !enabled; button.classList.remove("live-check","live-call","live-bet","live-fold"); if (enabled) button.classList.add(liveClass); }
+
+    function advanceAfterPlayerAction(table){
+      const active = getSortedPlayers(table).filter(p => !p.left && Number(p.currentBet || 0) > 0);
+      const pending = active.filter(p => !["busted","stood","blackjack"].includes(String(p.status || "")));
+      if (!pending.length) {
+        table.phase = "dealerTurn";
+        table.currentTurnUid = "";
+        return runDealer(table);
+      }
+      const currentIndex = active.findIndex(p => p.uid === table.currentTurnUid);
+      const ordered = currentIndex >= 0 ? [...active.slice(currentIndex + 1), ...active.slice(0, currentIndex + 1)] : active;
+      const next = ordered.find(p => !["busted","stood","blackjack"].includes(String(p.status || "")));
+      table.currentTurnUid = next?.uid || "";
+      if (!table.currentTurnUid) {
+        table.phase = "dealerTurn";
+        return runDealer(table);
+      }
+      return table;
+    }
+
+    function runDealer(table){
+      table.dealerReveal = true;
+      while (handTotals(table.dealerCards).total < 17) table.dealerCards.push(drawCard(table));
+      return settleRound(table);
+    }
+
+    function settleRound(table){
+      const dealer = handTotals(table.dealerCards).total;
+      const dealerBust = dealer > 21;
+      const dealerBJ = isBlackjack(table.dealerCards);
+      const winnerUids = [];
+      table.players = getSortedPlayers(table).map(player => {
+        if (player.left || Number(player.currentBet || 0) <= 0) return { ...player, cards:[], currentBet:0, pendingBet:Math.min(Number(table.minBet || 0), Number(player.bank || 0)), status: player.left ? "left" : "waiting", result:"" };
+        const total = handTotals(player.cards).total;
+        let bank = Number(player.bank || 0);
+        let result = "";
+        if (player.status === "busted") {
+          result = `Bust • lost ${money(player.currentBet)}`;
+        } else if (isBlackjack(player.cards) && !dealerBJ) {
+          bank += player.currentBet * 2.5;
+          result = `Blackjack • won ${money(player.currentBet * 1.5)}`;
+          winnerUids.push(player.uid);
+        } else if (dealerBust) {
+          bank += player.currentBet * 2;
+          result = `Dealer busted • won ${money(player.currentBet)}`;
+          winnerUids.push(player.uid);
+        } else if (dealerBJ && !isBlackjack(player.cards)) {
+          result = `Dealer blackjack • lost ${money(player.currentBet)}`;
+        } else if (total > dealer) {
+          bank += player.currentBet * 2;
+          result = `Won ${money(player.currentBet)}`;
+          winnerUids.push(player.uid);
+        } else if (total === dealer) {
+          bank += player.currentBet;
+          result = "Push";
+        } else {
+          result = `Lost ${money(player.currentBet)}`;
+        }
+        return { ...player, bank, currentBet:0, pendingBet:Math.min(Math.max(Number(table.minBet || 0), Number(player.pendingBet || table.minBet || 0)), bank || Number(table.minBet || 0)), status: bank > 0 ? "waiting" : "broke", result };
+      });
+      table.status = "settle";
+      table.phase = "settle";
+      table.currentTurnUid = "";
+      table.lastWinnerUids = winnerUids;
+      table.lastMessage = winnerUids.length ? `${winnerUids.length} player${winnerUids.length === 1 ? "" : "s"} won this round.` : "Dealer won the round.";
+      return table;
+    }
+
+    function startRoundState(table){
+      table = normalizeTable(table);
+      const players = getSortedPlayers(table).map(player => ({ ...player, cards:[], result:"", currentBet:0, status: player.left ? "left" : (Number(player.bank || 0) > 0 ? "waiting" : "broke") }));
+      let deck = Array.isArray(table.deck) && table.deck.length >= 20 ? [...table.deck] : buildShoe(Number(table.deckCount || 4));
+      const dealerCards = [];
+      let seated = 0;
+      for (const player of players) {
+        if (player.left || Number(player.bank || 0) < Number(table.minBet || 0)) continue;
+        const bet = Math.floor(Number(player.pendingBet || 0));
+        if (bet >= Number(table.minBet || 0) && bet <= Number(player.bank || 0)) {
+          player.currentBet = bet;
+          player.bank -= bet;
+          player.status = "active";
+          seated++;
+        }
+      }
+      if (!seated) throw new Error("At least one player needs a valid bet.");
+      for (let round = 0; round < 2; round++) {
+        for (const player of players) if (player.status === "active") player.cards.push(deck.shift());
+        dealerCards.push(deck.shift());
+      }
+      let tableNext = { ...table, players, deck, dealerCards, dealerReveal:false, roundNumber:Number(table.roundNumber || 0) + 1, status:"in_round", phase:"playerTurns", lastWinnerUids:[], lastMessage:"Round started." };
+      for (const player of tableNext.players) {
+        if (player.status === "active" && isBlackjack(player.cards)) player.status = "blackjack";
+      }
+      tableNext.currentTurnUid = nextTurnUid(tableNext);
+      if (!tableNext.currentTurnUid) return runDealer(tableNext);
+      return tableNext;
+    }
+
+    function renderPlayers(table){
+      const players = getSortedPlayers(table).filter(p => !p.left);
+      if (!players.length) {
+        playersList.innerHTML = `<div class="player"><div class="player-main"><div class="player-name">No players</div></div></div>`;
+        return;
+      }
+      const winners = Array.isArray(table.lastWinnerUids) ? table.lastWinnerUids : [];
+      playersList.innerHTML = players.map(player => {
+        const me = currentUser && player.uid === currentUser.uid;
+        const turn = isTurn(table, player);
+        const rightText = [me ? "You" : "", player.status === "blackjack" ? "Blackjack" : "", player.status === "busted" ? "Busted" : "", player.status === "stood" ? "Stood" : "", player.status === "broke" ? "Broke" : "", turn ? "Turn" : ""].filter(Boolean).join(" • ");
+        return `<div class="player ${me ? "me" : ""} ${turn ? "current-turn" : ""} ${winners.includes(player.uid) ? "winner" : ""}">
+          <div class="player-main">
+            <div class="player-name">${escapeHtml(getPublicName(player))}</div>
+            <div class="player-sub"><span>Bank ${money(player.bank)}</span><span>Bet ${money(player.currentBet || player.pendingBet || 0)}</span>${player.result ? `<span>${escapeHtml(player.result)}</span>` : ``}</div>
+          </div>
+          <div class="player-sub">${rightText ? `<span>${escapeHtml(rightText)}</span>` : ``}</div>
+        </div>`;
+      }).join("");
+    }
+
+    function renderGame(table){
+      currentTable = normalizeTable(table);
+      const me = findMe(currentTable);
+      headerTitle.textContent = currentTable.name ? `${currentTable.name} • Blackjack` : "Blackjack";
+      minBetValue.textContent = money(currentTable.minBet || 0);
+      roundValue.textContent = String(currentTable.roundNumber || 0);
+      const dealerCards = currentTable.dealerCards || [];
+      const dealerHand = currentTable.dealerReveal ? handTotals(dealerCards).total : (dealerCards[0] ? handTotals([dealerCards[0]]).total : 0);
+      dealerValue.textContent = String(dealerHand || 0);
+      renderCardRow(dealerCardsEl, dealerCards, { hiddenIndex: currentTable.dealerReveal ? -1 : 1, minSlots: Math.max(2, dealerCards.length || 0) });
+      dealerText.textContent = currentTable.dealerReveal ? `Dealer total ${handTotals(dealerCards).total}` : "Dealer hidden card face down";
+      renderPlayers(currentTable);
+      renderCardRow(myCards, me?.cards || [], { minSlots: 2 });
+      statusLine.textContent = currentTable.lastMessage || "Waiting...";
+
+      const betBase = Math.max(Number(currentTable.minBet || 1), 1);
+      const maxBet = Math.max(Number(me?.bank || 0), 0);
+      const currentPending = Math.min(Math.max(Number(me?.pendingBet || betBase), betBase), maxBet || betBase);
+      betSlider.min = String(Math.min(betBase, maxBet || betBase));
+      betSlider.max = String(Math.max(maxBet, betBase));
+      betInput.min = String(Math.min(betBase, maxBet || betBase));
+      betInput.max = String(Math.max(maxBet, betBase));
+      if (document.activeElement !== betInput) betInput.value = String(currentPending);
+      if (document.activeElement !== betSlider) betSlider.value = String(currentPending);
+      betSizeText.textContent = money(Number(betInput.value || 0));
+
+      const waiting = ["waiting","settle"].includes(currentTable.status);
+      const myTurn = !!me && currentTable.currentTurnUid === me.uid && currentTable.phase === "playerTurns";
+      const canHit = myTurn && me.status === "active";
+      const canStand = myTurn && me.status === "active";
+      const canDouble = myTurn && me.status === "active" && Array.isArray(me.cards) && me.cards.length === 2 && Number(me.bank || 0) >= Number(me.currentBet || 0);
+      const canPlaceBet = !!me && waiting && Number(me.bank || 0) >= Number(currentTable.minBet || 0);
+      const canStart = waiting && isHost(currentTable, currentUser?.uid);
+
+      placeBetBtn.disabled = !canPlaceBet || actionBusy;
+      betSlider.disabled = !canPlaceBet || actionBusy;
+      betInput.disabled = !canPlaceBet || actionBusy;
+      setActionButtonState(hitBtn, canHit && !actionBusy, "live-call");
+      setActionButtonState(standBtn, canStand && !actionBusy, "live-check");
+      setActionButtonState(doubleBtn, canDouble && !actionBusy, "live-bet");
+      setActionButtonState(newRoundBtn, canStart && currentTable.status === "settle" && !actionBusy, "live-bet");
+      startBtn.disabled = !(canStart && !actionBusy);
+      startBtn.classList.toggle("live-start", canStart && !actionBusy);
+      startBtn.textContent = currentTable.status === "settle" ? "Next" : "Start";
+    }
+
+    async function mutateTable(mutator){
+      if (!tableId || actionBusy) return;
+      actionBusy = true;
+      try {
+        await runTransaction(db, async (tx) => {
+          const ref = doc(db, "blackjackTables", tableId);
+          const snap = await tx.get(ref);
+          if (!snap.exists()) throw new Error("Table not found.");
+          let table = normalizeTable({ id:snap.id, ...snap.data() });
+          table = mutator(table);
+          table.updatedAt = serverTimestamp();
+          tx.update(ref, table);
+        });
+      } catch (error) {
+        console.error(error);
+        statusLine.textContent = error.message || "Action failed.";
+      } finally {
+        actionBusy = false;
+      }
+    }
+
+    async function placeBet(){
+      const entered = Math.floor(Number(betInput.value || 0));
+      await mutateTable((table) => {
+        if (!["waiting","settle"].includes(table.status)) throw new Error("You can only set bets between rounds.");
+        const index = table.players.findIndex(p => p.uid === currentUser.uid && !p.left);
+        if (index < 0) throw new Error("You are not seated.");
+        const player = table.players[index];
+        if (entered < Number(table.minBet || 0)) throw new Error(`Minimum bet is ${money(table.minBet)}.`);
+        if (entered > Number(player.bank || 0)) throw new Error("Not enough bank for that bet.");
+        table.players[index] = { ...player, pendingBet:entered };
+        table.lastMessage = `${getPublicName(player)} set bet to ${money(entered)}.`;
+        return table;
+      });
+    }
+
+    async function startRound(){
+      await mutateTable((table) => {
+        if (!isHost(table, currentUser.uid)) throw new Error("Only the host can start the round.");
+        if (!["waiting","settle"].includes(table.status)) throw new Error("Round already in progress.");
+        return startRoundState(table);
+      });
+    }
+
+    async function playerAction(type){
+      await mutateTable((table) => {
+        if (table.phase !== "playerTurns") throw new Error("It is not player action time.");
+        const index = table.players.findIndex(p => p.uid === currentUser.uid && !p.left);
+        if (index < 0) throw new Error("You are not seated.");
+        const player = table.players[index];
+        if (table.currentTurnUid !== currentUser.uid) throw new Error("Not your turn.");
+        if (player.status !== "active") throw new Error("You cannot act right now.");
+
+        if (type === "hit") {
+          player.cards.push(drawCard(table));
+          if (handTotals(player.cards).total > 21) player.status = "busted";
+        } else if (type === "stand") {
+          player.status = "stood";
+        } else if (type === "double") {
+          if (player.cards.length !== 2) throw new Error("Double only allowed on first decision.");
+          if (Number(player.bank || 0) < Number(player.currentBet || 0)) throw new Error("Not enough bank to double.");
+          player.bank -= Number(player.currentBet || 0);
+          player.currentBet += Number(player.currentBet || 0);
+          player.cards.push(drawCard(table));
+          player.status = handTotals(player.cards).total > 21 ? "busted" : "stood";
+        }
+        table.players[index] = player;
+        table.lastMessage = `${getPublicName(player)} chose ${type}.`;
+        return advanceAfterPlayerAction(table);
+      });
+    }
+
+    async function leaveTable(){
+      if (!tableId || !currentUser) return;
+      try {
+        await runTransaction(db, async (tx) => {
+          const ref = doc(db, "blackjackTables", tableId);
+          const snap = await tx.get(ref);
+          if (!snap.exists()) return;
+          const table = normalizeTable({ id:snap.id, ...snap.data() });
+          const players = getSortedPlayers(table).map(p => p.uid === currentUser.uid ? { ...p, left:true, status:"left", currentBet:0, cards:[], result:"", pendingBet:0 } : p);
+          const seated = players.filter(p => !p.left);
+          const nextHost = seated[0] || null;
+          tx.update(ref, {
+            players,
+            hostUid: nextHost ? nextHost.uid : table.hostUid,
+            hostUsername: nextHost ? (nextHost.username || "") : (table.hostUsername || ""),
+            hostDisplayName: nextHost ? getPublicName(nextHost) : (table.hostDisplayName || ""),
+            status: seated.length ? (["playerTurns","dealerTurn"].includes(table.phase) ? table.status : "waiting") : "deleted",
+            updatedAt: serverTimestamp(),
+            lastMessage: seated.length ? `${getPublicName({ uid:currentUser.uid, displayName: currentUser.displayName || "Player" })} left the table.` : "Table closed."
+          });
+        });
+      } catch (error) {
+        console.error(error);
+      }
+      window.location.href = "blackjack.html";
+    }
+
+    function syncBetFromSlider(){ const value = Math.max(0, Number(betSlider.value || 0)); betInput.value = String(value); betSizeText.textContent = money(value); }
+    function syncBetFromInput(){ const min = Number(betInput.min || 0), max = Number(betInput.max || 0); let value = Number(betInput.value || 0); if (!Number.isFinite(value)) value = min; value = Math.max(min, Math.min(max, value)); betInput.value = String(value); betSlider.value = String(value); betSizeText.textContent = money(value); }
+
+    placeBetBtn.addEventListener("click", placeBet);
+    startBtn.addEventListener("click", startRound);
+    newRoundBtn.addEventListener("click", startRound);
+    hitBtn.addEventListener("click", () => playerAction("hit"));
+    standBtn.addEventListener("click", () => playerAction("stand"));
+    doubleBtn.addEventListener("click", () => playerAction("double"));
+    leaveBtn.addEventListener("click", leaveTable);
+    betSlider.addEventListener("input", syncBetFromSlider);
+    betInput.addEventListener("input", syncBetFromInput);
+
+    async function watchTable(){
+      if (!tableId) { setGateMessage("Missing table id."); return; }
+      unsubscribeTable = onSnapshot(doc(db, "blackjackTables", tableId), async (snap) => {
+        if (!snap.exists()) { statusLine.textContent = "Table not found."; return; }
+        renderGame({ id:snap.id, ...snap.data() });
+      });
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        setGateMessage("You need to sign in to use blackjack. Redirecting...");
+        setTimeout(() => window.location.replace("https://williammaclean.ca/login"), 1400);
+        return;
+      }
+      currentUser = user;
+      authGate.classList.add("hidden");
+      await watchTable();
+    });
+
+    window.addEventListener("beforeunload", () => { if (unsubscribeTable) unsubscribeTable(); });
+  </script>
+</body>
+</html>

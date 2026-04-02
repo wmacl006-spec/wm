@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blackjack Lobby | William MacLean</title>
+  <link rel="icon" href="logo.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --bg:#000;
+      --panel:#050505;
+      --panel-2:rgba(255,255,255,0.03);
+      --text:#fff;
+      --muted:#8d8d8d;
+      --line:rgba(255,255,255,0.08);
+      --accent:#b00b55;
+      --success:#57d38c;
+      --danger:#ff6b81;
+      --warning:#ffd166;
+      --header-h:64px;
+      --max-w:980px;
+      --shadow:0 18px 40px rgba(0,0,0,0.24);
+      --card-h:72px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{min-height:100%}
+    body{font-family:"Comfortaa",sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+    a{color:inherit;text-decoration:none}
+    button,input,select{font:inherit}
+    img{display:block;max-width:100%}
+    header{position:fixed;inset:0 0 auto 0;height:var(--header-h);display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:rgba(0,0,0,0.72);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.05);z-index:200}
+    .logo{display:flex;align-items:center;gap:10px;min-width:0}
+    .logo img{width:28px;height:28px}
+    .logo span{font-size:.95rem;font-weight:700;white-space:nowrap}
+    nav{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+    nav a{font-size:.84rem;color:#cfcfcf;transition:.2s}
+    nav a:hover{color:#fff}
+    .status-pill{font-size:.72rem;padding:7px 10px;border:1px solid rgba(255,255,255,.1);color:#fff;background:rgba(255,255,255,.04)}
+    .page{min-height:100vh;padding-top:var(--header-h)}
+    #authGate{position:fixed;inset:var(--header-h) 0 0 0;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;z-index:150;backdrop-filter:blur(8px)}
+    #authGate.hidden{display:none}
+    .gate-card{border:1px solid var(--line);background:rgba(255,255,255,.03);padding:24px 26px;color:#d8d8d8;font-size:.92rem;text-align:center;max-width:420px;line-height:1.5}
+    .hero-wrap{width:100%;border-bottom:1px solid rgba(255,255,255,.05);background:radial-gradient(circle at top left, rgba(176,11,85,.14), transparent 32%),radial-gradient(circle at top right, rgba(255,255,255,.04), transparent 28%),linear-gradient(180deg, rgba(255,255,255,.015), transparent)}
+    .hero{width:min(var(--max-w), calc(100% - 24px));margin:0 auto;padding:28px 0 18px}
+    .hero h1{font-size:clamp(2rem,8vw,3.7rem);line-height:.95;letter-spacing:-.05em;margin-bottom:8px}
+    .hero p{color:var(--muted);font-size:.88rem;line-height:1.45}
+    .shell{width:min(var(--max-w), calc(100% - 24px));margin:0 auto;padding:14px 0 18px;display:grid;gap:12px}
+    .panel{border:1px solid var(--line);background:var(--panel-2);box-shadow:var(--shadow)}
+    .section-head{padding:12px 14px 0;display:flex;flex-direction:column;gap:6px}
+    .tag{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);font-weight:700}
+    .section-title{font-size:1.02rem;font-weight:700;letter-spacing:-.03em}
+    .section-sub,.signed-in,.status-line{color:var(--muted);font-size:.82rem;line-height:1.4}
+    .panel-body{padding:12px 14px 14px}
+    form{display:grid;gap:10px}
+    .form-grid{display:grid;grid-template-columns:1fr;gap:10px}
+    .input-label{display:grid;gap:8px;font-size:.82rem;color:var(--muted);font-weight:600}
+    input,select{width:100%;border:1px solid var(--line);background:#0a0a0a;color:var(--text);padding:12px 13px}
+    input:focus,select:focus{outline:none;border-color:rgba(176,11,85,.7);box-shadow:inset 0 0 0 1px rgba(176,11,85,.45)}
+    .button-row,.table-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    button{width:100%;min-height:48px;border:1px solid var(--line);background:#0a0a0a;color:var(--text);padding:12px 10px;font-weight:700;cursor:pointer;transition:.14s ease}
+    button:hover{transform:translateY(-1px)}
+    button:disabled{opacity:.5;cursor:not-allowed;transform:none}
+    .primary-btn{border-color:rgba(176,11,85,.75);background:rgba(176,11,85,.16)}
+    .ghost-btn{background:rgba(255,255,255,.03)}
+    .danger-btn{border-color:rgba(255,107,129,.45);background:rgba(255,107,129,.10)}
+    .tables-list{display:grid;gap:8px}
+    .table-card{min-height:var(--card-h);border:1px solid var(--line);background:rgba(255,255,255,.02);padding:10px 12px;display:grid;gap:10px}
+    .table-top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:start}
+    .table-name{font-size:.95rem;font-weight:700;line-height:1.2;margin-bottom:6px;word-break:break-word}
+    .table-sub{display:flex;flex-wrap:wrap;gap:10px;color:var(--muted);font-size:.75rem;line-height:1.35}
+    .pill{display:inline-flex;align-items:center;padding:5px 8px;border:1px solid rgba(255,255,255,.1);font-size:.72rem;white-space:nowrap;background:rgba(255,255,255,.03);height:fit-content}
+    .pill.accent{border-color:rgba(176,11,85,.5);background:rgba(176,11,85,.12)}
+    .pill.success{border-color:rgba(87,211,140,.4);background:rgba(87,211,140,.1)}
+    .pill.warning{border-color:rgba(255,209,102,.4);background:rgba(255,209,102,.1)}
+    .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .meta-box{border:1px solid var(--line);background:#0a0a0a;padding:10px}
+    .meta-box-label{font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;font-weight:700}
+    .meta-box-value{font-size:.86rem;font-weight:700;line-height:1.25;word-break:break-word}
+    .empty{border:1px solid var(--line);background:rgba(255,255,255,.02);padding:14px 12px;color:var(--muted);font-size:.85rem}
+    .footer-space{height:6px}
+    @media (min-width:720px){.form-grid.two{grid-template-columns:1fr 1fr}.table-actions{grid-template-columns:repeat(3,1fr)}}
+    @media (max-width:560px){header{padding:0 14px}.logo span{font-size:.88rem}nav{gap:10px}nav a{font-size:.78rem}.hero,.shell{width:min(100% - 16px, var(--max-w))}.hero{padding:22px 0 14px}.button-row,.table-actions{grid-template-columns:1fr}button{min-height:46px;font-size:.9rem}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo"><img src="logo.png" alt="Logo" /><span>William MacLean</span></div>
+    <nav>
+      <a href="index">Home</a>
+      <a href="apps">Apps</a>
+      <span class="status-pill" id="statusPill">Status: loading</span>
+    </nav>
+  </header>
+
+  <div id="authGate"><div class="gate-card" id="gateCard">Checking access...</div></div>
+
+  <main class="page">
+    <section class="hero-wrap">
+      <div class="hero">
+        <h1>Blackjack Lobby</h1>
+        <p>Create a table, join a table, and jump into a simple multiplayer blackjack room.</p>
+      </div>
+    </section>
+
+    <section class="shell">
+      <section class="panel">
+        <div class="section-head">
+          <div class="tag">You</div>
+          <div class="section-title">Profile</div>
+          <div class="signed-in" id="signedInAs">Not signed in</div>
+        </div>
+        <div class="panel-body">
+          <form id="usernameForm">
+            <label class="input-label">Username<input type="text" id="usernameInput" maxlength="20" placeholder="pick a username" /></label>
+            <div class="button-row">
+              <button type="submit" class="primary-btn">Save Username</button>
+              <button type="button" class="ghost-btn" id="clearUsernameBtn">Clear</button>
+            </div>
+          </form>
+          <div class="status-line" id="usernameStatus"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div class="tag">Create</div>
+          <div class="section-title">New Table</div>
+          <div class="section-sub">Same overall style as your poker hub, but for blackjack.</div>
+        </div>
+        <div class="panel-body">
+          <form id="createTableForm">
+            <label class="input-label">Table Name<input type="text" id="tableNameInput" maxlength="40" placeholder="Friday Night Blackjack" required /></label>
+            <div class="form-grid two">
+              <label class="input-label">Min Bet<input type="number" id="minBetInput" min="1" step="1" value="5" required /></label>
+              <label class="input-label">Max Players<input type="number" id="maxPlayersInput" min="1" max="7" step="1" value="5" required /></label>
+            </div>
+            <div class="form-grid two">
+              <label class="input-label">Starting Bank<input type="number" id="startingBankInput" min="1" step="1" value="200" required /></label>
+              <label class="input-label">Decks in Shoe<input type="number" id="deckCountInput" min="1" max="8" step="1" value="4" required /></label>
+            </div>
+            <div class="button-row">
+              <button type="submit" class="primary-btn">Create Table</button>
+              <button type="button" class="ghost-btn" id="resetTableFormBtn">Reset</button>
+            </div>
+          </form>
+          <div class="status-line" id="createStatus"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div class="tag">Tables</div>
+          <div class="section-title">Join Table</div>
+          <div class="section-sub">Open tables you can hop into right now.</div>
+        </div>
+        <div class="panel-body"><div class="tables-list" id="tablesList"><div class="empty">No active tables.</div></div></div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div class="tag">Host</div>
+          <div class="section-title">Your Tables</div>
+          <div class="section-sub">Tables you created.</div>
+        </div>
+        <div class="panel-body"><div class="tables-list" id="myTablesList"><div class="empty">No tables created by you.</div></div></div>
+      </section>
+      <div class="footer-space"></div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getAnalytics, isSupported as analyticsSupported } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-analytics.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import { getFirestore, collection, doc, addDoc, getDoc, getDocs, setDoc, deleteDoc, updateDoc, serverTimestamp, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBLQmCVdVkz_sxxdfvXshDmoe3PeYIUMAY",
+      authDomain: "site-78972.firebaseapp.com",
+      projectId: "site-78972",
+      storageBucket: "site-78972.firebasestorage.app",
+      messagingSenderId: "519857042562",
+      appId: "1:519857042562:web:64ff26e5f795208081f09b",
+      measurementId: "G-TSQ1FNH5W1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    if (await analyticsSupported()) getAnalytics(app);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const statusPill = document.getElementById("statusPill");
+    const signedInAs = document.getElementById("signedInAs");
+    const authGate = document.getElementById("authGate");
+    const gateCard = document.getElementById("gateCard");
+    const usernameForm = document.getElementById("usernameForm");
+    const usernameInput = document.getElementById("usernameInput");
+    const usernameStatus = document.getElementById("usernameStatus");
+    const clearUsernameBtn = document.getElementById("clearUsernameBtn");
+    const createTableForm = document.getElementById("createTableForm");
+    const resetTableFormBtn = document.getElementById("resetTableFormBtn");
+    const createStatus = document.getElementById("createStatus");
+    const tableNameInput = document.getElementById("tableNameInput");
+    const minBetInput = document.getElementById("minBetInput");
+    const maxPlayersInput = document.getElementById("maxPlayersInput");
+    const startingBankInput = document.getElementById("startingBankInput");
+    const deckCountInput = document.getElementById("deckCountInput");
+    const tablesList = document.getElementById("tablesList");
+    const myTablesList = document.getElementById("myTablesList");
+
+    const statusRank = { default:0, plus:1, me:2 };
+    let currentUser = null;
+    let currentUserStatus = "default";
+    let currentPlayerProfile = null;
+    let currentTables = [];
+
+    function normalizeStatus(status){ const clean = String(status || "default").trim().toLowerCase(); return ["default","plus","me"].includes(clean) ? clean : "default"; }
+    function setGateMessage(message){ gateCard.textContent = message; }
+    function showCreateStatus(message, isError=false){ createStatus.textContent = message; createStatus.style.color = isError ? "var(--danger)" : "var(--muted)"; }
+    function showUsernameStatus(message, isError=false){ usernameStatus.textContent = message; usernameStatus.style.color = isError ? "var(--danger)" : "var(--muted)"; }
+    function money(value){ return new Intl.NumberFormat("en-CA",{ style:"currency", currency:"CAD", maximumFractionDigits:0 }).format(Number(value || 0)); }
+    function escapeHtml(value){ return String(value ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
+    function formatDate(value){ if (!value) return "—"; try { const date = typeof value?.toDate === "function" ? value.toDate() : new Date(value); if (Number.isNaN(date.getTime())) return "—"; return new Intl.DateTimeFormat("en-CA",{ year:"numeric", month:"short", day:"numeric", hour:"numeric", minute:"2-digit" }).format(date);} catch { return "—"; } }
+    function normalizeUsername(value){ return String(value || "").trim().replace(/\s+/g,"_").replace(/[^a-zA-Z0-9_]/g,"").slice(0,20); }
+    function fallbackNameFromUser(user){ if (!user) return "Player"; return String(user.displayName || "").trim() || "Player"; }
+    function getPublicName(data, fallback="Player"){ return String(data?.username || "").trim() || String(data?.displayName || "").trim() || fallback; }
+    async function getUserStatus(uid){ try { const snap = await getDoc(doc(db, "users", uid)); return snap.exists() ? normalizeStatus(snap.data()?.status) : "default"; } catch { return "default"; } }
+    async function getPlayerProfile(uid){ const snap = await getDoc(doc(db, "blackjackPlayers", uid)); return snap.exists() ? { id:snap.id, ...snap.data() } : null; }
+
+    async function ensurePlayerProfile(user){
+      const ref = doc(db, "blackjackPlayers", user.uid);
+      const snap = await getDoc(ref);
+      const base = { uid:user.uid, email:user.email || "", displayName:user.displayName || "", roundsPlayed:0, roundsWon:0, updatedAt:serverTimestamp() };
+      if (!snap.exists()) {
+        await setDoc(ref, { ...base, username:"", usernameLower:"", displayName:fallbackNameFromUser(user), createdAt:serverTimestamp() });
+      } else {
+        const existing = snap.data() || {};
+        await setDoc(ref, { ...base, username:existing.username || "", usernameLower:existing.usernameLower || "", displayName:existing.displayName || fallbackNameFromUser(user) }, { merge:true });
+      }
+      currentPlayerProfile = await getPlayerProfile(user.uid);
+      usernameInput.value = currentPlayerProfile?.username || "";
+    }
+
+    async function protectPlusPage(user){
+      currentUserStatus = await getUserStatus(user.uid);
+      statusPill.textContent = `Status: ${currentUserStatus}`;
+      signedInAs.textContent = `Signed in as ${getPublicName(currentPlayerProfile, fallbackNameFromUser(user))}`;
+      if ((statusRank[currentUserStatus] ?? 0) < statusRank.plus) {
+        setGateMessage("This page is for plus or me accounts. Redirecting to Apps...");
+        setTimeout(() => window.location.replace("https://williammaclean.ca/apps"), 1800);
+        return false;
+      }
+      authGate.classList.add("hidden");
+      return true;
+    }
+
+    function isAlreadyInTable(table){ return !!currentUser && Array.isArray(table?.players) && table.players.some(player => player.uid === currentUser.uid); }
+    function canJoinTable(table){ const playerCount = Array.isArray(table?.players) ? table.players.filter(p => !p.left).length : 0; if (isAlreadyInTable(table)) return false; if (playerCount >= Number(table?.maxPlayers || 0)) return false; return !["deleted"].includes(String(table?.status || "").toLowerCase()); }
+    function renderJoinButton(table){
+      if (isAlreadyInTable(table)) return `<a class="primary-btn" style="display:flex;align-items:center;justify-content:center;min-height:48px;border:1px solid rgba(176,11,85,0.75);background:rgba(176,11,85,0.16);" href="blackjackgame.html?table=${encodeURIComponent(table.id)}">Open</a>`;
+      if (!canJoinTable(table)) return `<button disabled class="ghost-btn">Full</button>`;
+      return `<button class="primary-btn" data-join-table="${table.id}">Join</button>`;
+    }
+    function renderTableCard(table, isMine=false){
+      const seated = Array.isArray(table?.players) ? table.players.filter(p => !p.left).length : 0;
+      const isWaiting = ["waiting","settle"].includes(String(table?.status || "").toLowerCase());
+      return `
+        <div class="table-card">
+          <div class="table-top">
+            <div>
+              <div class="table-name">${escapeHtml(table.name || "Untitled Table")}</div>
+              <div class="table-sub"><span>Host ${escapeHtml(table.hostUsername || table.hostDisplayName || "Player")}</span><span>${formatDate(table.createdAt)}</span></div>
+            </div>
+            <span class="pill ${isWaiting ? "warning" : "success"}">${escapeHtml(table.status || "waiting")}</span>
+          </div>
+          <div class="meta-grid">
+            <div class="meta-box"><div class="meta-box-label">Min Bet</div><div class="meta-box-value">${money(table.minBet || 0)}</div></div>
+            <div class="meta-box"><div class="meta-box-label">Players</div><div class="meta-box-value">${seated} / ${Number(table.maxPlayers || 0)}</div></div>
+            <div class="meta-box"><div class="meta-box-label">Starting Bank</div><div class="meta-box-value">${money(table.startingBank || 0)}</div></div>
+            <div class="meta-box"><div class="meta-box-label">Decks</div><div class="meta-box-value">${Number(table.deckCount || 0)}</div></div>
+          </div>
+          <div class="table-actions">
+            ${renderJoinButton(table)}
+            ${isMine ? `<button class="danger-btn" data-delete-table="${table.id}">Delete</button>` : ``}
+          </div>
+        </div>`;
+    }
+
+    async function loadTables(){
+      const snap = await getDocs(query(collection(db, "blackjackTables"), orderBy("createdAt", "desc")));
+      currentTables = snap.docs.map(d => ({ id:d.id, ...d.data() })).filter(t => t.status !== "deleted");
+      const openTables = currentTables;
+      const myTables = currentUser ? openTables.filter(t => t.hostUid === currentUser.uid) : [];
+      tablesList.innerHTML = openTables.length ? openTables.map(t => renderTableCard(t, false)).join("") : `<div class="empty">No active tables.</div>`;
+      myTablesList.innerHTML = myTables.length ? myTables.map(t => renderTableCard(t, true)).join("") : `<div class="empty">No tables created by you.</div>`;
+    }
+
+    function resetTableForm(){ tableNameInput.value = ""; minBetInput.value = 5; maxPlayersInput.value = 5; startingBankInput.value = 200; deckCountInput.value = 4; }
+
+    async function saveUsername(nextUsername){
+      if (!currentUser) return false;
+      const clean = normalizeUsername(nextUsername);
+      if (nextUsername.trim() && clean.length < 3) { showUsernameStatus("Username must be at least 3 characters.", true); return false; }
+      if (clean) {
+        const existing = await getDocs(query(collection(db, "blackjackPlayers"), where("usernameLower", "==", clean.toLowerCase()), limit(1)));
+        const taken = existing.docs.find(d => d.id !== currentUser.uid);
+        if (taken) { showUsernameStatus("That username is already taken.", true); return false; }
+      }
+      const displayName = currentPlayerProfile?.displayName || fallbackNameFromUser(currentUser);
+      await setDoc(doc(db, "blackjackPlayers", currentUser.uid), { username:clean, usernameLower:clean.toLowerCase(), displayName, updatedAt:serverTimestamp() }, { merge:true });
+      currentPlayerProfile = await getPlayerProfile(currentUser.uid);
+      usernameInput.value = currentPlayerProfile?.username || "";
+      signedInAs.textContent = `Signed in as ${getPublicName(currentPlayerProfile, fallbackNameFromUser(currentUser))}`;
+      showUsernameStatus(clean ? "Username saved." : "Username cleared.");
+      return true;
+    }
+
+    async function joinTable(tableId){
+      if (!currentUser) return;
+      const ref = doc(db, "blackjackTables", tableId);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) { showCreateStatus("Table not found.", true); return; }
+      const table = { id:snap.id, ...snap.data() };
+      const players = Array.isArray(table.players) ? [...table.players] : [];
+      const existingIndex = players.findIndex(p => p.uid === currentUser.uid);
+      if (existingIndex >= 0) {
+        players[existingIndex] = { ...players[existingIndex], left:false, lastSeenAt:new Date().toISOString() };
+        await updateDoc(ref, { players, updatedAt:serverTimestamp() });
+        window.location.href = `blackjackgame.html?table=${encodeURIComponent(tableId)}`;
+        return;
+      }
+      const seatedCount = players.filter(p => !p.left).length;
+      if (seatedCount >= Number(table.maxPlayers || 0)) { showCreateStatus("Table is full.", true); return; }
+      const publicName = getPublicName(currentPlayerProfile, fallbackNameFromUser(currentUser));
+      players.push({ uid:currentUser.uid, username:currentPlayerProfile?.username || "", displayName:publicName, email:currentUser.email || "", seat:players.length + 1, bank:Number(table.startingBank || 0), pendingBet:Number(table.minBet || 0), currentBet:0, cards:[], result:"", status:"waiting", left:false, joinedAt:new Date().toISOString(), isHost:false });
+      await updateDoc(ref, { players, updatedAt:serverTimestamp() });
+      window.location.href = `blackjackgame.html?table=${encodeURIComponent(tableId)}`;
+    }
+
+    createTableForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!currentUser) return;
+      const name = tableNameInput.value.trim();
+      const minBet = Math.floor(Number(minBetInput.value));
+      const maxPlayers = Math.floor(Number(maxPlayersInput.value));
+      const startingBank = Math.floor(Number(startingBankInput.value));
+      const deckCount = Math.floor(Number(deckCountInput.value));
+      if (!name) return showCreateStatus("Enter a table name.", true);
+      if (minBet < 1) return showCreateStatus("Min bet must be at least 1.", true);
+      if (maxPlayers < 1 || maxPlayers > 7) return showCreateStatus("Max players must be between 1 and 7.", true);
+      if (startingBank < minBet) return showCreateStatus("Starting bank should be at least the min bet.", true);
+      try {
+        showCreateStatus("Creating table...");
+        const hostName = getPublicName(currentPlayerProfile, fallbackNameFromUser(currentUser));
+        const docRef = await addDoc(collection(db, "blackjackTables"), {
+          name,
+          hostUid:currentUser.uid,
+          hostUsername:currentPlayerProfile?.username || "",
+          hostDisplayName:hostName,
+          hostEmail:currentUser.email || "",
+          createdAt:serverTimestamp(),
+          updatedAt:serverTimestamp(),
+          status:"waiting",
+          phase:"waiting",
+          minBet,
+          maxPlayers,
+          startingBank,
+          deckCount,
+          roundNumber:0,
+          currentTurnUid:"",
+          deck:[],
+          discard:[],
+          dealerCards:[],
+          dealerReveal:false,
+          lastMessage:"Waiting for bets.",
+          players:[{
+            uid:currentUser.uid,
+            username:currentPlayerProfile?.username || "",
+            displayName:hostName,
+            email:currentUser.email || "",
+            seat:1,
+            bank:startingBank,
+            pendingBet:minBet,
+            currentBet:0,
+            cards:[],
+            result:"",
+            status:"waiting",
+            left:false,
+            joinedAt:new Date().toISOString(),
+            isHost:true
+          }]
+        });
+        showCreateStatus("Table created.");
+        resetTableForm();
+        await loadTables();
+        window.location.href = `blackjackgame.html?table=${encodeURIComponent(docRef.id)}`;
+      } catch (error) {
+        console.error(error);
+        showCreateStatus("Could not create table.", true);
+      }
+    });
+
+    usernameForm.addEventListener("submit", async (event) => { event.preventDefault(); await saveUsername(usernameInput.value); });
+    clearUsernameBtn.addEventListener("click", async () => { usernameInput.value = ""; await saveUsername(""); });
+    resetTableFormBtn.addEventListener("click", resetTableForm);
+    document.addEventListener("click", async (event) => {
+      const joinBtn = event.target.closest("[data-join-table]");
+      if (joinBtn) { await joinTable(joinBtn.dataset.joinTable); return; }
+      const deleteBtn = event.target.closest("[data-delete-table]");
+      if (deleteBtn && currentUser) {
+        const tableId = deleteBtn.dataset.deleteTable;
+        const table = currentTables.find(t => t.id === tableId);
+        if (!table || table.hostUid !== currentUser.uid) return;
+        await updateDoc(doc(db, "blackjackTables", tableId), { status:"deleted", updatedAt:serverTimestamp() });
+        await loadTables();
+      }
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        setGateMessage("You need to sign in to use blackjack. Redirecting...");
+        setTimeout(() => window.location.replace("https://williammaclean.ca/login"), 1400);
+        return;
+      }
+      currentUser = user;
+      await ensurePlayerProfile(user);
+      const allowed = await protectPlusPage(user);
+      if (!allowed) return;
+      await loadTables();
+    });
+  </script>
+</body>
+</html>
