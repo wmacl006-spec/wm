@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gaydar</title>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  .container {
+    text-align: center;
+  }
+
+  .title {
+    font-size: 28px;
+    margin-bottom: 20px;
+    opacity: 0.8;
+  }
+
+  .reading {
+    font-size: 48px;
+    margin-bottom: 30px;
+    font-weight: bold;
+  }
+
+  button {
+    width: 200px;
+    height: 200px;
+    border-radius: 20px;
+    border: none;
+    background: #222;
+    color: white;
+    font-size: 20px;
+    box-shadow: 0 0 20px rgba(255,255,255,0.1);
+  }
+
+  button:active {
+    background: #444;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="title">GAYDAR SCANNER</div>
+  <div class="reading" id="reading">0%</div>
+  <button id="scanBtn">SCAN</button>
+</div>
+
+<script>
+  const btn = document.getElementById("scanBtn");
+  const reading = document.getElementById("reading");
+
+  let holdInterval;
+  let value = 0;
+  let holding = false;
+
+  function startHold() {
+    holding = true;
+    value = 0;
+
+    holdInterval = setInterval(() => {
+      if (value < 100) {
+        value += Math.floor(Math.random() * 8) + 3;
+        if (value > 100) value = 100;
+        reading.textContent = value + "%";
+      }
+    }, 120);
+  }
+
+  function endHold() {
+    clearInterval(holdInterval);
+
+    if (holding && value < 20) {
+      // quick tap = 0%
+      reading.textContent = "0%";
+    } else if (value >= 70) {
+      reading.textContent = "HIGH";
+    }
+
+    holding = false;
+    value = 0;
+  }
+
+  // Touch support (phones)
+  btn.addEventListener("touchstart", startHold);
+  btn.addEventListener("touchend", endHold);
+
+  // Mouse support (desktop)
+  btn.addEventListener("mousedown", startHold);
+  btn.addEventListener("mouseup", endHold);
+</script>
+
+</body>
+</html>
