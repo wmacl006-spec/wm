@@ -41,6 +41,7 @@
     color: white;
     font-size: 20px;
     box-shadow: 0 0 20px rgba(255,255,255,0.1);
+    position: relative;
   }
 
   button:active {
@@ -61,41 +62,49 @@
   const reading = document.getElementById("reading");
 
   let holdInterval;
-  let value = 0;
-  let holding = false;
+  let mode = null; // "top" or "bottom"
 
-  function startHold() {
-    holding = true;
-    value = 0;
+  function startHold(e) {
+    const rect = btn.getBoundingClientRect();
+    let y;
+
+    if (e.touches) {
+      y = e.touches[0].clientY;
+    } else {
+      y = e.clientY;
+    }
+
+    const relativeY = y - rect.top;
+
+    // Determine if top or bottom half
+    if (relativeY < rect.height / 2) {
+      mode = "top";
+    } else {
+      mode = "bottom";
+    }
+
+    if (mode === "top") {
+      reading.textContent = "0%";
+    }
 
     holdInterval = setInterval(() => {
-      if (value < 100) {
-        value += Math.floor(Math.random() * 8) + 3;
-        if (value > 100) value = 100;
+      if (mode === "bottom") {
+        const value = Math.floor(Math.random() * (100 - 63 + 1)) + 63;
         reading.textContent = value + "%";
       }
-    }, 120);
+    }, 100);
   }
 
   function endHold() {
     clearInterval(holdInterval);
-
-    if (holding && value < 20) {
-      // quick tap = 0%
-      reading.textContent = "0%";
-    } else if (value >= 70) {
-      reading.textContent = "GAY";
-    }
-
-    holding = false;
-    value = 0;
+    mode = null;
   }
 
-  // Touch support (phones)
+  // Touch
   btn.addEventListener("touchstart", startHold);
   btn.addEventListener("touchend", endHold);
 
-  // Mouse support (desktop)
+  // Mouse
   btn.addEventListener("mousedown", startHold);
   btn.addEventListener("mouseup", endHold);
 </script>
