@@ -633,6 +633,7 @@
     let currentGame = null;
     let startCountdownInterval = null;
     let actionBusy = false;
+    let nextHandAutoStartTimeout = null;
 
     const statusRank = { default: 0, plus: 1, me: 2 };
 
@@ -1029,7 +1030,8 @@
         allIn: false,
         actedThisRound: false,
         handResult: "",
-        winningText: ""
+        winningText: "",
+        showedCards: false
       };
     }
 
@@ -1121,6 +1123,7 @@
       game.minRaise = Number(game.bigBlind || 0);
       game.lastWinnerUids = [winner.uid];
       game.lastResultText = `${getPublicName(winner)} won ${money(pot)} (everyone folded).`;
+      game.showdownOccurred = false;
       game.pot = 0;
       return game;
     }
@@ -1152,6 +1155,7 @@
     function resolveShowdown(game) {
       const live = game.players.filter(p => !p.out && !p.folded);
       const board = game.communityCards.slice();
+      game.showdownOccurred = true;
 
       const scoresByUid = {};
       for (const p of live) {
@@ -1194,6 +1198,7 @@
       let winnerUids = [];
 
       for (const p of game.players) {
+        p.showedCards = live.some(lp => lp.uid === p.uid);
         const won = Number(winnings[p.uid] || 0);
         if (won > 0) {
           p.stack = Number(p.stack || 0) + won;
@@ -1267,7 +1272,7 @@
 
       const headsUp = alive.length === 2;
       const firstToAct = headsUp
-        ? nextIndex(players, dealerIndex, p => !p.out && !p.folded && !p.allIn)
+        ? dealerIndex
         : nextIndex(players, bbIndex, p => !p.out && !p.folded && !p.allIn);
 
       players = players.map(p => ({ ...p, actedThisRound: false }));
@@ -1287,6 +1292,7 @@
       game.lastAggressorIndex = bbIndex;
       game.lastResultText = "";
       game.lastWinnerUids = [];
+      game.showdownOccurred = false;
       game.handNumber = Number(game.handNumber || 0) + 1;
       return settleGameAfterStateChange(game);
     }
@@ -1394,6 +1400,7 @@
         out: false,
         handResult: "",
         winningText: "",
+        showedCards: false,
         ...p
       }));
       game.communityCards = Array.isArray(game.communityCards) ? game.communityCards : [];
@@ -1403,6 +1410,7 @@
       game.minRaise = Number(game.minRaise || game.bigBlind || 1);
       game.phase = String(game.phase || "waiting");
       game.status = String(game.status || "waiting");
+      game.showdownOccurred = !!game.showdownOccurred;
       return game;
     }
 
@@ -1620,10 +1628,10 @@
         `;
       }).join("");
 
-      if (String(game.phase || "") === "finished") {
+      if (String(game.phase || "") === "finished" && game.showdownOccurred) {
         const sorted = seatOrderPlayers(game);
         const cardsHtml = sorted.map((p) => {
-          if (!Array.isArray(p.cards) || p.cards.length < 2) return "";
+          if (!game.showdownOccurred || !p.showedCards || !Array.isArray(p.cards) || p.cards.length < 2) return "";
           const combo = getCurrentComboHighlight(game, p);
           return `
             <div class="player" style="margin-top:8px;">
@@ -1645,11 +1653,32 @@
       }
     }
 
+    function clearNextHandTimeout() {
+      if (nextHandAutoStartTimeout) {
+        clearTimeout(nextHandAutoStartTimeout);
+        nextHandAutoStartTimeout = null;
+      }
+    }
+
     function clearStartInterval() {
       if (startCountdownInterval) {
         clearInterval(startCountdownInterval);
         startCountdownInterval = null;
       }
+    }
+
+    function scheduleNextHandAutoStart(game) {
+      clearNextHandTimeout();
+
+      if (!game || !currentUser) return;
+      if (!isHost(game, currentUser.uid)) return;
+      if (String(game.status || "") === "active") return;
+      if (String(game.phase || "") !== "finished") return;
+      if (getPlayerCount(game) < 2) return;
+
+      nextHandAutoStartTimeout = setTimeout(() => {
+        startHand("auto-next-hand");
+      }, 3000);
     }
 
     function updateStartDisplay(game) {
@@ -1745,6 +1774,7 @@
 
       updateBetControls(currentGame);
       updateStartDisplay(currentGame);
+      scheduleNextHandAutoStart(currentGame);
 
       const started = String(currentGame.status || "") === "active";
       const myIndex = getMySortedIndex(currentGame);
@@ -1948,7 +1978,10 @@
     leaveBtn.addEventListener("click", leaveGame);
     startBtn.addEventListener("click", () => startHand(String(currentGame?.phase || "") === "finished" ? "next-hand" : "manual"));
 
-    window.addEventListener("beforeunload", clearStartInterval);
+    window.addEventListener("beforeunload", () => {
+      clearStartInterval();
+      clearNextHandTimeout();
+    });
   </script>
 </body>
 </html>
