@@ -3,1374 +3,476 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Inventory | William MacLean</title>
-  <link rel="icon" href="logo.png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>Inventory</title>
   <style>
-    :root {
-      --bg: #000;
-      --panel: #050505;
-      --panel-2: #0b0b0b;
-      --panel-3: #101010;
-      --text: #fff;
-      --muted: #8d8d8d;
-      --line: rgba(255,255,255,0.08);
-      --line-strong: rgba(255,255,255,0.14);
-      --accent: #b00b55;
-      --accent-2: #cf2d7a;
-      --danger: #ff6b81;
-      --success: #57d38c;
-      --warn: #ffd166;
-      --header-h: 64px;
-      --shadow: 0 18px 40px rgba(0,0,0,0.24);
-      --radius: 0px;
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { min-height: 100%; }
-
-    body {
-      font-family: "Comfortaa", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      overflow-x: hidden;
+    :root{
+      --bg:#050505;
+      --panel:#0d0d0d;
+      --panel2:#121212;
+      --line:rgba(255,255,255,0.08);
+      --text:#ffffff;
+      --muted:#9a9a9a;
+      --accent:#d43b7d;
+      --accent2:#ff5c9a;
+      --danger:#ff6b6b;
+      --warn:#ffcc66;
+      --ok:#6ddc91;
+      --radius:18px;
+      --shadow:0 14px 35px rgba(0,0,0,0.35);
     }
 
-    button, input, select {
-      font: inherit;
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,Arial,sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(212,59,125,0.12), transparent 35%),
+        var(--bg);
+      color:var(--text);
+      padding:28px;
     }
 
-    header {
-      position: fixed;
-      inset: 0 0 auto 0;
-      height: var(--header-h);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 18px;
-      background: rgba(0,0,0,0.72);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-      z-index: 200;
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
     }
 
-    .logo { display: flex; align-items: center; gap: 10px; }
-    .logo img { width: 28px; height: 28px; }
-    .logo span { font-size: 0.95rem; font-weight: 700; }
-
-    nav {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      flex-wrap: wrap;
-    }
-
-    nav a {
-      font-size: 0.84rem;
-      color: #cfcfcf;
-      text-decoration: none;
-      transition: 0.2s;
-    }
-
-    nav a:hover { color: #fff; }
-
-    .status-pill {
-      font-size: 0.72rem;
-      padding: 7px 10px;
-      border: 1px solid rgba(255,255,255,0.1);
-      color: #fff;
-      background: rgba(255,255,255,0.04);
-    }
-
-    .page {
-      min-height: 100vh;
-      padding-top: var(--header-h);
-      display: block;
-    }
-
-    .hero {
-      border-bottom: 1px solid var(--line);
-      background: linear-gradient(180deg, rgba(176,11,85,0.10), rgba(176,11,85,0.00));
-    }
-
-    .hero-inner {
-      width: min(1400px, calc(100% - 32px));
-      margin: 0 auto;
-      padding: 34px 0 28px;
-    }
-
-    .hero h1 {
-      font-size: clamp(2.2rem, 6vw, 4.2rem);
-      line-height: 0.92;
-      letter-spacing: -0.05em;
-      margin-bottom: 10px;
-    }
-
-    .hero p {
-      color: var(--muted);
-      font-size: 0.88rem;
-      line-height: 1.5;
-      max-width: 760px;
-    }
-
-    .app-shell {
-      width: min(1400px, calc(100% - 32px));
-      margin: 0 auto;
-      padding: 18px 0 30px;
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 14px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.02);
-      padding: 20px;
-      margin-bottom: 16px;
-    }
-
-    .topbar h2 {
-      font-size: clamp(1.2rem, 2.4vw, 2rem);
-      letter-spacing: -0.04em;
-    }
-
-    .tag {
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--accent);
-      font-weight: 700;
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
-      margin-bottom: 16px;
-    }
-
-    .card,
-    .panel {
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.03);
-      box-shadow: var(--shadow);
-    }
-
-    .card {
-      padding: 18px;
-      min-height: 108px;
-    }
-
-    .label {
-      color: var(--muted);
-      font-size: 0.76rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 10px;
-      font-weight: 700;
-    }
-
-    .value {
-      font-size: clamp(1.2rem, 2vw, 2rem);
-      font-weight: 800;
-      letter-spacing: -0.04em;
-      line-height: 1.1;
-      word-break: break-word;
-    }
-
-    .panel {
-      padding: 18px;
-      margin-bottom: 16px;
-    }
-
-    .panel-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 14px;
-    }
-
-    .panel-head h2 {
-      font-size: 1rem;
-      letter-spacing: -0.02em;
-    }
-
-    .panel-subtle {
-      color: var(--muted);
-      font-size: 0.82rem;
-      font-weight: 600;
-      text-align: right;
-    }
-
-    .main-layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.8fr);
-      gap: 16px;
-      align-items: start;
-    }
-
-    .left-stack,
-    .right-stack {
-      display: grid;
-      gap: 16px;
-    }
-
-    form { display: grid; gap: 12px; }
-
-    .form-row,
-    .button-row,
-    .compact-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    .button-row.three {
-      grid-template-columns: repeat(3, 1fr);
-    }
-
-    .button-row.four {
-      grid-template-columns: repeat(4, 1fr);
-    }
-
-    label.input-label {
-      display: grid;
-      gap: 8px;
-      font-size: 0.88rem;
-      color: var(--muted);
-      font-weight: 600;
-    }
-
-    input, select, button {
-      width: 100%;
-      border: 1px solid var(--line);
-      background: #0a0a0a;
-      color: var(--text);
-      padding: 12px 14px;
-    }
-
-    input:focus, select:focus {
-      outline: none;
-      border-color: rgba(176, 11, 85, 0.7);
-      box-shadow: inset 0 0 0 1px rgba(176, 11, 85, 0.5);
-    }
-
-    button {
-      font-weight: 700;
-      cursor: pointer;
-      transition: transform 0.14s ease, background 0.14s ease, border-color 0.14s ease;
-    }
-
-    button:hover { transform: translateY(-1px); }
-    button:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
-
-    .primary-btn {
-      border: 1px solid rgba(176, 11, 85, 0.75);
-      background: rgba(176, 11, 85, 0.16);
-    }
-
-    .primary-btn:hover { background: rgba(176, 11, 85, 0.22); }
-
-    .ghost-btn { background: rgba(255,255,255,0.03); }
-    .ghost-btn:hover { background: rgba(255,255,255,0.05); border-color: var(--line-strong); }
-
-    .danger-btn {
-      border: 1px solid rgba(255,107,129,0.45);
-      background: rgba(255,107,129,0.10);
-    }
-
-    .danger-btn:hover { background: rgba(255,107,129,0.16); }
-
-    .success-btn {
-      border: 1px solid rgba(87,211,140,0.45);
-      background: rgba(87,211,140,0.10);
-    }
-
-    .success-btn:hover { background: rgba(87,211,140,0.16); }
-
-    .pill-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .pill,
-    .status-chip {
-      display: inline-flex;
-      align-items: center;
-      padding: 6px 10px;
-      border: 1px solid rgba(176, 11, 85, 0.34);
-      background: rgba(176, 11, 85, 0.12);
-      font-size: 0.82rem;
-      white-space: nowrap;
-    }
-
-    .status-chip.good {
-      border-color: rgba(87,211,140,0.35);
-      background: rgba(87,211,140,0.12);
+    .top{
+      margin-bottom:24px;
     }
 
-    .status-chip.warn {
-      border-color: rgba(255,209,102,0.35);
-      background: rgba(255,209,102,0.12);
+    .top h1{
+      margin:0 0 8px;
+      font-size:clamp(2rem,4vw,3.2rem);
+      letter-spacing:-0.04em;
     }
 
-    .status-chip.bad {
-      border-color: rgba(255,107,129,0.35);
-      background: rgba(255,107,129,0.12);
+    .top p{
+      margin:0;
+      color:var(--muted);
+      font-size:.98rem;
     }
 
-    .status {
-      min-height: 1.2em;
-      margin-top: 4px;
-      color: var(--muted);
-      font-size: 0.92rem;
+    .add-box{
+      background:linear-gradient(180deg,var(--panel2),var(--panel));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:18px;
+      box-shadow:var(--shadow);
+      margin-bottom:20px;
     }
 
-    .toggle-box {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      padding: 12px 14px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.02);
+    .add-row{
+      display:grid;
+      grid-template-columns: 1fr 140px;
+      gap:12px;
     }
 
-    .toggle-left {
-      display: grid;
-      gap: 4px;
+    input, button{
+      border:none;
+      outline:none;
+      font:inherit;
     }
 
-    .toggle-left strong {
-      font-size: 0.92rem;
+    input{
+      width:100%;
+      background:#0a0a0a;
+      color:#fff;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:14px 16px;
     }
 
-    .toggle-left span {
-      color: var(--muted);
-      font-size: 0.8rem;
-    }
-
-    .switch {
-      position: relative;
-      width: 52px;
-      height: 28px;
-      flex-shrink: 0;
-    }
-
-    .switch input { display: none; }
-
-    .slider {
-      position: absolute;
-      inset: 0;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid var(--line-strong);
-      transition: 0.2s;
-    }
-
-    .slider::before {
-      content: "";
-      position: absolute;
-      height: 20px;
-      width: 20px;
-      left: 3px;
-      top: 3px;
-      background: #fff;
-      transition: 0.2s;
-    }
-
-    .switch input:checked + .slider {
-      background: rgba(176, 11, 85, 0.25);
-      border-color: rgba(176, 11, 85, 0.75);
-    }
-
-    .switch input:checked + .slider::before {
-      transform: translateX(24px);
-      background: #fff;
-    }
-
-    .expiry-builder {
-      display: none;
-      gap: 12px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.02);
-      padding: 14px;
-    }
-
-    .expiry-builder.active { display: grid; }
-
-    .expiry-inputs {
-      display: grid;
-      gap: 10px;
-    }
-
-    .expiry-input-row {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px;
-      align-items: end;
-    }
-
-    .section-grid {
-      display: grid;
-      gap: 14px;
-    }
-
-    .empty-state {
-      padding: 22px;
-      border: 1px dashed rgba(255,255,255,0.12);
-      color: var(--muted);
-      text-align: center;
-      background: rgba(255,255,255,0.02);
-    }
+    input::placeholder{color:#777}
 
-    .inventory-card {
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.02);
-      padding: 16px;
-      display: grid;
-      gap: 14px;
+    button{
+      background:linear-gradient(180deg,var(--accent2),var(--accent));
+      color:white;
+      font-weight:700;
+      border-radius:14px;
+      padding:14px 16px;
+      cursor:pointer;
+      transition:.18s ease;
     }
 
-    .inventory-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: flex-start;
+    button:hover{
+      transform:translateY(-1px);
+      filter:brightness(1.05);
     }
 
-    .inventory-title-wrap {
-      display: grid;
-      gap: 8px;
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:20px;
     }
 
-    .inventory-title {
-      font-size: 1rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      word-break: break-word;
+    .panel{
+      background:linear-gradient(180deg,var(--panel2),var(--panel));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:18px;
+      box-shadow:var(--shadow);
+      min-height:420px;
     }
 
-    .inventory-meta {
-      color: var(--muted);
-      font-size: 0.8rem;
-      line-height: 1.4;
+    .panel h2{
+      margin:0 0 14px;
+      font-size:1.15rem;
+      letter-spacing:-0.02em;
     }
 
-    .quantity-shell {
-      display: inline-flex;
-      align-items: stretch;
-      border: 1px solid var(--line);
-      background: #0a0a0a;
+    .list{
+      display:grid;
+      gap:12px;
     }
 
-    .quantity-shell button {
-      width: 44px;
-      min-width: 44px;
-      padding: 0;
-      border: none;
-      border-right: 1px solid var(--line);
-      background: transparent;
-      font-size: 1rem;
+    .empty{
+      color:var(--muted);
+      border:1px dashed var(--line);
+      border-radius:14px;
+      padding:18px;
+      text-align:center;
+      background:rgba(255,255,255,0.02);
     }
 
-    .quantity-shell button:last-child {
-      border-right: none;
-      border-left: 1px solid var(--line);
+    .item{
+      background:rgba(255,255,255,0.03);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+      display:grid;
+      gap:12px;
     }
 
-    .quantity-value {
-      min-width: 58px;
-      display: grid;
-      place-items: center;
-      padding: 0 12px;
-      font-weight: 700;
+    .item-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
     }
 
-    .inventory-actions {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
+    .name{
+      font-weight:700;
+      font-size:1rem;
+      word-break:break-word;
     }
 
-    .expiry-list {
-      display: grid;
-      gap: 10px;
+    .sub{
+      color:var(--muted);
+      font-size:.86rem;
+      margin-top:4px;
     }
 
-    .expiry-item {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
-      align-items: center;
-      padding: 12px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.02);
+    .actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
     }
 
-    .expiry-main {
-      display: grid;
-      gap: 6px;
+    .small-btn{
+      padding:9px 12px;
+      border-radius:12px;
+      font-size:.84rem;
+      background:#171717;
+      border:1px solid var(--line);
+      color:#fff;
+      font-weight:600;
     }
 
-    .expiry-date {
-      font-size: 0.92rem;
-      font-weight: 700;
+    .small-btn:hover{
+      background:#1f1f1f;
+      transform:translateY(-1px);
     }
 
-    .expiry-sub {
-      color: var(--muted);
-      font-size: 0.8rem;
+    .danger{
+      background:rgba(255,107,107,0.10);
+      border:1px solid rgba(255,107,107,0.28);
+      color:#fff;
     }
 
-    .catalog-row {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto auto;
-      gap: 12px;
-      align-items: center;
-      padding: 14px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.02);
+    .expiry-add{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:8px;
     }
 
-    .catalog-name {
-      font-weight: 700;
-      word-break: break-word;
+    .expiry-list{
+      display:grid;
+      gap:8px;
     }
 
-    .catalog-sub {
-      color: var(--muted);
-      font-size: 0.8rem;
-      margin-top: 5px;
+    .expiry{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px;
+      border-radius:12px;
+      background:#0a0a0a;
+      border:1px solid var(--line);
     }
 
-    .search-row {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
+    .expiry-left{
+      display:grid;
+      gap:4px;
     }
 
-    .fine-print {
-      color: var(--muted);
-      font-size: 0.8rem;
-      line-height: 1.5;
+    .expiry-date{
+      font-size:.9rem;
+      font-weight:600;
     }
 
-    .small-btn {
-      width: auto;
-      padding: 9px 12px;
-      font-size: 0.85rem;
-      line-height: 1;
-      white-space: nowrap;
+    .expiry-days{
+      font-size:.8rem;
+      color:var(--muted);
     }
 
-    .inline-form {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px;
-      align-items: end;
+    .badge{
+      padding:5px 9px;
+      border-radius:999px;
+      font-size:.75rem;
+      font-weight:700;
+      white-space:nowrap;
     }
 
-    .muted-line {
-      color: var(--muted);
-      font-size: 0.82rem;
-    }
-
-    .hidden { display: none !important; }
-
-    @media (max-width: 1280px) {
-      .stats-grid { grid-template-columns: repeat(2, 1fr); }
-      .main-layout { grid-template-columns: 1fr; }
-    }
+    .ok{background:rgba(109,220,145,0.14); color:var(--ok);}
+    .warn{background:rgba(255,204,102,0.14); color:var(--warn);}
+    .bad{background:rgba(255,107,107,0.14); color:var(--danger);}
 
-    @media (max-width: 760px) {
-      .hero-inner,
-      .app-shell { width: min(100% - 16px, 1400px); }
-      .stats-grid,
-      .form-row,
-      .button-row,
-      .button-row.three,
-      .button-row.four,
-      .compact-row,
-      .inventory-actions,
-      .search-row,
-      .inline-form,
-      .catalog-row,
-      .expiry-input-row,
-      .expiry-item {
-        grid-template-columns: 1fr;
-      }
-      .panel,
-      .card,
-      .topbar { padding: 16px; }
-      nav { gap: 10px; }
-      nav a { font-size: 0.76rem; }
-      .inventory-head { flex-direction: column; }
+    @media (max-width: 860px){
+      body{padding:16px}
+      .grid{grid-template-columns:1fr}
+      .add-row{grid-template-columns:1fr}
+      .expiry-add{grid-template-columns:1fr}
+      .item-top{flex-direction:column}
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="logo">
-      <img src="logo.png" alt="Logo">
-      <span>William MacLean</span>
+  <div class="wrap">
+    <div class="top">
+      <h1>Inventory</h1>
+      <p>Simple inventory with expiry dates and two clean lists.</p>
     </div>
 
-    <nav>
-      <a href="index">Home</a>
-      <a href="apps">Apps</a>
-      <span class="status-pill" id="statusPill">Sync: loading</span>
-    </nav>
-  </header>
-
-  <main class="page">
-    <section class="hero">
-      <div class="hero-inner">
-        <h1>Inventory</h1>
-        <p>Track what you have, keep a unique history list of items you have had, and manage multiple expiry countdowns for each item.</p>
+    <div class="add-box">
+      <div class="add-row">
+        <input id="itemInput" type="text" placeholder="Add an item..." maxlength="80">
+        <button id="addItemBtn">Add Item</button>
       </div>
-    </section>
+    </div>
 
-    <section class="app-shell">
-      <section class="topbar">
-        <div>
-          <div class="tag">Inventory</div>
-          <h2>Stock Tracker</h2>
-        </div>
-        <div class="panel-subtle">Firestore sync with expiry countdowns</div>
-      </section>
+    <div class="grid">
+      <div class="panel">
+        <h2>What I Have</h2>
+        <div id="haveList" class="list"></div>
+      </div>
 
-      <section class="stats-grid">
-        <div class="card">
-          <div class="label">Items I Have</div>
-          <div class="value" id="haveCountValue">0</div>
-        </div>
-        <div class="card">
-          <div class="label">Total Units</div>
-          <div class="value" id="unitCountValue">0</div>
-        </div>
-        <div class="card">
-          <div class="label">Unique Ever Had</div>
-          <div class="value" id="catalogCountValue">0</div>
-        </div>
-        <div class="card">
-          <div class="label">Expiring In 7 Days</div>
-          <div class="value" id="soonCountValue">0</div>
-        </div>
-      </section>
+      <div class="panel">
+        <h2>Everything</h2>
+        <div id="everythingList" class="list"></div>
+      </div>
+    </div>
+  </div>
 
-      <section class="main-layout">
-        <div class="left-stack">
-          <section class="panel">
-            <div class="panel-head">
-              <h2>Add To What I Have</h2>
-              <div class="panel-subtle">Adding here also creates or keeps one unique entry in the bottom section</div>
-            </div>
+  <script>
+    const haveListEl = document.getElementById("haveList");
+    const everythingListEl = document.getElementById("everythingList");
+    const itemInput = document.getElementById("itemInput");
+    const addItemBtn = document.getElementById("addItemBtn");
 
-            <form id="addItemForm">
-              <div class="form-row">
-                <label class="input-label">
-                  Item name
-                  <input type="text" id="itemNameInput" placeholder="Milk" maxlength="80" required>
-                </label>
-                <label class="input-label">
-                  Quantity to add
-                  <input type="number" id="itemQtyInput" min="1" step="1" value="1" required>
-                </label>
-              </div>
+    let haveItems = {};
+    let everythingItems = [];
 
-              <div class="toggle-box">
-                <div class="toggle-left">
-                  <strong>Add expiry dates</strong>
-                  <span>Turn this on to attach one or more expiry dates right when you add the item.</span>
-                </div>
-                <label class="switch">
-                  <input type="checkbox" id="expiryToggle">
-                  <span class="slider"></span>
-                </label>
-              </div>
-
-              <div class="expiry-builder" id="expiryBuilder">
-                <div class="expiry-inputs" id="expiryInputs"></div>
-                <div class="button-row">
-                  <button type="button" class="ghost-btn" id="addExpiryInputButton">Add Another Date</button>
-                  <button type="button" class="ghost-btn" id="clearExpiryInputsButton">Clear Dates</button>
-                </div>
-              </div>
-
-              <div class="button-row">
-                <button type="submit" class="primary-btn" id="submitAddItemButton">Add Item</button>
-                <button type="button" class="ghost-btn" id="resetAddFormButton">Reset</button>
-              </div>
-            </form>
-
-            <div class="status" id="formStatus"></div>
-          </section>
-
-          <section class="panel">
-            <div class="panel-head">
-              <h2>What I Have</h2>
-              <div class="panel-subtle">Top section</div>
-            </div>
-            <div class="section-grid" id="haveList"></div>
-          </section>
-        </div>
-
-        <div class="right-stack">
-          <section class="panel">
-            <div class="panel-head">
-              <h2>Search</h2>
-            </div>
-            <div class="search-row">
-              <input type="text" id="searchInput" placeholder="Search items">
-              <button type="button" class="ghost-btn" id="clearSearchButton">Clear</button>
-            </div>
-          </section>
-
-          <section class="panel">
-            <div class="panel-head">
-              <h2>Quick Add To Bottom</h2>
-              <div class="panel-subtle">Adds something to the history list without putting it in stock</div>
-            </div>
-            <form id="addCatalogForm">
-              <label class="input-label">
-                Item name
-                <input type="text" id="catalogNameInput" placeholder="Eggs" maxlength="80" required>
-              </label>
-              <div class="button-row">
-                <button type="submit" class="primary-btn">Add To Bottom</button>
-                <button type="button" class="ghost-btn" id="resetCatalogButton">Reset</button>
-              </div>
-            </form>
-            <div class="status" id="catalogStatus"></div>
-          </section>
-
-          <section class="panel">
-            <div class="panel-head">
-              <h2>Notes</h2>
-            </div>
-            <div class="fine-print">
-              Removing an item from the top only changes what you currently have. It stays in the bottom list unless you manually remove it there. Bottom list entries stay unique by item name.
-            </div>
-          </section>
-        </div>
-      </section>
-
-      <section class="panel">
-        <div class="panel-head">
-          <h2>What I Don’t Have / Ever Had</h2>
-          <div class="panel-subtle">Bottom section</div>
-        </div>
-        <div class="section-grid" id="catalogList"></div>
-      </section>
-    </section>
-  </main>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAnalytics, isSupported as analyticsSupported } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
-    import {
-      getFirestore,
-      collection,
-      doc,
-      setDoc,
-      getDocs,
-      serverTimestamp,
-      deleteDoc,
-      runTransaction,
-      increment,
-      updateDoc,
-      writeBatch
-    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBLQmCVdVkz_sxxdfvXshDmoe3PeYIUMAY",
-      authDomain: "site-78972.firebaseapp.com",
-      projectId: "site-78972",
-      storageBucket: "site-78972.firebasestorage.app",
-      messagingSenderId: "519857042562",
-      appId: "1:519857042562:web:64ff26e5f795208081f09b",
-      measurementId: "G-TSQ1FNH5W1"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    if (await analyticsSupported()) {
-      getAnalytics(app);
+    function normalize(name) {
+      return String(name || "").trim().toLowerCase().replace(/\s+/g, " ");
     }
 
-    const ITEMS_COLLECTION = "inventory_items";
-    const CATALOG_COLLECTION = "inventory_catalog";
-
-    const statusPill = document.getElementById("statusPill");
-    const haveCountValue = document.getElementById("haveCountValue");
-    const unitCountValue = document.getElementById("unitCountValue");
-    const catalogCountValue = document.getElementById("catalogCountValue");
-    const soonCountValue = document.getElementById("soonCountValue");
-
-    const addItemForm = document.getElementById("addItemForm");
-    const itemNameInput = document.getElementById("itemNameInput");
-    const itemQtyInput = document.getElementById("itemQtyInput");
-    const expiryToggle = document.getElementById("expiryToggle");
-    const expiryBuilder = document.getElementById("expiryBuilder");
-    const expiryInputs = document.getElementById("expiryInputs");
-    const addExpiryInputButton = document.getElementById("addExpiryInputButton");
-    const clearExpiryInputsButton = document.getElementById("clearExpiryInputsButton");
-    const resetAddFormButton = document.getElementById("resetAddFormButton");
-    const formStatus = document.getElementById("formStatus");
-
-    const addCatalogForm = document.getElementById("addCatalogForm");
-    const catalogNameInput = document.getElementById("catalogNameInput");
-    const catalogStatus = document.getElementById("catalogStatus");
-    const resetCatalogButton = document.getElementById("resetCatalogButton");
-
-    const haveList = document.getElementById("haveList");
-    const catalogList = document.getElementById("catalogList");
-    const searchInput = document.getElementById("searchInput");
-    const clearSearchButton = document.getElementById("clearSearchButton");
-
-    let items = [];
-    let catalog = [];
-    let searchTerm = "";
-    let loading = false;
-
-    function normalizeName(name) {
+    function titleCase(name) {
       return String(name || "")
         .trim()
-        .toLowerCase()
-        .replace(/\s+/g, " ");
+        .replace(/\s+/g, " ")
+        .split(" ")
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
     }
 
-    function createIdFromName(name) {
-      return normalizeName(name)
-        .replace(/[^a-z0-9 -]/g, "")
-        .replace(/\s+/g, "-")
-        .replace(/-+/g, "-")
-        .replace(/^[-]+|[-]+$/g, "")
-        .slice(0, 80) || `item-${Date.now()}`;
+    function addItem() {
+      const raw = itemInput.value;
+      const key = normalize(raw);
+      if (!key) return;
+
+      const display = titleCase(raw);
+
+      if (!haveItems[key]) {
+        haveItems[key] = {
+          name: display,
+          expiries: []
+        };
+      }
+
+      if (!everythingItems.includes(key)) {
+        everythingItems.push(key);
+      }
+
+      itemInput.value = "";
+      render();
     }
 
-    function displayName(name) {
-      const clean = String(name || "").trim();
-      return clean || "Untitled item";
+    function removeFromHave(key) {
+      delete haveItems[key];
+      render();
     }
 
-    function setStatus(element, message, isError = false) {
-      element.textContent = message;
-      element.style.color = isError ? "var(--danger)" : "var(--muted)";
+    function deleteFromEverything(key) {
+      delete haveItems[key];
+      everythingItems = everythingItems.filter(item => item !== key);
+      render();
     }
 
-    function setLoadingState(isLoading) {
-      loading = isLoading;
-      statusPill.textContent = isLoading ? "Sync: saving" : "Sync: live";
+    function addBackToHave(key) {
+      if (!haveItems[key]) {
+        haveItems[key] = {
+          name: titleCase(key),
+          expiries: []
+        };
+      }
+      render();
     }
 
-    function formatDate(dateString) {
-      if (!dateString) return "No date";
-      const [y, m, d] = dateString.split("-").map(Number);
-      const date = new Date(y, m - 1, d);
-      return new Intl.DateTimeFormat("en-CA", {
-        year: "numeric",
-        month: "short",
-        day: "numeric"
-      }).format(date);
+    function addExpiry(key) {
+      const input = document.getElementById(`expiry-input-${cssSafe(key)}`);
+      if (!input || !input.value) return;
+
+      haveItems[key].expiries.push(input.value);
+      input.value = "";
+      render();
     }
 
-    function daysUntil(dateString) {
+    function removeExpiry(key, index) {
+      haveItems[key].expiries.splice(index, 1);
+      render();
+    }
+
+    function daysLeft(dateStr) {
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const [y, m, d] = dateString.split("-").map(Number);
-      const target = new Date(y, m - 1, d);
+      const parts = dateStr.split("-").map(Number);
+      const target = new Date(parts[0], parts[1] - 1, parts[2]);
       return Math.ceil((target - today) / (1000 * 60 * 60 * 24));
     }
 
-    function getExpiryBadge(days) {
-      if (days < 0) return { className: "bad", text: `${Math.abs(days)} day${Math.abs(days) === 1 ? "" : "s"} overdue` };
-      if (days === 0) return { className: "bad", text: "expires today" };
-      if (days <= 7) return { className: "warn", text: `${days} day${days === 1 ? "" : "s"} left` };
-      return { className: "good", text: `${days} day${days === 1 ? "" : "s"} left` };
+    function badgeFor(days) {
+      if (days < 0) return { cls: "bad", text: `${Math.abs(days)}d overdue` };
+      if (days === 0) return { cls: "bad", text: "today" };
+      if (days <= 7) return { cls: "warn", text: `${days}d left` };
+      return { cls: "ok", text: `${days}d left` };
     }
 
-    function addExpiryInput(value = "") {
-      const row = document.createElement("div");
-      row.className = "expiry-input-row";
-      row.innerHTML = `
-        <label class="input-label">
-          Expiry date
-          <input type="date" class="expiry-date-input" ${value ? `value="${value}"` : ""}>
-        </label>
-        <button type="button" class="danger-btn small-btn remove-expiry-input-button">Remove</button>
-      `;
-      expiryInputs.appendChild(row);
-      row.querySelector(".remove-expiry-input-button").addEventListener("click", () => {
-        row.remove();
-      });
+    function formatDate(dateStr) {
+      const [y, m, d] = dateStr.split("-");
+      return `${y}-${m}-${d}`;
     }
 
-    function ensureAtLeastOneExpiryInput() {
-      if (!expiryInputs.children.length) {
-        addExpiryInput();
-      }
+    function cssSafe(str) {
+      return str.replace(/[^a-z0-9]/gi, "_");
     }
 
-    function resetAddForm() {
-      addItemForm.reset();
-      itemQtyInput.value = 1;
-      expiryBuilder.classList.remove("active");
-      expiryInputs.innerHTML = "";
-      setStatus(formStatus, "");
-    }
+    function renderHave() {
+      const keys = Object.keys(haveItems).sort((a, b) =>
+        haveItems[a].name.localeCompare(haveItems[b].name)
+      );
 
-    function getExpiryDatesFromForm() {
-      return Array.from(expiryInputs.querySelectorAll(".expiry-date-input"))
-        .map((input) => input.value)
-        .filter(Boolean)
-        .map((date) => ({
-          id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-          date
-        }));
-    }
-
-    function getFilteredItems() {
-      const term = normalizeName(searchTerm);
-      if (!term) return items.filter(item => Number(item.quantity || 0) > 0);
-      return items.filter(item => Number(item.quantity || 0) > 0 && normalizeName(item.name).includes(term));
-    }
-
-    function getFilteredCatalog() {
-      const term = normalizeName(searchTerm);
-      if (!term) return catalog;
-      return catalog.filter(entry => normalizeName(entry.name).includes(term));
-    }
-
-    function getItemById(id) {
-      return items.find(item => item.id === id) || null;
-    }
-
-    function getCatalogById(id) {
-      return catalog.find(entry => entry.id === id) || null;
-    }
-
-    function itemQuantityById(id) {
-      const item = getItemById(id);
-      return Number(item?.quantity || 0);
-    }
-
-    function countExpiringSoon() {
-      let count = 0;
-      for (const item of items) {
-        if (!Number(item.quantity || 0)) continue;
-        for (const expiry of item.expiryDates || []) {
-          const diff = daysUntil(expiry.date);
-          if (diff >= 0 && diff <= 7) count += 1;
-        }
-      }
-      return count;
-    }
-
-    function updateStats() {
-      const activeItems = items.filter(item => Number(item.quantity || 0) > 0);
-      const totalUnits = activeItems.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
-      haveCountValue.textContent = String(activeItems.length);
-      unitCountValue.textContent = String(totalUnits);
-      catalogCountValue.textContent = String(catalog.length);
-      soonCountValue.textContent = String(countExpiringSoon());
-    }
-
-    function renderHaveList() {
-      const filtered = getFilteredItems().sort((a, b) => a.name.localeCompare(b.name));
-      if (!filtered.length) {
-        haveList.innerHTML = `<div class="empty-state">No items in stock right now.</div>`;
+      if (!keys.length) {
+        haveListEl.innerHTML = `<div class="empty">Nothing here yet.</div>`;
         return;
       }
 
-      haveList.innerHTML = filtered.map((item) => {
-        const expiryMarkup = (item.expiryDates || []).length
-          ? (item.expiryDates || [])
-              .sort((a, b) => a.date.localeCompare(b.date))
-              .map((expiry) => {
-                const diff = daysUntil(expiry.date);
-                const badge = getExpiryBadge(diff);
+      haveListEl.innerHTML = keys.map(key => {
+        const item = haveItems[key];
+        const expiryHtml = item.expiries.length
+          ? `
+            <div class="expiry-list">
+              ${item.expiries.map((date, index) => {
+                const days = daysLeft(date);
+                const badge = badgeFor(days);
                 return `
-                  <div class="expiry-item">
-                    <div class="expiry-main">
-                      <div class="expiry-date">${formatDate(expiry.date)}</div>
-                      <div class="expiry-sub">${diff < 0 ? "Expired" : "Countdown"}</div>
+                  <div class="expiry">
+                    <div class="expiry-left">
+                      <div class="expiry-date">${formatDate(date)}</div>
+                      <div class="expiry-days">${days < 0 ? "Expired" : "Expiry countdown"}</div>
                     </div>
-                    <div class="pill-row">
-                      <span class="status-chip ${badge.className}">${badge.text}</span>
-                      <button type="button" class="small-btn danger-btn" data-action="delete-expiry" data-id="${item.id}" data-expiry-id="${expiry.id}">Delete Date</button>
+                    <div class="actions">
+                      <span class="badge ${badge.cls}">${badge.text}</span>
+                      <button class="small-btn danger" onclick="removeExpiry('${key}', ${index})">Delete</button>
                     </div>
                   </div>
                 `;
-              })
-              .join("")
-          : `<div class="muted-line">No expiry dates attached.</div>`;
+              }).join("")}
+            </div>
+          `
+          : `<div class="sub">No expiry dates yet.</div>`;
 
         return `
-          <div class="inventory-card">
-            <div class="inventory-head">
-              <div class="inventory-title-wrap">
-                <div class="inventory-title">${item.name}</div>
-                <div class="inventory-meta">Current quantity: ${item.quantity} • Added to history list automatically</div>
-                <div class="pill-row">
-                  <span class="pill">${item.quantity} in stock</span>
-                  ${(item.expiryDates || []).length ? `<span class="pill">${item.expiryDates.length} expiry date${item.expiryDates.length === 1 ? "" : "s"}</span>` : ""}
-                </div>
+          <div class="item">
+            <div class="item-top">
+              <div>
+                <div class="name">${item.name}</div>
               </div>
-              <div class="quantity-shell">
-                <button type="button" data-action="decrease" data-id="${item.id}">−</button>
-                <div class="quantity-value">${item.quantity}</div>
-                <button type="button" data-action="increase" data-id="${item.id}">+</button>
+              <div class="actions">
+                <button class="small-btn danger" onclick="removeFromHave('${key}')">Remove</button>
               </div>
             </div>
 
-            <div class="inventory-actions">
-              <button type="button" class="ghost-btn" data-action="add-one" data-id="${item.id}">Add 1</button>
-              <button type="button" class="ghost-btn" data-action="remove-one" data-id="${item.id}">Remove 1</button>
-              <button type="button" class="ghost-btn" data-action="zero-out" data-id="${item.id}">Remove From Top</button>
-              <button type="button" class="danger-btn" data-action="delete-item-doc" data-id="${item.id}">Delete Top Doc</button>
+            <div class="expiry-add">
+              <input type="date" id="expiry-input-${cssSafe(key)}">
+              <button class="small-btn" onclick="addExpiry('${key}')">Add Date</button>
             </div>
 
-            <div class="inline-form">
-              <label class="input-label">
-                Add another expiry date
-                <input type="date" data-expiry-input-for="${item.id}">
-              </label>
-              <button type="button" class="primary-btn" data-action="add-expiry" data-id="${item.id}">Add Date</button>
-            </div>
-
-            <div class="expiry-list">${expiryMarkup}</div>
+            ${expiryHtml}
           </div>
         `;
       }).join("");
     }
 
-    function renderCatalogList() {
-      const filtered = getFilteredCatalog().sort((a, b) => a.name.localeCompare(b.name));
-      if (!filtered.length) {
-        catalogList.innerHTML = `<div class="empty-state">Nothing in the bottom list yet.</div>`;
+    function renderEverything() {
+      const keys = [...everythingItems].sort((a, b) => a.localeCompare(b));
+
+      if (!keys.length) {
+        everythingListEl.innerHTML = `<div class="empty">No items yet.</div>`;
         return;
       }
 
-      catalogList.innerHTML = filtered.map((entry) => {
-        const qty = itemQuantityById(entry.id);
-        const inStock = qty > 0;
+      everythingListEl.innerHTML = keys.map(key => {
+        const inHave = !!haveItems[key];
         return `
-          <div class="catalog-row">
-            <div>
-              <div class="catalog-name">${entry.name}</div>
-              <div class="catalog-sub">${inStock ? `Currently in stock: ${qty}` : "Not currently in stock"}</div>
-            </div>
-            <div>
-              <span class="status-chip ${inStock ? "good" : "warn"}">${inStock ? "in stock" : "not in stock"}</span>
-            </div>
-            <div class="pill-row">
-              <button type="button" class="small-btn success-btn" data-action="restore-from-catalog" data-id="${entry.id}">Add Back</button>
-              <button type="button" class="small-btn danger-btn" data-action="delete-catalog" data-id="${entry.id}">Delete Bottom</button>
+          <div class="item">
+            <div class="item-top">
+              <div>
+                <div class="name">${titleCase(key)}</div>
+                <div class="sub">${inHave ? "Currently in what I have" : "Not currently in what I have"}</div>
+              </div>
+              <div class="actions">
+                ${!inHave ? `<button class="small-btn" onclick="addBackToHave('${key}')">Add Back</button>` : ``}
+                <button class="small-btn danger" onclick="deleteFromEverything('${key}')">Delete</button>
+              </div>
             </div>
           </div>
         `;
       }).join("");
     }
 
-    function renderAll() {
-      updateStats();
-      renderHaveList();
-      renderCatalogList();
+    function render() {
+      renderHave();
+      renderEverything();
     }
 
-    async function loadData() {
-      statusPill.textContent = "Sync: loading";
-      const [itemsSnapshot, catalogSnapshot] = await Promise.all([
-        getDocs(collection(db, ITEMS_COLLECTION)),
-        getDocs(collection(db, CATALOG_COLLECTION))
-      ]);
-
-      items = itemsSnapshot.docs.map((docSnap) => ({
-        id: docSnap.id,
-        ...docSnap.data(),
-        quantity: Number(docSnap.data().quantity || 0),
-        expiryDates: Array.isArray(docSnap.data().expiryDates) ? docSnap.data().expiryDates : []
-      }));
-
-      catalog = catalogSnapshot.docs.map((docSnap) => ({
-        id: docSnap.id,
-        ...docSnap.data()
-      }));
-
-      statusPill.textContent = "Sync: live";
-      renderAll();
-    }
-
-    async function ensureCatalogEntry(id, name) {
-      await setDoc(doc(db, CATALOG_COLLECTION, id), {
-        name: displayName(name),
-        searchName: normalizeName(name),
-        updatedAt: serverTimestamp(),
-        createdAt: serverTimestamp()
-      }, { merge: true });
-    }
-
-    async function addItemToInventory(name, quantityToAdd, expiryDates = []) {
-      const cleanName = displayName(name);
-      const normalized = normalizeName(cleanName);
-      if (!normalized) {
-        throw new Error("Enter an item name.");
-      }
-      const quantity = Number(quantityToAdd);
-      if (!Number.isInteger(quantity) || quantity <= 0) {
-        throw new Error("Quantity must be a whole number above 0.");
-      }
-
-      const id = createIdFromName(cleanName);
-      const itemRef = doc(db, ITEMS_COLLECTION, id);
-      const catalogRef = doc(db, CATALOG_COLLECTION, id);
-
-      await runTransaction(db, async (transaction) => {
-        const snap = await transaction.get(itemRef);
-        const existing = snap.exists() ? snap.data() : null;
-        const existingExpiryDates = Array.isArray(existing?.expiryDates) ? existing.expiryDates : [];
-        const mergedExpiryDates = [...existingExpiryDates, ...expiryDates];
-
-        transaction.set(itemRef, {
-          name: cleanName,
-          searchName: normalized,
-          quantity: (Number(existing?.quantity || 0) + quantity),
-          expiryDates: mergedExpiryDates,
-          updatedAt: serverTimestamp(),
-          createdAt: existing?.createdAt || serverTimestamp()
-        }, { merge: true });
-
-        transaction.set(catalogRef, {
-          name: cleanName,
-          searchName: normalized,
-          updatedAt: serverTimestamp(),
-          createdAt: serverTimestamp()
-        }, { merge: true });
-      });
-    }
-
-    async function addCatalogOnly(name) {
-      const cleanName = displayName(name);
-      const normalized = normalizeName(cleanName);
-      if (!normalized) {
-        throw new Error("Enter an item name.");
-      }
-      const id = createIdFromName(cleanName);
-      await ensureCatalogEntry(id, cleanName);
-    }
-
-    async function changeQuantity(id, delta) {
-      const item = getItemById(id);
-      if (!item) return;
-      const nextQuantity = Math.max(0, Number(item.quantity || 0) + delta);
-      await setDoc(doc(db, ITEMS_COLLECTION, id), {
-        name: item.name,
-        searchName: normalizeName(item.name),
-        quantity: nextQuantity,
-        expiryDates: Array.isArray(item.expiryDates) ? item.expiryDates : [],
-        updatedAt: serverTimestamp(),
-        createdAt: item.createdAt || serverTimestamp()
-      }, { merge: true });
-      await ensureCatalogEntry(id, item.name);
-    }
-
-    async function setQuantityToZero(id) {
-      const item = getItemById(id);
-      if (!item) return;
-      await setDoc(doc(db, ITEMS_COLLECTION, id), {
-        name: item.name,
-        searchName: normalizeName(item.name),
-        quantity: 0,
-        expiryDates: Array.isArray(item.expiryDates) ? item.expiryDates : [],
-        updatedAt: serverTimestamp(),
-        createdAt: item.createdAt || serverTimestamp()
-      }, { merge: true });
-      await ensureCatalogEntry(id, item.name);
-    }
-
-    async function deleteTopDoc(id) {
-      await deleteDoc(doc(db, ITEMS_COLLECTION, id));
-    }
-
-    async function deleteBottomDoc(id) {
-      await deleteDoc(doc(db, CATALOG_COLLECTION, id));
-    }
-
-    async function addExpiryDateToItem(id, dateValue) {
-      const item = getItemById(id);
-      if (!item) throw new Error("Item not found.");
-      if (!dateValue) throw new Error("Choose an expiry date first.");
-      const nextExpiryDates = [
-        ...(Array.isArray(item.expiryDates) ? item.expiryDates : []),
-        {
-          id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-          date: dateValue
-        }
-      ];
-      await updateDoc(doc(db, ITEMS_COLLECTION, id), {
-        expiryDates: nextExpiryDates,
-        updatedAt: serverTimestamp()
-      });
-    }
-
-    async function deleteExpiryDate(id, expiryId) {
-      const item = getItemById(id);
-      if (!item) return;
-      const nextExpiryDates = (item.expiryDates || []).filter(expiry => expiry.id !== expiryId);
-      await updateDoc(doc(db, ITEMS_COLLECTION, id), {
-        expiryDates: nextExpiryDates,
-        updatedAt: serverTimestamp()
-      });
-    }
-
-    async function restoreFromCatalog(id) {
-      const entry = getCatalogById(id);
-      if (!entry) return;
-      const item = getItemById(id);
-      if (item) {
-        await changeQuantity(id, 1);
-      } else {
-        await setDoc(doc(db, ITEMS_COLLECTION, id), {
-          name: entry.name,
-          searchName: normalizeName(entry.name),
-          quantity: 1,
-          expiryDates: [],
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        }, { merge: true });
-      }
-      await ensureCatalogEntry(id, entry.name);
-    }
-
-    async function refreshAfter(action, successElement, successMessage) {
-      try {
-        setLoadingState(true);
-        await action();
-        await loadData();
-        if (successElement) setStatus(successElement, successMessage);
-      } catch (error) {
-        console.error(error);
-        if (successElement) setStatus(successElement, error.message || "Something went wrong.", true);
-      } finally {
-        setLoadingState(false);
-      }
-    }
-
-    expiryToggle.addEventListener("change", () => {
-      if (expiryToggle.checked) {
-        expiryBuilder.classList.add("active");
-        ensureAtLeastOneExpiryInput();
-      } else {
-        expiryBuilder.classList.remove("active");
-      }
+    addItemBtn.addEventListener("click", addItem);
+    itemInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") addItem();
     });
 
-    addExpiryInputButton.addEventListener("click", () => addExpiryInput());
-    clearExpiryInputsButton.addEventListener("click", () => {
-      expiryInputs.innerHTML = "";
-      ensureAtLeastOneExpiryInput();
-    });
-
-    resetAddFormButton.addEventListener("click", () => resetAddForm());
-    resetCatalogButton.addEventListener("click", () => {
-      addCatalogForm.reset();
-      setStatus(catalogStatus, "");
-    });
-
-    addItemForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const expiryDates = expiryToggle.checked ? getExpiryDatesFromForm() : [];
-      await refreshAfter(
-        () => addItemToInventory(itemNameInput.value, itemQtyInput.value, expiryDates),
-        formStatus,
-        `${displayName(itemNameInput.value)} added.`
-      );
-      resetAddForm();
-      itemNameInput.focus();
-    });
-
-    addCatalogForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      await refreshAfter(
-        () => addCatalogOnly(catalogNameInput.value),
-        catalogStatus,
-        `${displayName(catalogNameInput.value)} added to the bottom list.`
-      );
-      addCatalogForm.reset();
-      catalogNameInput.focus();
-    });
-
-    searchInput.addEventListener("input", () => {
-      searchTerm = searchInput.value;
-      renderAll();
-    });
-
-    clearSearchButton.addEventListener("click", () => {
-      searchInput.value = "";
-      searchTerm = "";
-      renderAll();
-    });
-
-    haveList.addEventListener("click", async (event) => {
-      const button = event.target.closest("button[data-action]");
-      if (!button) return;
-      const { action, id, expiryId } = button.dataset;
-
-      if (action === "increase" || action === "add-one") {
-        await refreshAfter(() => changeQuantity(id, 1), formStatus, "Quantity updated.");
-      }
-
-      if (action === "decrease" || action === "remove-one") {
-        await refreshAfter(() => changeQuantity(id, -1), formStatus, "Quantity updated.");
-      }
-
-      if (action === "zero-out") {
-        await refreshAfter(() => setQuantityToZero(id), formStatus, "Removed from the top section.");
-      }
-
-      if (action === "delete-item-doc") {
-        await refreshAfter(() => deleteTopDoc(id), formStatus, "Top item document deleted.");
-      }
-
-      if (action === "delete-expiry") {
-        await refreshAfter(() => deleteExpiryDate(id, expiryId), formStatus, "Expiry date deleted.");
-      }
-
-      if (action === "add-expiry") {
-        const input = haveList.querySelector(`[data-expiry-input-for="${id}"]`);
-        const dateValue = input?.value || "";
-        await refreshAfter(() => addExpiryDateToItem(id, dateValue), formStatus, "Expiry date added.");
-        if (input) input.value = "";
-      }
-    });
-
-    catalogList.addEventListener("click", async (event) => {
-      const button = event.target.closest("button[data-action]");
-      if (!button) return;
-      const { action, id } = button.dataset;
-
-      if (action === "restore-from-catalog") {
-        await refreshAfter(() => restoreFromCatalog(id), catalogStatus, "Item added back to the top section.");
-      }
-
-      if (action === "delete-catalog") {
-        await refreshAfter(() => deleteBottomDoc(id), catalogStatus, "Bottom item deleted.");
-      }
-    });
-
-    try {
-      await loadData();
-    } catch (error) {
-      console.error(error);
-      statusPill.textContent = "Sync: error";
-      setStatus(formStatus, "Could not load Firestore data. Make sure Firestore is created and your rules allow reads and writes.", true);
-    }
+    render();
   </script>
 </body>
 </html>
