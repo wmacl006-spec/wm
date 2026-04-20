@@ -249,7 +249,22 @@
     }
 
     .chart-shell { height: 640px; }
+    .chart-shell.secondary { height: 420px; }
     .pie-chart-shell { height: 340px; }
+
+    .rolling-control-row {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .rolling-control-row .input-label {
+      min-width: 220px;
+      max-width: 280px;
+    }
 
     .range-pill {
       display: inline-flex;
@@ -539,6 +554,7 @@
       .button-row,
       .button-row.three { grid-template-columns: 1fr; }
       .chart-shell { height: 400px; }
+      .chart-shell.secondary { height: 320px; }
       .pie-chart-shell { height: 300px; }
       .mini-stats-grid { grid-template-columns: 1fr; }
       nav { gap: 10px; }
@@ -626,7 +642,7 @@
               </tr>
             </thead>
             <tbody id="quickStatsBody">
-              <tr><td colspan="6" style="color: var(--muted);">No data yet.</td></tr>
+              <tr><td colspan="7" style="color: var(--muted);">No data yet.</td></tr>
             </tbody>
           </table>
         </div>
@@ -641,6 +657,22 @@
             </div>
             <div class="chart-shell">
               <canvas id="moneyChart"></canvas>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2>Rolling Average Per Day</h2>
+              <div class="panel-subtle" id="rollingRangeLabel">Last 7 days for each day</div>
+            </div>
+            <div class="rolling-control-row">
+              <label class="input-label">
+                Rolling Window (days)
+                <input type="number" id="rollingDaysInput" min="1" step="1" value="7" />
+              </label>
+            </div>
+            <div class="chart-shell secondary">
+              <canvas id="rollingMoneyChart"></canvas>
             </div>
           </section>
 
@@ -706,6 +738,7 @@
             <thead>
               <tr>
                 <th>Category</th>
+                <th>Cash Used</th>
                 <th>Selected Range</th>
                 <th>Last Month</th>
                 <th>Last 3 Months</th>
@@ -923,6 +956,8 @@
     const clearRangeButton = document.getElementById('clearRangeButton');
     const downloadPdfButton = document.getElementById('downloadPdfButton');
     const activeRangeLabel = document.getElementById('activeRangeLabel');
+    const rollingRangeLabel = document.getElementById('rollingRangeLabel');
+    const rollingDaysInput = document.getElementById('rollingDaysInput');
     const entriesTitle = document.getElementById('entriesTitle');
     const extraStatsGrid = document.getElementById('extraStatsGrid');
 
@@ -1013,6 +1048,7 @@
     }
 
     let chart;
+    let rollingChart;
     let pieChart;
     let lastTransactions = [];
     let filteredTransactions = [];
@@ -1447,7 +1483,7 @@
       };
     }
 
-    function buildDatasets(seriesMap) {
+    function buildDatasets(seriesMap, { includeTodayAverage = true } = {}) {
       const datasets = [];
 
       DISPLAY_METRICS.forEach(metric => {
@@ -1470,22 +1506,111 @@
           fill: false
         });
 
-        const finalValue = values[values.length - 1];
-        datasets.push({
-          label: `${metric} Today Avg`,
-          data: new Array(values.length).fill(finalValue),
-          borderColor: color,
-          backgroundColor: color,
-          borderDash: [8, 8],
-          borderWidth: 1.2,
-          pointRadius: 0,
-          pointHoverRadius: 0,
-          tension: 0,
-          fill: false
-        });
+        if (includeTodayAverage) {
+          const finalValue = values[values.length - 1];
+          datasets.push({
+            label: `${metric} Today Avg`,
+            data: new Array(values.length).fill(finalValue),
+            borderColor: color,
+            backgroundColor: color,
+            borderDash: [8, 8],
+            borderWidth: 1.2,
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            tension: 0,
+            fill: false
+          });
+        }
       });
 
       return datasets;
+    }
+
+    function buildRollingAverageSeries(seriesMap, windowDays) {
+      const safeWindow = Math.max(1, Math.floor(Number(windowDays) || 1));
+      const rollingSeriesMap = {};
+
+      DISPLAY_METRICS.forEach(metric => {
+        const values = seriesMap[metric] || [];
+        let runningTotal = 0;
+        rollingSeriesMap[metric] = values.map((value, index) => {
+          runningTotal += Number(value || 0);
+          if (index >= safeWindow) {
+            runningTotal -= Number(values[index - safeWindow] || 0);
+          }
+          const pointsInWindow = Math.min(index + 1, safeWindow);
+          return Number((runningTotal / pointsInWindow).toFixed(2));
+        });
+      });
+
+      return rollingSeriesMap;
+    }
+
+    function createLineChart(canvasId, data, chartTitle = '') {
+      return new Chart(document.getElementById(canvasId), {
+        type: 'line',
+        data,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'nearest', intersect: false },
+          plugins: {
+            legend: {
+              labels: {
+                color: '#f4f1f5',
+                boxWidth: 18,
+                boxHeight: 3,
+                padding: 16,
+                font: { size: 11, weight: 600 },
+                filter: (legendItem) => !legendItem.text.endsWith('Today Avg')
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(13,16,24,0.96)',
+              borderColor: 'rgba(255,255,255,0.08)',
+              borderWidth: 1,
+              callbacks: {
+                title: (items) => items.length ? formatDisplayDate(items[0].label) : '',
+                label: (ctx) => `${ctx.dataset.label}: ${formatMoney(ctx.parsed.y)}`
+              }
+            },
+            title: {
+              display: Boolean(chartTitle),
+              text: chartTitle,
+              color: '#f4f1f5',
+              font: { size: 12, weight: 700 },
+              padding: { bottom: 10 }
+            }
+          },
+          elements: {
+            point: {
+              radius: 0,
+              hoverRadius: 5,
+              hitRadius: 14
+            }
+          },
+          scales: {
+            x: {
+              ticks: {
+                color: '#9ca3b5',
+                maxTicksLimit: 10,
+                callback: function(value) {
+                  const label = this.getLabelForValue(value);
+                  return formatDisplayDate(label);
+                }
+              },
+              grid: { color: 'rgba(255,255,255,0.05)' }
+            },
+            y: {
+              ticks: {
+                color: '#9ca3b5',
+                callback: (value) => formatMoney(value)
+              },
+              grid: { color: 'rgba(255,255,255,0.05)' }
+            }
+          }
+        }
+      });
     }
 
     function getSpendingPieData(transactions) {
@@ -1590,6 +1715,7 @@
               </span>
             </div>
           </td>
+          <td>${formatMoney(windowSet.selected.totals[metric] || 0)}</td>
           <td>${formatMoney(windowSet.selected.averages[metric] || 0)}</td>
           <td>${formatMoney(windowSet.last30.averages[metric] || 0)}</td>
           <td>${formatMoney(windowSet.last90.averages[metric] || 0)}</td>
@@ -1672,11 +1798,17 @@
       const computed = computeMetricSeries(filteredTransactions);
       currentComputed = computed;
 
+      const rollingDays = Math.max(1, Math.floor(Number(rollingDaysInput.value) || 1));
+      rollingDaysInput.value = rollingDays;
+      const rollingSeriesMap = buildRollingAverageSeries(computed.seriesMap, rollingDays);
+      const rollingLabelText = `Last ${rollingDays} day${rollingDays === 1 ? '' : 's'} for each day`;
+
       daysValue.textContent = String(computed.trackedDays || 0);
       entriesValue.textContent = String(filteredTransactions.length || 0);
       incomeValue.textContent = formatMoney(computed.totalIncome);
       spendingValue.textContent = formatMoney(computed.totalSpending);
       foodValue.textContent = formatMoney(computed.foodTotal);
+      if (rollingRangeLabel) rollingRangeLabel.textContent = rollingLabelText;
 
       const windowSet = buildWindowSet(lastTransactions, computed);
       renderQuickStats(windowSet);
@@ -1686,72 +1818,33 @@
       renderSpendingPieChart(filteredTransactions);
       updateRangeDisplays(computed.rangeLabel || 'Full Range');
 
-      const data = {
+      const mainData = {
         labels: computed.labels,
         datasets: buildDatasets(computed.seriesMap)
       };
 
+      const rollingData = {
+        labels: computed.labels,
+        datasets: buildDatasets(rollingSeriesMap, { includeTodayAverage: false })
+      };
+
       if (chart) {
-        chart.data = data;
+        chart.data = mainData;
         chart.update();
       } else {
-        chart = new Chart(document.getElementById('moneyChart'), {
-          type: 'line',
-          data,
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: { mode: 'nearest', intersect: false },
-            plugins: {
-              legend: {
-                labels: {
-                  color: '#f4f1f5',
-                  boxWidth: 18,
-                  boxHeight: 3,
-                  padding: 16,
-                  font: { size: 11, weight: 600 },
-                  filter: (legendItem) => !legendItem.text.endsWith('Today Avg')
-                }
-              },
-              tooltip: {
-                backgroundColor: 'rgba(13,16,24,0.96)',
-                borderColor: 'rgba(255,255,255,0.08)',
-                borderWidth: 1,
-                callbacks: {
-                  title: (items) => items.length ? formatDisplayDate(items[0].label) : '',
-                  label: (ctx) => `${ctx.dataset.label}: ${formatMoney(ctx.parsed.y)}`
-                }
-              }
-            },
-            elements: {
-              point: {
-                radius: 0,
-                hoverRadius: 5,
-                hitRadius: 14
-              }
-            },
-            scales: {
-              x: {
-                ticks: {
-                  color: '#9ca3b5',
-                  maxTicksLimit: 10,
-                  callback: function(value) {
-                    const label = this.getLabelForValue(value);
-                    return formatDisplayDate(label);
-                  }
-                },
-                grid: { color: 'rgba(255,255,255,0.05)' }
-              },
-              y: {
-                ticks: {
-                  color: '#9ca3b5',
-                  callback: (value) => formatMoney(value)
-                },
-                grid: { color: 'rgba(255,255,255,0.05)' }
-              }
-            }
-          }
-        });
+        chart = createLineChart('moneyChart', mainData, 'Cumulative Average Per Day');
+      }
+
+      if (rollingChart) {
+        rollingChart.data = rollingData;
+        rollingChart.update();
+      } else {
+        rollingChart = createLineChart('rollingMoneyChart', rollingData, rollingLabelText);
+      }
+
+      if (rollingChart?.options?.plugins?.title) {
+        rollingChart.options.plugins.title.text = rollingLabelText;
+        rollingChart.update();
       }
     }
 
@@ -1809,12 +1902,36 @@
 
       return order.map(metric => [
         metric,
+        `${formatMoney(windowSet.selected.totals[metric] || 0)}`,
         `${formatMoney(windowSet.selected.averages[metric] || 0)}`,
         `${formatMoney(windowSet.last30.averages[metric] || 0)}`,
         `${formatMoney(windowSet.last90.averages[metric] || 0)}`,
         `${formatMoney(windowSet.last180.averages[metric] || 0)}`,
         `${formatMoney(windowSet.last365.averages[metric] || 0)}`
       ]);
+    }
+
+    function buildRollingAverageRowsForPdf(computed, rollingDays) {
+      const rollingSeriesMap = buildRollingAverageSeries(computed.seriesMap, rollingDays);
+      return averagesRowOrder.map(metric => {
+        const values = rollingSeriesMap[metric] || [];
+        const latestValue = values.length ? values[values.length - 1] : 0;
+        return [metric, String(rollingDays), formatMoney(latestValue)];
+      });
+    }
+
+    function addChartToPdf(doc, chartInstance, title, marginX) {
+      if (!chartInstance?.canvas) return;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const imageWidth = pageWidth - (marginX * 2);
+      const imageHeight = 220;
+      doc.addPage();
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text(title, marginX, 40);
+      const imageData = chartInstance.canvas.toDataURL('image/png', 1.0);
+      doc.addImage(imageData, 'PNG', marginX, 54, imageWidth, imageHeight, undefined, 'FAST');
     }
 
     function downloadPdfStatement() {
@@ -1872,8 +1989,24 @@
       doc.autoTable({
         startY: y + 10,
         margin: { left: marginX, right: marginX },
-        head: [['Category', 'Selected Range', 'Last Month', 'Last 3 Months', 'Last 6 Months', 'Last Year']],
+        head: [['Category', 'Cash Used', 'Selected Range', 'Last Month', 'Last 3 Months', 'Last 6 Months', 'Last Year']],
         body: buildAverageRowsForPdf(windowSet),
+        theme: 'grid',
+        headStyles: { fillColor: [176, 11, 85] },
+        styles: { font: 'helvetica', fontSize: 8.2, textColor: [20, 20, 20] }
+      });
+
+      y = doc.lastAutoTable.finalY + 22;
+      const rollingDays = Math.max(1, Math.floor(Number(rollingDaysInput.value) || 1));
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text(`Rolling Average Snapshot (${rollingDays} day${rollingDays === 1 ? '' : 's'})`, marginX, y);
+
+      doc.autoTable({
+        startY: y + 10,
+        margin: { left: marginX, right: marginX },
+        head: [['Category', 'Window (days)', 'Latest Rolling Avg']],
+        body: buildRollingAverageRowsForPdf(currentComputed, rollingDays),
         theme: 'grid',
         headStyles: { fillColor: [176, 11, 85] },
         styles: { font: 'helvetica', fontSize: 8.5, textColor: [20, 20, 20] }
@@ -1903,6 +2036,10 @@
           3: { cellWidth: 100, halign: 'right' }
         }
       });
+
+      addChartToPdf(doc, chart, 'Average Per Day Chart', marginX);
+      addChartToPdf(doc, rollingChart, `Rolling Average Per Day Chart (${Math.max(1, Math.floor(Number(rollingDaysInput.value) || 1))} day${Math.max(1, Math.floor(Number(rollingDaysInput.value) || 1)) === 1 ? '' : 's'})`, marginX);
+      addChartToPdf(doc, pieChart, 'Spending By Category Chart', marginX);
 
       const safeStart = currentComputed.rangeStart || 'full';
       const safeEnd = currentComputed.rangeEnd || 'range';
@@ -1960,6 +2097,9 @@
     applyRangeButton.addEventListener('click', applyRangeFilter);
     clearRangeButton.addEventListener('click', clearRangeFilter);
     downloadPdfButton.addEventListener('click', downloadPdfStatement);
+    rollingDaysInput.addEventListener('input', () => {
+      refreshActiveView();
+    });
 
     entryForm.addEventListener('submit', async (event) => {
       event.preventDefault();
