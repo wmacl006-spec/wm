@@ -663,7 +663,7 @@
           <section class="panel">
             <div class="panel-head">
               <h2>Rolling Average Per Day</h2>
-              <div class="panel-subtle" id="rollingRangeLabel">Last 7 days for each day</div>
+              <div class="panel-subtle" id="rollingRangeLabel">Costs in last 7 days ÷ 7 for each day</div>
             </div>
             <div class="rolling-control-row">
               <label class="input-label">
@@ -1526,24 +1526,54 @@
       return datasets;
     }
 
-    function buildRollingAverageSeries(seriesMap, windowDays) {
+    function buildRollingAverageSeries(computed, windowDays) {
       const safeWindow = Math.max(1, Math.floor(Number(windowDays) || 1));
+      const sourceLabels = computed.labels || [];
+      const sourceSeriesMap = computed.seriesMap || {};
       const rollingSeriesMap = {};
 
-      DISPLAY_METRICS.forEach(metric => {
-        const values = seriesMap[metric] || [];
-        let runningTotal = 0;
-        rollingSeriesMap[metric] = values.map((value, index) => {
-          runningTotal += Number(value || 0);
-          if (index >= safeWindow) {
-            runningTotal -= Number(values[index - safeWindow] || 0);
-          }
-          const pointsInWindow = Math.min(index + 1, safeWindow);
-          return Number((runningTotal / pointsInWindow).toFixed(2));
+      if (sourceLabels.length < safeWindow) {
+        DISPLAY_METRICS.forEach(metric => {
+          rollingSeriesMap[metric] = [];
         });
+        return {
+          labels: [],
+          seriesMap: rollingSeriesMap
+        };
+      }
+
+      DISPLAY_METRICS.forEach(metric => {
+        const cumulativeAverageValues = sourceSeriesMap[metric] || [];
+        const dailyValues = cumulativeAverageValues.map((value, index) => {
+          const cumulativeTotal = Number(value || 0) * (index + 1);
+          const previousCumulativeTotal = index > 0
+            ? Number(cumulativeAverageValues[index - 1] || 0) * index
+            : 0;
+          return cumulativeTotal - previousCumulativeTotal;
+        });
+
+        const rollingValues = [];
+        let runningWindowTotal = 0;
+
+        dailyValues.forEach((dailyValue, index) => {
+          runningWindowTotal += Number(dailyValue || 0);
+
+          if (index >= safeWindow) {
+            runningWindowTotal -= Number(dailyValues[index - safeWindow] || 0);
+          }
+
+          if (index >= safeWindow - 1) {
+            rollingValues.push(Number((runningWindowTotal / safeWindow).toFixed(2)));
+          }
+        });
+
+        rollingSeriesMap[metric] = rollingValues;
       });
 
-      return rollingSeriesMap;
+      return {
+        labels: sourceLabels.slice(safeWindow - 1),
+        seriesMap: rollingSeriesMap
+      };
     }
 
     function createLineChart(canvasId, data, chartTitle = '') {
@@ -1800,8 +1830,8 @@
 
       const rollingDays = Math.max(1, Math.floor(Number(rollingDaysInput.value) || 1));
       rollingDaysInput.value = rollingDays;
-      const rollingSeriesMap = buildRollingAverageSeries(computed.seriesMap, rollingDays);
-      const rollingLabelText = `Last ${rollingDays} day${rollingDays === 1 ? '' : 's'} for each day`;
+      const rollingResult = buildRollingAverageSeries(computed, rollingDays);
+      const rollingLabelText = `Costs in last ${rollingDays} day${rollingDays === 1 ? '' : 's'} ÷ ${rollingDays} for each day`;
 
       daysValue.textContent = String(computed.trackedDays || 0);
       entriesValue.textContent = String(filteredTransactions.length || 0);
@@ -1824,8 +1854,8 @@
       };
 
       const rollingData = {
-        labels: computed.labels,
-        datasets: buildDatasets(rollingSeriesMap, { includeTodayAverage: false })
+        labels: rollingResult.labels,
+        datasets: buildDatasets(rollingResult.seriesMap, { includeTodayAverage: false })
       };
 
       if (chart) {
@@ -1844,6 +1874,13 @@
 
       if (rollingChart?.options?.plugins?.title) {
         rollingChart.options.plugins.title.text = rollingLabelText;
+      }
+
+      if (rollingChart?.options?.plugins?.tooltip?.callbacks) {
+        rollingChart.options.plugins.tooltip.callbacks.title = (items) => items.length ? formatDisplayDate(items[0].label) : '';
+      }
+
+      if (rollingChart) {
         rollingChart.update();
       }
     }
@@ -1912,9 +1949,9 @@
     }
 
     function buildRollingAverageRowsForPdf(computed, rollingDays) {
-      const rollingSeriesMap = buildRollingAverageSeries(computed.seriesMap, rollingDays);
+      const rollingResult = buildRollingAverageSeries(computed, rollingDays);
       return averagesRowOrder.map(metric => {
-        const values = rollingSeriesMap[metric] || [];
+        const values = rollingResult.seriesMap[metric] || [];
         const latestValue = values.length ? values[values.length - 1] : 0;
         return [metric, String(rollingDays), formatMoney(latestValue)];
       });
