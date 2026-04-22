@@ -657,7 +657,7 @@
               </tr>
             </thead>
             <tbody id="quickStatsBody">
-              <tr><td colspan="6" style="color: var(--muted);">No data yet.</td></tr>
+              <tr><td colspan="7" style="color: var(--muted);">No data yet.</td></tr>
             </tbody>
           </table>
         </div>
@@ -757,6 +757,7 @@
             <thead>
               <tr>
                 <th>Category</th>
+                <th>Total Transacted</th>
                 <th>Selected Range</th>
                 <th>Last Month</th>
                 <th>Last 3 Months</th>
@@ -765,7 +766,7 @@
               </tr>
             </thead>
             <tbody id="averagesBody">
-              <tr><td colspan="6" style="color: var(--muted);">No data yet.</td></tr>
+              <tr><td colspan="7" style="color: var(--muted);">No data yet.</td></tr>
             </tbody>
           </table>
         </div>
@@ -1812,6 +1813,7 @@
               </span>
             </div>
           </td>
+          <td>${formatMoney(windowSet.selected.totals[metric] || 0)}</td>
           <td>${formatMoney(windowSet.selected.averages[metric] || 0)}</td>
           <td>${formatMoney(windowSet.last30.averages[metric] || 0)}</td>
           <td>${formatMoney(windowSet.last90.averages[metric] || 0)}</td>
@@ -2076,6 +2078,7 @@
 
       return order.map(metric => [
         metric,
+        `${formatMoney(windowSet.selected.totals[metric] || 0)}`,
         `${formatMoney(windowSet.selected.averages[metric] || 0)}`,
         `${formatMoney(windowSet.last30.averages[metric] || 0)}`,
         `${formatMoney(windowSet.last90.averages[metric] || 0)}`,
@@ -2202,7 +2205,7 @@
       doc.autoTable({
         startY: y,
         margin: { left: marginX, right: marginX },
-        head: [['Category', 'Selected Range', 'Last Month', 'Last 3 Months', 'Last 6 Months', 'Last Year']],
+        head: [['Category', 'Total Transacted', 'Selected Range', 'Last Month', 'Last 3 Months', 'Last 6 Months', 'Last Year']],
         body: buildAverageRowsForPdf(windowSet),
         theme: 'grid',
         headStyles: { fillColor: [176, 11, 85] },
