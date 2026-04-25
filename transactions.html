@@ -344,23 +344,33 @@
       font-size: 0.92rem;
     }
 
-    .last-transaction-bubble {
-      margin-top: 12px;
-      padding: 12px 14px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.035);
-      color: var(--text);
-      font-size: 0.9rem;
-      line-height: 1.45;
+
+    .last-added-bubble {
+      display: none;
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid rgba(176, 11, 85, 0.34);
+      background: rgba(176, 11, 85, 0.10);
     }
 
-    .last-transaction-bubble strong {
+    .last-added-bubble.visible { display: block; }
+
+    .last-added-title {
       color: var(--muted);
-      font-size: 0.76rem;
+      font-size: 0.72rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      display: block;
-      margin-bottom: 4px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .last-added-details {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      font-size: 0.9rem;
+      font-weight: 700;
     }
 
     .controls-wrap {
@@ -833,11 +843,12 @@
           </div>
         </form>
 
-        <div class="status" id="statusText"></div>
-        <div class="last-transaction-bubble" id="lastTransactionBubble">
-          <strong>Last Transaction</strong>
-          No transaction entered yet.
+        <div class="last-added-bubble" id="lastAddedBubble">
+          <div class="last-added-title">Last Transaction Added</div>
+          <div class="last-added-details" id="lastAddedDetails"></div>
         </div>
+
+        <div class="status" id="statusText"></div>
       </section>
 
       <section class="panel">
@@ -984,7 +995,6 @@
     const amountInput = document.getElementById('amountInput');
     const entryForm = document.getElementById('entryForm');
     const statusText = document.getElementById('statusText');
-    const lastTransactionBubble = document.getElementById('lastTransactionBubble');
     const toggleGrid = document.getElementById('toggleGrid');
     const spendingIncludeGrid = document.getElementById('spendingIncludeGrid');
     const entriesTableBody = document.getElementById('entriesTableBody');
@@ -1004,6 +1014,8 @@
     const rollingSummaryLabel = document.getElementById('rollingSummaryLabel');
     const entriesTitle = document.getElementById('entriesTitle');
     const extraStatsGrid = document.getElementById('extraStatsGrid');
+    const lastAddedBubble = document.getElementById('lastAddedBubble');
+    const lastAddedDetails = document.getElementById('lastAddedDetails');
 
     const daysValue = document.getElementById('daysValue');
     const entriesValue = document.getElementById('entriesValue');
@@ -1102,10 +1114,12 @@
     let editSessionUnlocked = false;
     let rollingWindowDays = 30;
     let rollingTrendlineEnabled = false;
+    let lastAddedTransaction = null;
 
     dateInput.value = new Date().toISOString().slice(0, 10);
     if (rollingDaysInput) rollingDaysInput.value = String(rollingWindowDays);
     if (rollingTrendlineToggle) rollingTrendlineToggle.checked = rollingTrendlineEnabled;
+    loadLastAddedTransaction();
 
     CATEGORIES.forEach((category) => {
       const option = document.createElement('option');
@@ -1153,28 +1167,47 @@
       }).format(date);
     }
 
-    function showStatus(message, isError = false) {
-      statusText.textContent = message;
-      statusText.style.color = isError ? 'var(--danger)' : 'var(--muted)';
-    }
 
-    function renderLastTransactionBubble(transactions) {
-      if (!lastTransactionBubble) return;
-      if (!transactions.length) {
-        lastTransactionBubble.innerHTML = '<strong>Last Transaction</strong>No transaction entered yet.';
+    function renderLastAddedTransactionBubble() {
+      if (!lastAddedBubble || !lastAddedDetails) return;
+      if (!lastAddedTransaction) {
+        lastAddedBubble.classList.remove('visible');
+        lastAddedDetails.innerHTML = '';
         return;
       }
 
-      const lastTx = [...transactions].sort((a, b) => {
-        const byDate = b.date.localeCompare(a.date);
-        if (byDate !== 0) return byDate;
-        return b.id.localeCompare(a.id);
-      })[0];
-
-      lastTransactionBubble.innerHTML = `
-        <strong>Last Transaction</strong>
-        ${lastTx.date} · ${lastTx.category} · ${lastTx.type} · ${formatMoney(lastTx.amount)}
+      lastAddedDetails.innerHTML = `
+        <span>${lastAddedTransaction.date}</span>
+        <span class="pill">${lastAddedTransaction.category}</span>
+        <span>${lastAddedTransaction.type}</span>
+        <span>${formatMoney(lastAddedTransaction.amount)}</span>
       `;
+      lastAddedBubble.classList.add('visible');
+    }
+
+    function saveLastAddedTransaction(tx) {
+      lastAddedTransaction = tx;
+      try {
+        localStorage.setItem('moneyTrackerLastAddedTransaction', JSON.stringify(tx));
+      } catch (error) {
+        console.warn('Could not save last added transaction locally:', error);
+      }
+      renderLastAddedTransactionBubble();
+    }
+
+    function loadLastAddedTransaction() {
+      try {
+        const saved = localStorage.getItem('moneyTrackerLastAddedTransaction');
+        if (saved) lastAddedTransaction = JSON.parse(saved);
+      } catch (error) {
+        lastAddedTransaction = null;
+      }
+      renderLastAddedTransactionBubble();
+    }
+
+    function showStatus(message, isError = false) {
+      statusText.textContent = message;
+      statusText.style.color = isError ? 'var(--danger)' : 'var(--muted)';
     }
 
     function advanceDateByOneDay() {
@@ -2015,7 +2048,6 @@
       renderAverages(windowSet);
       renderExtraStats(windowSet);
       renderEntriesTable(filteredTransactions);
-      renderLastTransactionBubble(lastTransactions);
       renderSpendingPieChart(filteredTransactions);
       updateRangeDisplays(computed.rangeLabel || 'Full Range');
 
@@ -2159,71 +2191,106 @@
     }
 
     function downloadPdfStatement() {
-      if (!currentComputed || !window.jspdf?.jsPDF) {
+      if (!currentComputed || !window.jspdf?.jsPDF || !docAutoTableReady()) {
         showStatus('PDF export is not available right now.', true);
         return;
       }
 
       const windowSet = buildWindowSet(lastTransactions, currentComputed);
       const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+      const doc = new jsPDF({ unit: 'pt', format: 'a4', orientation: 'landscape' });
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
-      const rangeText = currentComputed.rangeLabel || 'No Data';
-      const marginX = 40;
-      let y = 42;
+      const marginX = 34;
+      const accent = [176, 11, 85];
+      const dark = [18, 18, 18];
+      const soft = [245, 245, 245];
+      let y = 34;
 
-      const ensurePageSpace = (neededHeight = 60) => {
-        if (y + neededHeight <= pageHeight - 36) return;
+      const cleanRange = (currentComputed.rangeLabel || 'No Data').replace('→', 'to');
+      const generatedText = new Intl.DateTimeFormat('en-CA', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date());
+
+      const addFooter = () => {
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+          doc.setPage(i);
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8);
+          doc.setTextColor(120);
+          doc.text(`Money Tracker Statement • Page ${i} of ${pageCount}`, marginX, pageHeight - 18);
+        }
+      };
+
+      const ensureSpace = (needed = 70) => {
+        if (y + needed <= pageHeight - 42) return;
         doc.addPage();
-        y = 42;
+        y = 34;
       };
 
       const sectionTitle = (title) => {
-        ensurePageSpace(28);
+        ensureSpace(34);
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(12);
+        doc.setFontSize(13);
+        doc.setTextColor(...dark);
         doc.text(title, marginX, y);
-        y += 10;
+        doc.setDrawColor(...accent);
+        doc.setLineWidth(1.4);
+        doc.line(marginX, y + 7, pageWidth - marginX, y + 7);
+        y += 20;
       };
 
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(20);
-      doc.text('Money Tracker Statement', marginX, y);
-      y += 22;
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      doc.text(`Range: ${rangeText}`, marginX, y);
-      y += 14;
-      doc.text(`Generated: ${new Intl.DateTimeFormat('en-CA', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date())}`, marginX, y);
-      y += 24;
-
-      sectionTitle('Summary');
-      doc.autoTable({
-        startY: y,
+      const tableOptions = {
+        theme: 'striped',
         margin: { left: marginX, right: marginX },
-        head: [['Metric', 'Value']],
-        body: [
-          ['Tracked Days', String(currentComputed.trackedDays || 0)],
-          ['Entries', String(filteredTransactions.length || 0)],
-          ['Total Income', formatMoney(currentComputed.totalIncome)],
-          ['Total Spending', formatMoney(currentComputed.totalSpending)],
-          ['Food Total', formatMoney(currentComputed.foodTotal)],
-          ['Net', formatMoney((currentComputed.totalIncome || 0) - (currentComputed.totalSpending || 0))],
-          ['Rolling Window', `${rollingWindowDays} day${rollingWindowDays === 1 ? '' : 's'}`],
-          ['Trendlines In Rolling Graph', rollingTrendlineEnabled ? 'On' : 'Off']
-        ],
-        theme: 'grid',
-        headStyles: { fillColor: [176, 11, 85] },
-        styles: { font: 'helvetica', fontSize: 10, textColor: [20, 20, 20] }
-      });
-      y = doc.lastAutoTable.finalY + 22;
+        headStyles: { fillColor: accent, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8.4, cellPadding: 5 },
+        styles: { font: 'helvetica', fontSize: 8.2, textColor: [28, 28, 28], cellPadding: 5, overflow: 'linebreak', lineColor: [225, 225, 225], lineWidth: 0.25 },
+        alternateRowStyles: { fillColor: soft },
+        bodyStyles: { valign: 'middle' }
+      };
+
+      const addInfoCard = (label, value, x, cardY, w, h) => {
+        doc.setFillColor(250, 250, 250);
+        doc.setDrawColor(225, 225, 225);
+        doc.roundedRect(x, cardY, w, h, 6, 6, 'FD');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7.4);
+        doc.setTextColor(115);
+        doc.text(String(label).toUpperCase(), x + 10, cardY + 16);
+        doc.setFontSize(13);
+        doc.setTextColor(...dark);
+        doc.text(String(value), x + 10, cardY + 38, { maxWidth: w - 20 });
+      };
+
+      doc.setFillColor(...dark);
+      doc.rect(0, 0, pageWidth, 86, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(22);
+      doc.setTextColor(255, 255, 255);
+      doc.text('Money Tracker Statement', marginX, 36);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9.5);
+      doc.setTextColor(215, 215, 215);
+      doc.text(`Range: ${cleanRange}`, marginX, 58);
+      doc.text(`Generated: ${generatedText}`, marginX, 73);
+      y = 108;
+
+      const cardGap = 10;
+      const cardW = (pageWidth - (marginX * 2) - (cardGap * 5)) / 6;
+      const summaryCards = [
+        ['Days', currentComputed.trackedDays || 0],
+        ['Entries', filteredTransactions.length || 0],
+        ['Income', formatMoney(currentComputed.totalIncome)],
+        ['Spending', formatMoney(currentComputed.totalSpending)],
+        ['Food', formatMoney(currentComputed.foodTotal)],
+        ['Net', formatMoney((currentComputed.totalIncome || 0) - (currentComputed.totalSpending || 0))]
+      ];
+      summaryCards.forEach((card, index) => addInfoCard(card[0], card[1], marginX + index * (cardW + cardGap), y, cardW, 52));
+      y += 76;
 
       sectionTitle('Quick Stats');
       doc.autoTable({
+        ...tableOptions,
         startY: y,
-        margin: { left: marginX, right: marginX },
         head: [['Metric', 'Selected Range', 'Last Month', 'Last 3 Months', 'Last 6 Months', 'Last Year']],
         body: [
           ['Income / Day', formatMoney(windowSet.selected.averages['Total Income'] || 0), formatMoney(windowSet.last30.averages['Total Income'] || 0), formatMoney(windowSet.last90.averages['Total Income'] || 0), formatMoney(windowSet.last180.averages['Total Income'] || 0), formatMoney(windowSet.last365.averages['Total Income'] || 0)],
@@ -2232,42 +2299,35 @@
           ['Non-Food / Day', formatMoney(getNonFoodTotalFromTotals(windowSet.selected.totals || {}) / (windowSet.selected.days || 1)), formatMoney(getNonFoodTotalFromTotals(windowSet.last30.totals || {}) / (windowSet.last30.days || 1)), formatMoney(getNonFoodTotalFromTotals(windowSet.last90.totals || {}) / (windowSet.last90.days || 1)), formatMoney(getNonFoodTotalFromTotals(windowSet.last180.totals || {}) / (windowSet.last180.days || 1)), formatMoney(getNonFoodTotalFromTotals(windowSet.last365.totals || {}) / (windowSet.last365.days || 1))],
           ['Net / Day', formatMoney((windowSet.selected.averages['Total Income'] || 0) - (windowSet.selected.averages['Total Spending'] || 0)), formatMoney((windowSet.last30.averages['Total Income'] || 0) - (windowSet.last30.averages['Total Spending'] || 0)), formatMoney((windowSet.last90.averages['Total Income'] || 0) - (windowSet.last90.averages['Total Spending'] || 0)), formatMoney((windowSet.last180.averages['Total Income'] || 0) - (windowSet.last180.averages['Total Spending'] || 0)), formatMoney((windowSet.last365.averages['Total Income'] || 0) - (windowSet.last365.averages['Total Spending'] || 0))]
         ],
-        theme: 'grid',
-        headStyles: { fillColor: [176, 11, 85] },
-        styles: { font: 'helvetica', fontSize: 8.2, textColor: [20, 20, 20] }
+        columnStyles: { 0: { fontStyle: 'bold', cellWidth: 120 } }
       });
-      y = doc.lastAutoTable.finalY + 22;
+      y = doc.lastAutoTable.finalY + 24;
 
-      addChartImageToPdf(doc, document.getElementById('moneyChart'), 'Average Per Day Graph', marginX, pageWidth, pageHeight);
-      y = (doc.lastAutoTable?.finalY || y) + 22;
-      addChartImageToPdf(doc, document.getElementById('rollingMoneyChart'), `Rolling Average Graph (${rollingWindowDays} days)`, marginX, pageWidth, pageHeight);
-      y = (doc.lastAutoTable?.finalY || y) + 22;
-      addChartImageToPdf(doc, document.getElementById('spendingPieChart'), 'Spending By Category Graph', marginX, pageWidth, pageHeight);
-      y = (doc.lastAutoTable?.finalY || y) + 22;
+      const addChart = (canvasId, title) => {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        ensureSpace(250);
+        sectionTitle(title);
+        const imageData = canvas.toDataURL('image/png', 1.0);
+        const usableWidth = pageWidth - (marginX * 2);
+        const targetHeight = Math.min(250, canvas.height ? usableWidth * (canvas.height / canvas.width) : 220);
+        doc.addImage(imageData, 'PNG', marginX, y, usableWidth, targetHeight);
+        y += targetHeight + 24;
+      };
+
+      addChart('moneyChart', 'Average Per Day Graph');
+      addChart('rollingMoneyChart', `Rolling Average Graph (${rollingWindowDays} days)`);
+      addChart('spendingPieChart', 'Spending By Category Graph');
 
       sectionTitle('Category Averages');
       doc.autoTable({
+        ...tableOptions,
         startY: y,
-        margin: { left: marginX, right: marginX },
         head: [['Category', 'Total Transacted', 'Selected Range', 'Last Month', 'Last 3 Months', 'Last 6 Months', 'Last Year']],
         body: buildAverageRowsForPdf(windowSet),
-        theme: 'grid',
-        headStyles: { fillColor: [176, 11, 85] },
-        styles: { font: 'helvetica', fontSize: 8.5, textColor: [20, 20, 20] }
+        columnStyles: { 0: { fontStyle: 'bold', cellWidth: 120 } }
       });
-      y = doc.lastAutoTable.finalY + 22;
-
-      sectionTitle('Category Totals In Selected Range');
-      doc.autoTable({
-        startY: y,
-        margin: { left: marginX, right: marginX },
-        head: [['Category', 'Total']],
-        body: buildCategoryTotalsRows(currentComputed.totalsByMetric || {}),
-        theme: 'grid',
-        headStyles: { fillColor: [176, 11, 85] },
-        styles: { font: 'helvetica', fontSize: 9, textColor: [20, 20, 20] }
-      });
-      y = doc.lastAutoTable.finalY + 22;
+      y = doc.lastAutoTable.finalY + 24;
 
       sectionTitle('Transactions');
       const transactionRows = [...filteredTransactions]
@@ -2275,25 +2335,27 @@
         .map(tx => [tx.date, tx.category, tx.type, formatMoney(tx.amount)]);
 
       doc.autoTable({
+        ...tableOptions,
         startY: y,
-        margin: { left: marginX, right: marginX },
         head: [['Date', 'Category', 'Type', 'Amount']],
         body: transactionRows.length ? transactionRows : [['-', 'No transactions in this range', '-', '-']],
-        theme: 'grid',
-        headStyles: { fillColor: [176, 11, 85] },
-        styles: { font: 'helvetica', fontSize: 9, textColor: [20, 20, 20] },
         columnStyles: {
-          0: { cellWidth: 80 },
-          1: { cellWidth: 180 },
-          2: { cellWidth: 80 },
+          0: { cellWidth: 90 },
+          1: { cellWidth: 210 },
+          2: { cellWidth: 90 },
           3: { cellWidth: 100, halign: 'right' }
         }
       });
 
+      addFooter();
       const safeStart = currentComputed.rangeStart || 'full';
       const safeEnd = currentComputed.rangeEnd || 'range';
       doc.save(`money-statement-${safeStart}-to-${safeEnd}.pdf`);
       showStatus('PDF downloaded.');
+    }
+
+    function docAutoTableReady() {
+      return typeof window.jspdf?.jsPDF === 'function';
     }
 
     async function loadTransactions(successMessage = null) {
@@ -2387,13 +2449,14 @@
           await loadTransactions('Entry updated.');
         } else {
           showStatus('Saving entry...');
-          await addDoc(collection(db, TRANSACTIONS_COLLECTION), {
+          const addedRef = await addDoc(collection(db, TRANSACTIONS_COLLECTION), {
             date,
             category,
             amount,
             type,
             createdAt: serverTimestamp()
           });
+          saveLastAddedTransaction({ id: addedRef.id, date, category, amount, type });
           amountInput.value = '';
           amountInput.focus();
           await loadTransactions('Entry saved.');
