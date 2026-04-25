@@ -707,12 +707,12 @@
           <section class="panel">
             <div class="panel-head">
               <h2>Rolling Average Per Day</h2>
-              <div class="panel-subtle" id="rollingSummaryLabel">Last 30 days average per day</div>
+              <div class="panel-subtle" id="rollingSummaryLabel">Last X days average per day</div>
             </div>
             <div class="rolling-controls">
               <label class="input-label">
                 Rolling Window (days)
-                <input type="number" id="rollingDaysInput" min="1" step="1" value="30" />
+                <input type="number" id="rollingDaysInput" min="1" step="1" value="17" />
               </label>
               <label class="inline-check">
                 <input type="checkbox" id="rollingTrendlineToggle" />
@@ -1112,7 +1112,7 @@
     let activeRange = { start: '', end: '' };
     let currentComputed = null;
     let editSessionUnlocked = false;
-    let rollingWindowDays = 30;
+    let rollingWindowDays = 17;
     let rollingTrendlineEnabled = false;
     let lastAddedTransaction = null;
 
