@@ -2190,6 +2190,182 @@
       doc.lastAutoTable = { finalY: y + 10 + targetHeight };
     }
 
+    function getWindowForLastDays(allTransactions, days = 21) {
+      const endDate = getEndReferenceDate(allTransactions);
+      return getWindowStats(allTransactions, endDate, Math.max(1, Number(days) || 21));
+    }
+
+    function percentText(value) {
+      if (!Number.isFinite(value)) return '0.0%';
+      return `${value.toFixed(1)}%`;
+    }
+
+    function safeRatio(numerator, denominator) {
+      return denominator > 0 ? (numerator / denominator) : 0;
+    }
+
+    function buildUsefulRatiosRows(windowSet) {
+      const selected = windowSet.selected;
+      const last21 = getWindowForLastDays(lastTransactions, 21);
+      const makeRowsForWindow = (w) => {
+        const income = w.totals['Total Income'] || 0;
+        const spending = w.totals['Total Spending'] || 0;
+        const food = w.totals['Food'] || 0;
+        const groceries = w.totals['Groceries'] || 0;
+        const fastFood = w.totals['Fast Food'] || 0;
+        const misc = w.totals['Misc Spending'] || 0;
+        const net = income - spending;
+        return {
+          income,
+          spending,
+          food,
+          groceries,
+          fastFood,
+          misc,
+          net,
+          savingRate: safeRatio(net, income) * 100,
+          consumptionRate: safeRatio(spending, income) * 100,
+          foodShare: safeRatio(food, spending) * 100,
+          miscShare: safeRatio(misc, spending) * 100,
+          fastFoodShare: safeRatio(fastFood, food) * 100,
+          groceriesShare: safeRatio(groceries, food) * 100,
+          netPerDay: safeRatio(net, w.days || 1)
+        };
+      };
+
+      const selectedRows = makeRowsForWindow(selected);
+      const last21Rows = makeRowsForWindow(last21);
+      return [
+        ['Income', formatMoney(selectedRows.income), formatMoney(last21Rows.income)],
+        ['Total Spending', formatMoney(selectedRows.spending), formatMoney(last21Rows.spending)],
+        ['Net Saved / Leftover', formatMoney(selectedRows.net), formatMoney(last21Rows.net)],
+        ['Net / Day', formatMoney(selectedRows.netPerDay), formatMoney(last21Rows.netPerDay)],
+        ['Saving Rate', percentText(selectedRows.savingRate), percentText(last21Rows.savingRate)],
+        ['Consumption Rate', percentText(selectedRows.consumptionRate), percentText(last21Rows.consumptionRate)],
+        ['Food Share Of Spending', percentText(selectedRows.foodShare), percentText(last21Rows.foodShare)],
+        ['Misc Share Of Spending', percentText(selectedRows.miscShare), percentText(last21Rows.miscShare)],
+        ['Fast Food Share Of Food', percentText(selectedRows.fastFoodShare), percentText(last21Rows.fastFoodShare)],
+        ['Groceries Share Of Food', percentText(selectedRows.groceriesShare), percentText(last21Rows.groceriesShare)]
+      ];
+    }
+
+    function makePdfChartImage(type, labels, datasets, chartOptions = {}, width = 1200, height = 520) {
+      const wrap = document.createElement('div');
+      wrap.style.position = 'fixed';
+      wrap.style.left = '-10000px';
+      wrap.style.top = '0';
+      wrap.style.width = `${width}px`;
+      wrap.style.height = `${height}px`;
+      wrap.style.background = '#ffffff';
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      wrap.appendChild(canvas);
+      document.body.appendChild(wrap);
+
+      const whiteBackground = {
+        id: 'pdfWhiteBackground',
+        beforeDraw(chart) {
+          const { ctx, width: chartWidth, height: chartHeight } = chart;
+          ctx.save();
+          ctx.globalCompositeOperation = 'destination-over';
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, chartWidth, chartHeight);
+          ctx.restore();
+        }
+      };
+
+      const pdfChart = new Chart(canvas, {
+        type,
+        data: { labels, datasets },
+        plugins: [whiteBackground],
+        options: {
+          responsive: false,
+          maintainAspectRatio: false,
+          animation: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: '#222222',
+                font: { size: 18, weight: 700 },
+                padding: 22,
+                boxWidth: 28
+              }
+            },
+            tooltip: { enabled: false }
+          },
+          scales: type === 'pie' ? undefined : {
+            x: {
+              ticks: { color: '#333333', font: { size: 15, weight: 600 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 10 },
+              grid: { color: '#eeeeee' }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: { color: '#333333', font: { size: 15, weight: 600 }, callback: (value) => formatMoney(value) },
+              grid: { color: '#e8e8e8' }
+            }
+          },
+          ...chartOptions
+        }
+      });
+
+      pdfChart.update();
+      const image = canvas.toDataURL('image/png', 1.0);
+      pdfChart.destroy();
+      wrap.remove();
+      return image;
+    }
+
+    function addPdfImageChart(doc, title, imageData, chartRatio, marginX, pageWidth, pageHeight, yState) {
+      const usableWidth = pageWidth - (marginX * 2);
+      const chartWidth = usableWidth;
+      const chartHeight = Math.min(300, chartWidth * chartRatio);
+      if (yState.value + chartHeight + 48 > pageHeight - 42) {
+        doc.addPage();
+        yState.value = 34;
+      }
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(13);
+      doc.setTextColor(18, 18, 18);
+      doc.text(title, marginX, yState.value);
+      doc.setDrawColor(176, 11, 85);
+      doc.setLineWidth(1.4);
+      doc.line(marginX, yState.value + 7, pageWidth - marginX, yState.value + 7);
+      yState.value += 18;
+      doc.addImage(imageData, 'PNG', marginX, yState.value, chartWidth, chartHeight);
+      yState.value += chartHeight + 24;
+    }
+
+    function getLastNDailyTotals(transactions, days = 21) {
+      const end = getEndReferenceDate(transactions);
+      const start = new Date(end);
+      start.setDate(end.getDate() - (days - 1));
+      const rows = [];
+      const dailySums = {};
+      transactions.forEach(tx => {
+        if (!dailySums[tx.date]) dailySums[tx.date] = {};
+        dailySums[tx.date][tx.category] = (dailySums[tx.date][tx.category] || 0) + tx.amount;
+      });
+
+      for (let i = 0; i < days; i++) {
+        const current = new Date(start);
+        current.setDate(start.getDate() + i);
+        const key = formatDateInputValue(current);
+        const day = dailySums[key] || {};
+        rows.push({
+          date: key,
+          income: (day['Misc Income'] || 0) + (day['Work income'] || 0),
+          spending: SPENDING_CATEGORIES.reduce((sum, category) => sum + (spendingIncludedState[category] ? (day[category] || 0) : 0), 0),
+          groceries: day['Groceries'] || 0,
+          fastFood: day['Fast Food'] || 0,
+          food: (day['Groceries'] || 0) + (day['Fast Food'] || 0),
+          misc: day['Misc Spending'] || 0
+        });
+      }
+      return rows;
+    }
+
     function downloadPdfStatement() {
       if (!currentComputed || !window.jspdf?.jsPDF || !docAutoTableReady()) {
         showStatus('PDF export is not available right now.', true);
@@ -2204,11 +2380,13 @@
       const marginX = 34;
       const accent = [176, 11, 85];
       const dark = [18, 18, 18];
-      const soft = [245, 245, 245];
-      let y = 34;
+      const soft = [248, 248, 248];
+      const yState = { value: 34 };
 
       const cleanRange = (currentComputed.rangeLabel || 'No Data').replace('→', 'to');
       const generatedText = new Intl.DateTimeFormat('en-CA', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date());
+      const daily21 = getLastNDailyTotals(lastTransactions, 21);
+      const shortLabels = daily21.map(row => row.date.slice(5));
 
       const addFooter = () => {
         const pageCount = doc.internal.getNumberOfPages();
@@ -2222,9 +2400,9 @@
       };
 
       const ensureSpace = (needed = 70) => {
-        if (y + needed <= pageHeight - 42) return;
+        if (yState.value + needed <= pageHeight - 42) return;
         doc.addPage();
-        y = 34;
+        yState.value = 34;
       };
 
       const sectionTitle = (title) => {
@@ -2232,11 +2410,11 @@
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(13);
         doc.setTextColor(...dark);
-        doc.text(title, marginX, y);
+        doc.text(title, marginX, yState.value);
         doc.setDrawColor(...accent);
         doc.setLineWidth(1.4);
-        doc.line(marginX, y + 7, pageWidth - marginX, y + 7);
-        y += 20;
+        doc.line(marginX, yState.value + 7, pageWidth - marginX, yState.value + 7);
+        yState.value += 20;
       };
 
       const tableOptions = {
@@ -2272,7 +2450,7 @@
       doc.setTextColor(215, 215, 215);
       doc.text(`Range: ${cleanRange}`, marginX, 58);
       doc.text(`Generated: ${generatedText}`, marginX, 73);
-      y = 108;
+      yState.value = 108;
 
       const cardGap = 10;
       const cardW = (pageWidth - (marginX * 2) - (cardGap * 5)) / 6;
@@ -2284,13 +2462,27 @@
         ['Food', formatMoney(currentComputed.foodTotal)],
         ['Net', formatMoney((currentComputed.totalIncome || 0) - (currentComputed.totalSpending || 0))]
       ];
-      summaryCards.forEach((card, index) => addInfoCard(card[0], card[1], marginX + index * (cardW + cardGap), y, cardW, 52));
-      y += 76;
+      summaryCards.forEach((card, index) => addInfoCard(card[0], card[1], marginX + index * (cardW + cardGap), yState.value, cardW, 52));
+      yState.value += 76;
+
+      sectionTitle('Useful Data & Ratios');
+      doc.autoTable({
+        ...tableOptions,
+        startY: yState.value,
+        head: [['Metric', 'Selected Range', 'Last 21 Days']],
+        body: buildUsefulRatiosRows(windowSet),
+        columnStyles: {
+          0: { fontStyle: 'bold', cellWidth: 210 },
+          1: { halign: 'right' },
+          2: { halign: 'right' }
+        }
+      });
+      yState.value = doc.lastAutoTable.finalY + 24;
 
       sectionTitle('Quick Stats');
       doc.autoTable({
         ...tableOptions,
-        startY: y,
+        startY: yState.value,
         head: [['Metric', 'Selected Range', 'Last Month', 'Last 3 Months', 'Last 6 Months', 'Last Year']],
         body: [
           ['Income / Day', formatMoney(windowSet.selected.averages['Total Income'] || 0), formatMoney(windowSet.last30.averages['Total Income'] || 0), formatMoney(windowSet.last90.averages['Total Income'] || 0), formatMoney(windowSet.last180.averages['Total Income'] || 0), formatMoney(windowSet.last365.averages['Total Income'] || 0)],
@@ -2301,33 +2493,37 @@
         ],
         columnStyles: { 0: { fontStyle: 'bold', cellWidth: 120 } }
       });
-      y = doc.lastAutoTable.finalY + 24;
+      yState.value = doc.lastAutoTable.finalY + 24;
 
-      const addChart = (canvasId, title) => {
-        const canvas = document.getElementById(canvasId);
-        if (!canvas) return;
-        ensureSpace(250);
-        sectionTitle(title);
-        const imageData = canvas.toDataURL('image/png', 1.0);
-        const usableWidth = pageWidth - (marginX * 2);
-        const targetHeight = Math.min(250, canvas.height ? usableWidth * (canvas.height / canvas.width) : 220);
-        doc.addImage(imageData, 'PNG', marginX, y, usableWidth, targetHeight);
-        y += targetHeight + 24;
-      };
+      const incomeSpendingChart = makePdfChartImage('bar', shortLabels, [
+        { label: 'Total Income', data: daily21.map(row => row.income), backgroundColor: colors['Total Income'] },
+        { label: 'Total Spending', data: daily21.map(row => row.spending), backgroundColor: colors['Total Spending'] }
+      ]);
+      addPdfImageChart(doc, 'Total Spending vs Total Income (Last 21 Days)', incomeSpendingChart, 520 / 1200, marginX, pageWidth, pageHeight, yState);
 
-      addChart('moneyChart', 'Average Per Day Graph');
-      addChart('rollingMoneyChart', `Rolling Average Graph (${rollingWindowDays} days)`);
-      addChart('spendingPieChart', 'Spending By Category Graph');
+      const foodChart = makePdfChartImage('bar', shortLabels, [
+        { label: 'Groceries', data: daily21.map(row => row.groceries), backgroundColor: colors['Groceries'] },
+        { label: 'Fast Food', data: daily21.map(row => row.fastFood), backgroundColor: colors['Fast Food'] },
+        { label: 'Food Total', data: daily21.map(row => row.food), backgroundColor: colors['Food'] }
+      ]);
+      addPdfImageChart(doc, 'Food vs Groceries vs Fast Food (Last 21 Days)', foodChart, 520 / 1200, marginX, pageWidth, pageHeight, yState);
+
+      const miscFoodSpendingChart = makePdfChartImage('bar', ['Selected Range'], [
+        { label: 'Food', data: [windowSet.selected.totals['Food'] || 0], backgroundColor: colors['Food'] },
+        { label: 'Misc Spending', data: [windowSet.selected.totals['Misc Spending'] || 0], backgroundColor: colors['Misc Spending'] },
+        { label: 'Total Spending', data: [windowSet.selected.totals['Total Spending'] || 0], backgroundColor: colors['Total Spending'] }
+      ], { scales: { x: { ticks: { color: '#333333', font: { size: 18, weight: 700 } }, grid: { display: false } }, y: { beginAtZero: true, ticks: { color: '#333333', font: { size: 15, weight: 600 }, callback: (value) => formatMoney(value) }, grid: { color: '#e8e8e8' } } } }, 1200, 420);
+      addPdfImageChart(doc, 'Food vs Misc vs Total Spending', miscFoodSpendingChart, 420 / 1200, marginX, pageWidth, pageHeight, yState);
 
       sectionTitle('Category Averages');
       doc.autoTable({
         ...tableOptions,
-        startY: y,
+        startY: yState.value,
         head: [['Category', 'Total Transacted', 'Selected Range', 'Last Month', 'Last 3 Months', 'Last 6 Months', 'Last Year']],
         body: buildAverageRowsForPdf(windowSet),
         columnStyles: { 0: { fontStyle: 'bold', cellWidth: 120 } }
       });
-      y = doc.lastAutoTable.finalY + 24;
+      yState.value = doc.lastAutoTable.finalY + 24;
 
       sectionTitle('Transactions');
       const transactionRows = [...filteredTransactions]
@@ -2336,7 +2532,7 @@
 
       doc.autoTable({
         ...tableOptions,
-        startY: y,
+        startY: yState.value,
         head: [['Date', 'Category', 'Type', 'Amount']],
         body: transactionRows.length ? transactionRows : [['-', 'No transactions in this range', '-', '-']],
         columnStyles: {
