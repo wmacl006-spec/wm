@@ -344,6 +344,25 @@
       font-size: 0.92rem;
     }
 
+    .last-transaction-bubble {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.035);
+      color: var(--text);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .last-transaction-bubble strong {
+      color: var(--muted);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      display: block;
+      margin-bottom: 4px;
+    }
+
     .controls-wrap {
       display: grid;
       gap: 10px;
@@ -815,6 +834,10 @@
         </form>
 
         <div class="status" id="statusText"></div>
+        <div class="last-transaction-bubble" id="lastTransactionBubble">
+          <strong>Last Transaction</strong>
+          No transaction entered yet.
+        </div>
       </section>
 
       <section class="panel">
@@ -961,6 +984,7 @@
     const amountInput = document.getElementById('amountInput');
     const entryForm = document.getElementById('entryForm');
     const statusText = document.getElementById('statusText');
+    const lastTransactionBubble = document.getElementById('lastTransactionBubble');
     const toggleGrid = document.getElementById('toggleGrid');
     const spendingIncludeGrid = document.getElementById('spendingIncludeGrid');
     const entriesTableBody = document.getElementById('entriesTableBody');
@@ -1132,6 +1156,25 @@
     function showStatus(message, isError = false) {
       statusText.textContent = message;
       statusText.style.color = isError ? 'var(--danger)' : 'var(--muted)';
+    }
+
+    function renderLastTransactionBubble(transactions) {
+      if (!lastTransactionBubble) return;
+      if (!transactions.length) {
+        lastTransactionBubble.innerHTML = '<strong>Last Transaction</strong>No transaction entered yet.';
+        return;
+      }
+
+      const lastTx = [...transactions].sort((a, b) => {
+        const byDate = b.date.localeCompare(a.date);
+        if (byDate !== 0) return byDate;
+        return b.id.localeCompare(a.id);
+      })[0];
+
+      lastTransactionBubble.innerHTML = `
+        <strong>Last Transaction</strong>
+        ${lastTx.date} · ${lastTx.category} · ${lastTx.type} · ${formatMoney(lastTx.amount)}
+      `;
     }
 
     function advanceDateByOneDay() {
@@ -1972,6 +2015,7 @@
       renderAverages(windowSet);
       renderExtraStats(windowSet);
       renderEntriesTable(filteredTransactions);
+      renderLastTransactionBubble(lastTransactions);
       renderSpendingPieChart(filteredTransactions);
       updateRangeDisplays(computed.rangeLabel || 'Full Range');
 
