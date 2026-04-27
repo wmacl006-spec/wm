@@ -1,0 +1,2896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Financial Analysis Tool</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #f4f5f7;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --line: #d9deea;
+      --soft: #f1f3f5;
+      --accent: #2563eb;
+      --accent-dark: #1d4ed8;
+      --success: #12805c;
+      --danger: #c2410c;
+      --shadow: none;
+      --radius: 4px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+      padding: 22px 18px;
+    }
+
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .auth-box {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      white-space: nowrap;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .wrap {
+      width: min(1200px, calc(100% - 28px));
+      margin: 0 auto;
+    }
+
+    h1, h2, h3 { margin: 0; }
+
+    h1 { font-size: clamp(1.6rem, 3vw, 2.2rem); letter-spacing: -0.02em; }
+    h2 { font-size: 1.15rem; margin-bottom: 12px; }
+    p { color: var(--muted); line-height: 1.5; }
+
+    main { padding: 22px 0 40px; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .stat {
+      background: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 14px;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .value { font-size: 1.45rem; font-weight: 800; }
+
+    label {
+      display: grid;
+      gap: 7px;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    input, select, button {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      padding: 11px 12px;
+      font: inherit;
+      background: #fff;
+      color: var(--text);
+    }
+
+    input:focus, select:focus {
+      outline: 2px solid rgba(37, 99, 235, 0.18);
+      border-color: var(--accent);
+    }
+
+    button {
+      cursor: pointer;
+      border-color: var(--accent);
+      background: var(--accent);
+      color: white;
+      font-weight: 800;
+    }
+
+    button:hover { background: var(--accent-dark); }
+    button.secondary { background: #fff; color: var(--accent); }
+    button.secondary:hover { background: #eff6ff; }
+    button.danger { border-color: var(--danger); background: var(--danger); }
+    button.small { width: auto; padding: 7px 10px; border-radius: 3px; font-size: 0.85rem; }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+    .status {
+      min-height: 1.3em;
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-top: 10px;
+    }
+
+    .chart-box {
+      height: 360px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 12px;
+      background: #fff;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 950px;
+      font-size: 0.92rem;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f8fafc;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-size: 0.76rem;
+      letter-spacing: 0.05em;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .pill {
+      display: inline-flex;
+      padding: 5px 9px;
+      border-radius: 3px;
+      background: #e0ebff;
+      color: #174ea6;
+      font-weight: 800;
+      font-size: 0.82rem;
+      white-space: nowrap;
+    }
+
+    .pill.income { background: #dcfce7; color: #166534; }
+    .pill.spending { background: #ffedd5; color: #9a3412; }
+    .pill.transfer { background: #e9d5ff; color: #6b21a8; }
+
+    .filters {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 23, 42, 0.52);
+      padding: 18px;
+      z-index: 100;
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    .modal {
+      width: min(560px, 100%);
+      background: #fff;
+      border-radius: 4px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+      padding: 20px;
+      border: 1px solid var(--line);
+    }
+
+    .modal h3 { margin-bottom: 8px; font-size: 1.35rem; }
+    .modal p { margin-top: 0; }
+
+    .description-box {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 13px;
+      background: #f8fafc;
+      margin: 12px 0;
+      font-weight: 800;
+      word-break: break-word;
+    }
+
+    .category-buttons {
+      display: grid;
+      gap: 12px;
+      margin: 12px 0;
+    }
+
+    .category-buttons button {
+      width: auto;
+      background: #fff;
+      color: var(--accent);
+      border-color: var(--line);
+    }
+
+    .category-buttons button:hover { background: #eff6ff; border-color: var(--accent); }
+
+    .category-section {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: #f8fafc;
+      padding: 10px;
+    }
+
+    .category-section-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .category-group-title {
+      width: 100%;
+      color: var(--muted);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 900;
+      margin: 10px 0 2px;
+    }
+
+    .category-button-group {
+      display: contents;
+    }
+
+    .graph-layout {
+      display: grid;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .graph-controls {
+      display: grid;
+      gap: 12px;
+      margin-top: 0;
+    }
+
+    .line-button-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .line-button-row button {
+      width: auto;
+      background: #fff;
+      color: var(--accent);
+      border-color: var(--line);
+      padding: 8px 10px;
+      border-radius: 3px;
+      font-size: 0.86rem;
+    }
+
+    .line-button-row button:hover { background: #eff6ff; border-color: var(--accent); }
+
+    .active-line-list {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .pie-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .pie-chart-box {
+      height: 330px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 12px;
+      background: #fff;
+    }
+
+    .pie-color-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .pie-toggle-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .pie-toggle-row button {
+      width: auto;
+      background: #fff;
+      color: var(--accent);
+      border-color: var(--line);
+      padding: 8px 10px;
+      border-radius: 3px;
+      font-size: 0.86rem;
+    }
+
+    .pie-toggle-row button:hover { background: #eff6ff; border-color: var(--accent); }
+
+    .projection-controls { margin-bottom: 12px; }
+    .projection-table { min-width: 860px; }
+
+    .combo-check-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px 12px;
+      max-height: 330px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 10px;
+      background: #fff;
+    }
+
+    .check-panel {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 12px;
+      background: #fff;
+      max-height: 260px;
+      overflow: auto;
+    }
+
+    .check-panel h3 {
+      font-size: 0.92rem;
+      margin-bottom: 8px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 0;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .check-item input { width: auto; }
+
+    .combo-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .line-pill, .combo-pill {
+      display: inline-grid;
+      grid-template-columns: auto auto auto;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      padding: 7px 8px 7px 12px;
+      background: #f8fafc;
+      font-weight: 800;
+      width: auto;
+    }
+
+    .line-pill input[type="color"] {
+      width: 42px;
+      height: 32px;
+      padding: 2px;
+      border-radius: 3px;
+    }
+
+    .line-pill button, .combo-pill button {
+      width: auto;
+      padding: 4px 9px;
+      border-radius: 3px;
+      background: #fff;
+      color: var(--danger);
+      border-color: var(--line);
+    }
+
+    .summary-table { min-width: 620px; }
+
+    .source-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .source-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 4px;
+      padding: 12px;
+    }
+
+    .source-title { font-weight: 900; }
+    .source-meta { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+
+    .category-cell { cursor: pointer; }
+    .description-cell { cursor: pointer; font-weight: 700; }
+    .description-cell:hover { color: var(--accent); text-decoration: underline; }
+    .category-edit-select { min-width: 165px; padding: 7px 9px; border-radius: 3px; font-weight: 800; }
+
+    .tx-detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 12px 0;
+    }
+
+    .tx-detail {
+      border: 1px solid var(--line);
+      background: #f8fafc;
+      border-radius: 4px;
+      padding: 10px;
+    }
+
+    .tx-detail strong { display: block; color: var(--muted); font-size: 0.78rem; text-transform: uppercase; margin-bottom: 5px; }
+
+    .loading-modal {
+      text-align: center;
+      max-width: 420px;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      margin: 4px auto 14px;
+      border: 5px solid #dbe4f0;
+      border-top-color: var(--accent);
+      border-radius: 3px;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 900px) {
+      .grid, .row, .row-3, .filters, .graph-layout, .graph-controls, .tx-detail-grid, .source-item, .pie-grid { grid-template-columns: 1fr; }
+      .header-row { align-items: flex-start; flex-direction: column; }
+      .stat-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 520px) {
+      .stat-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap header-row">
+      <div>
+        <h1>Bank Statement Tracker</h1>
+        <p>Upload CSV statements, assign categories by description, save transactions to Firestore, and view your list of transactions.</p>
+      </div>
+      <div class="auth-box">
+        <span id="userEmailText">Not signed in</span>
+        <button id="logoutButton" type="button" class="small secondary hidden">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="card">
+      <h2>Upload CSV</h2>
+      <div class="grid">
+        <label>
+          Bank / Account Format
+          <select id="bankFormatSelect"></select>
+        </label>
+        <label>
+          CSV File
+          <input type="file" id="csvInput" accept=".csv,text/csv" />
+        </label>
+      </div>
+      <div class="actions" style="margin-top:12px;">
+        <button id="uploadButton" type="button">Upload CSV</button>
+      </div>
+      <div class="status" id="statusText"></div>
+    </section>
+
+    <section class="card">
+      <h2>Source CSVs</h2>
+      <p>Each uploaded CSV is listed here. Deleting one removes all transactions saved from that upload.</p>
+      <div class="source-list" id="sourceList">
+        <div style="color: var(--muted);">No CSV uploads loaded yet.</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="stat-grid">
+        <div class="stat"><div class="label">Transactions</div><div class="value" id="statTransactions">0</div></div>
+        <div class="stat"><div class="label">Income</div><div class="value" id="statIncome">$0.00</div></div>
+        <div class="stat"><div class="label">Spending</div><div class="value" id="statSpending">$0.00</div></div>
+        <div class="stat"><div class="label">Transfers</div><div class="value" id="statTransfers">$0.00</div></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Rolling Average Comparison</h2>
+      <div class="row">
+        <label>
+          Rolling Days
+          <input type="number" id="rollingDaysInput" value="365" min="1" step="1" />
+        </label>
+        <label>
+          Included Direction
+          <select id="directionGraphFilter">
+            <option value="all">All non-transfer</option>
+            <option value="spending">Spending</option>
+            <option value="income">Income</option>
+            <option value="transfer">Transfers</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="graph-layout">
+        <div class="chart-box">
+          <canvas id="rollingChart"></canvas>
+        </div>
+        <div>
+          <h3 style="font-size:0.92rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em;">Active lines</h3>
+          <div class="active-line-list" id="activeLineList"></div>
+        </div>
+        <div>
+          <h3 style="font-size:0.92rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em;">Add category line</h3>
+          <div class="line-button-row" id="graphCategoryToggles"></div>
+        </div>
+        <div class="actions">
+          <button id="showComboModalButton" type="button" class="small secondary">Create Combo Line</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Net Worth Over Time</h2>
+      <p>Running total of income minus spending. Transfers are ignored.</p>
+      <div class="chart-box">
+        <canvas id="netWorthChart"></canvas>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Category Pie Charts</h2>
+      <div class="pie-grid">
+        <div>
+          <h3 style="font-size:0.98rem; margin-bottom:8px;">Spending by Category</h3>
+          <div class="pie-chart-box"><canvas id="spendingPieChart"></canvas></div>
+        </div>
+        <div>
+          <h3 style="font-size:0.98rem; margin-bottom:8px;">Income by Category</h3>
+          <div class="pie-chart-box"><canvas id="incomePieChart"></canvas></div>
+        </div>
+      </div>
+      <h3 style="font-size:0.92rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-top:16px;">Active pie categories</h3>
+      <div class="pie-color-controls" id="pieColorControls"></div>
+      <h3 style="font-size:0.92rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-top:16px;">Add pie category</h3>
+      <div class="pie-toggle-row" id="pieCategoryToggles"></div>
+    </section>
+
+    <section class="card">
+      <h2>Projected Average Income / Spending</h2>
+      <div class="row projection-controls">
+        <label>
+          Project next X days
+          <input type="number" id="projectionDaysInput" value="365" min="1" step="1" />
+        </label>
+        <label>
+          Based on past Y days
+          <input type="number" id="projectionLookbackDaysInput" value="365" min="1" step="1" />
+        </label>
+      </div>
+      <div class="table-wrap">
+        <table class="projection-table">
+          <thead><tr><th>Category</th><th>Period</th><th>Projected Income</th><th>Projected Spending</th><th>Projected Net</th><th>Daily Income Avg</th><th>Daily Spending Avg</th></tr></thead>
+          <tbody id="projectionBody"><tr><td colspan="7" style="color: var(--muted);">No projected averages yet.</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Category Totals</h2>
+      <div class="table-wrap">
+        <table class="summary-table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Total Received</th>
+              <th>Total Spent</th>
+              <th>Net</th>
+              <th>Transactions</th>
+            </tr>
+          </thead>
+          <tbody id="categorySummaryBody">
+            <tr><td colspan="5" style="color: var(--muted);">No category totals yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Totals</h2>
+      <div class="filters">
+        <label>
+          Start Date
+          <input type="date" id="startDateFilter" />
+        </label>
+        <label>
+          End Date
+          <input type="date" id="endDateFilter" />
+        </label>
+        <label>
+          Category
+          <select id="categoryFilter"></select>
+        </label>
+        <label>
+          Direction
+          <select id="directionFilter">
+            <option value="all">All</option>
+            <option value="spending">Spending</option>
+            <option value="income">Income</option>
+            <option value="transfer">Transfers</option>
+          </select>
+        </label>
+      </div>
+      <div class="actions">
+        <button id="applyFiltersButton" type="button">Apply Filters</button>
+        <button id="resetFiltersButton" type="button" class="secondary">Reset Filters</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="actions" style="justify-content:space-between; margin-bottom:12px;">
+        <h2 style="margin-bottom:0;">Transactions</h2>
+        <div class="actions">
+          <button id="downloadCsvButton" type="button" class="small secondary">Download CSV</button>
+          <button id="downloadPdfButton" type="button" class="small secondary">Download PDF</button>
+          <button id="showCustomTransactionButton" type="button" class="small">Add Custom Transaction</button>
+        </div>
+      </div>
+      <div class="row-3" style="margin-bottom:12px;">
+        <label>
+          Sort By
+          <select id="sortBySelect">
+            <option value="date">Date</option>
+            <option value="description">Description</option>
+            <option value="direction">In / Out</option>
+          </select>
+        </label>
+        <label>
+          Date Order
+          <select id="dateSortSelect">
+            <option value="desc">Newest to Oldest</option>
+            <option value="asc">Oldest to Newest</option>
+          </select>
+        </label>
+        <label>
+          In / Out Order
+          <select id="directionSortSelect">
+            <option value="all">Default</option>
+            <option value="incomeFirst">In first</option>
+            <option value="spendingFirst">Out first</option>
+          </select>
+        </label>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Category</th>
+              <th>In / Out</th>
+              <th>Amount</th>
+              <th>Bank/File</th>
+              <th>Balance</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="transactionsBody">
+            <tr><td colspan="8" style="color: var(--muted);">No transactions yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal-backdrop" id="uploadNameModal">
+    <div class="modal">
+      <h3>Name this upload</h3>
+      <p>This lets you track which bank or statement each transaction came from.</p>
+      <label>
+        Upload Name
+        <input id="uploadNameInput" placeholder="Example: Scotia Credit - March 2026" />
+      </label>
+      <div class="actions" style="margin-top:14px;">
+        <button id="confirmUploadNameButton" type="button">Continue</button>
+        <button id="cancelUploadButton" type="button" class="secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="loadingModal">
+    <div class="modal loading-modal">
+      <div class="spinner" aria-hidden="true"></div>
+      <h3 id="loadingTitle">Working...</h3>
+      <p id="loadingMessage">Please wait while your upload is processed.</p>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="categoryModal">
+    <div class="modal">
+      <h3>Assign Category</h3>
+      <p id="categoryProgressText">Transaction 1 of 1</p>
+      <div class="description-box" id="categoryDescriptionBox"></div>
+      <div class="tx-detail-grid">
+        <div class="tx-detail"><strong>Date</strong><span id="categoryDateText"></span></div>
+        <div class="tx-detail"><strong>Amount</strong><span id="categoryAmountText"></span></div>
+        <div class="tx-detail"><strong>In / Out</strong><span id="categoryInOutText"></span></div>
+        <div class="tx-detail"><strong>Raw Direction</strong><span id="categoryDirectionText"></span></div>
+      </div>
+
+      <p><strong>Choose a category:</strong></p>
+      <div class="category-buttons" id="quickCategoryButtons"></div>
+
+      <button id="showNewCategoryButton" type="button" class="secondary" style="margin-top:8px;">Create New Category</button>
+      <div class="row hidden" id="newCategoryRow" style="margin-top:14px;">
+        <label>
+          New Category Name
+          <input id="newCategoryInput" placeholder="Example: Coffee" />
+        </label>
+        <label>
+          &nbsp;
+          <button id="addAndAssignCategoryButton" type="button">Create + Assign</button>
+        </label>
+      </div>
+      <div class="status" id="categoryStatusText"></div>
+    </div>
+  </div>
+
+
+
+  <div class="modal-backdrop" id="comboModal">
+    <div class="modal">
+      <h3>Create Combo Line</h3>
+      <p>Choose categories to combine into one graph line.</p>
+      <div class="combo-check-grid" id="comboCategoryChecks"></div>
+      <div class="actions" style="margin-top:14px;">
+        <button id="createComboButton" type="button">Create Combo Line</button>
+        <button id="cancelComboButton" type="button" class="secondary">Cancel</button>
+      </div>
+      <div class="status" id="comboStatusText"></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="customTransactionModal">
+    <div class="modal">
+      <h3>Add Custom Transaction</h3>
+      <p>Add one transaction manually. It will save to Firestore like the CSV transactions.</p>
+      <div class="row">
+        <label>
+          Date
+          <input type="date" id="customDateInput" />
+        </label>
+        <label>
+          Amount
+          <input type="number" id="customAmountInput" min="0" step="0.01" placeholder="0.00" />
+        </label>
+      </div>
+      <label style="margin-top:12px;">
+        Description
+        <input id="customDescriptionInput" placeholder="Example: Cash purchase" />
+      </label>
+      <div class="row" style="margin-top:12px;">
+        <label>
+          In / Out
+          <select id="customDirectionInput">
+            <option value="spending">Out</option>
+            <option value="income">In</option>
+            <option value="transfer">Transfer</option>
+          </select>
+        </label>
+        <label>
+          Category
+          <select id="customCategoryInput"></select>
+        </label>
+      </div>
+      <label style="margin-top:12px;">
+        Source Name
+        <input id="customSourceInput" value="Manual Transaction" />
+      </label>
+      <div class="actions" style="margin-top:14px;">
+        <button id="saveCustomTransactionButton" type="button">Save Transaction</button>
+        <button id="cancelCustomTransactionButton" type="button" class="secondary">Cancel</button>
+      </div>
+      <div class="status" id="customTransactionStatusText"></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="authModal">
+    <div class="modal">
+      <h3>Sign in to continue</h3>
+      <p>Your transactions are saved separately for each user.</p>
+      <label>
+        Email
+        <input type="email" id="authEmailInput" autocomplete="email" placeholder="you@example.com" />
+      </label>
+      <label style="margin-top:12px;">
+        Password
+        <input type="password" id="authPasswordInput" autocomplete="current-password" placeholder="Password" />
+      </label>
+      <div class="actions" style="margin-top:14px;">
+        <button id="signInButton" type="button">Sign In</button>
+        <button id="signUpButton" type="button" class="secondary">Sign Up</button>
+      </div>
+      <div class="status" id="authStatusText"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js';
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      getDocs,
+      deleteDoc,
+      doc,
+      updateDoc,
+      query,
+      where,
+      serverTimestamp
+    } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword,
+      signOut
+    } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
+
+    const firebaseConfig = {
+      apiKey: 'AIzaSyCzvH5ABKaGQT4mMLO9uTeXwm3DDgVVAA8',
+      authDomain: 'balz-2b833.firebaseapp.com',
+      projectId: 'balz-2b833',
+      storageBucket: 'balz-2b833.firebasestorage.app',
+      messagingSenderId: '873898007438',
+      appId: '1:873898007438:web:43feaee9065fff07a9a2df',
+      measurementId: 'G-F09VMZ1EQQ'
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const TRANSACTIONS_COLLECTION = 'transactions';
+
+    const BANK_FORMATS = {
+      scotiaCredit: {
+        label: 'Scotia Credit',
+        skipFirstLine: true,
+        columns: ['Filter', 'Date', 'Description', 'Sub-description', 'Status', 'Type of Transaction', 'Amount'],
+        parse(row) {
+          const typeRaw = clean(row['Type of Transaction']).toLowerCase();
+          const amount = parseMoney(row.Amount);
+          const direction = typeRaw === 'credit' ? 'income' : 'spending';
+          return makeTx({
+            date: parseDate(row.Date),
+            description: joinDescription(row.Description, row['Sub-description']),
+            amount,
+            direction,
+            balance: null,
+            rawType: row['Type of Transaction']
+          });
+        }
+      },
+      scotiaDebit: {
+        label: 'Scotia Debit',
+        skipFirstLine: true,
+        columns: ['Filter', 'Date', 'Description', 'Sub-description', 'Type of Transaction', 'Amount', 'Balance'],
+        parse(row) {
+          const typeRaw = clean(row['Type of Transaction']).toLowerCase();
+          const amount = parseMoney(row.Amount);
+          const direction = typeRaw === 'credit' ? 'income' : 'spending';
+          return makeTx({
+            date: parseDate(row.Date),
+            description: joinDescription(row.Description, row['Sub-description']),
+            amount,
+            direction,
+            balance: parseMoney(row.Balance),
+            rawType: row['Type of Transaction']
+          });
+        }
+      },
+      tdDebit: {
+        label: 'TD Debit',
+        skipFirstLine: false,
+        columns: ['Date', 'Description', 'Out', 'In', 'Balance'],
+        parse(row) {
+          const out = parseMoney(row.Out);
+          const incoming = parseMoney(row.In);
+          const direction = incoming > 0 ? 'income' : 'spending';
+          const amount = incoming > 0 ? incoming : out;
+          return makeTx({
+            date: parseDate(row.Date),
+            description: clean(row.Description),
+            amount,
+            direction,
+            balance: parseMoney(row.Balance),
+            rawType: incoming > 0 ? 'In' : 'Out'
+          });
+        }
+      },
+      previousCsv: {
+        label: 'Previous CSV',
+        skipFirstLine: false,
+        columns: ['Date', 'Description', 'OriginalDescription', 'Category', 'InOut', 'Direction', 'Amount', 'BankFile', 'Balance'],
+        parse(row) {
+          const direction = clean(row.Direction).toLowerCase() || (clean(row.InOut).toLowerCase() === 'in' ? 'income' : clean(row.InOut).toLowerCase() === 'transfer' ? 'transfer' : 'spending');
+          const tx = makeTx({
+            date: parseDate(row.Date),
+            description: clean(row.OriginalDescription) || clean(row.Description),
+            amount: parseMoney(row.Amount),
+            direction,
+            balance: parseMoney(row.Balance),
+            rawType: clean(row.InOut) || direction
+          });
+          tx.category = clean(row.Category) || 'Uncategorized';
+          tx.customDescription = clean(row.Description) || '';
+          return tx;
+        }
+      }
+    };
+
+    const DEFAULT_CATEGORIES = [
+      'Uncategorized',
+      'Transfers',
+      'Groceries',
+      'Fast Food',
+      'Restaurants',
+      'Rent / Housing',
+      'Transport',
+      'Gas',
+      'School',
+      'Subscriptions',
+      'Entertainment',
+      'Shopping',
+      'Gambling',
+      'Work Income',
+      'Other Income',
+      'Other Spending'
+    ];
+
+    const CATEGORY_GROUP_ORDER = ['Income', 'Spending', 'Transfers'];
+    const CATEGORY_PRIORITY = ['Work Income', 'Other Income', 'Groceries', 'Fast Food', 'Other Spending', 'Transfers'];
+
+    let currentUser = null;
+    let categories = [...DEFAULT_CATEGORIES];
+    let categoryRules = {};
+    let descriptionNames = {};
+    let transactions = [];
+    let pendingUpload = null;
+    let pendingNeedsCategory = [];
+    let pendingIndex = 0;
+    let rollingChart = null;
+    let netWorthChart = null;
+    let spendingPieChart = null;
+    let incomePieChart = null;
+    let selectedGraphCategories = new Set(['Groceries', 'Fast Food', 'Restaurants'].filter(c => categories.includes(c)));
+    let selectedPieCategories = new Set(categories);
+    let renderTimer = null;
+    let graphLineColors = {};
+    let categoryCombos = [];
+
+    const el = (id) => document.getElementById(id);
+    const bankFormatSelect = el('bankFormatSelect');
+    const csvInput = el('csvInput');
+    const uploadButton = el('uploadButton');
+    const statusText = el('statusText');
+    const uploadNameModal = el('uploadNameModal');
+    const uploadNameInput = el('uploadNameInput');
+    const confirmUploadNameButton = el('confirmUploadNameButton');
+    const cancelUploadButton = el('cancelUploadButton');
+    const categoryModal = el('categoryModal');
+    const categoryDescriptionBox = el('categoryDescriptionBox');
+    const categoryDirectionText = el('categoryDirectionText');
+    const categoryDateText = el('categoryDateText');
+    const categoryAmountText = el('categoryAmountText');
+    const categoryInOutText = el('categoryInOutText');
+    const categoryProgressText = el('categoryProgressText');
+    const showNewCategoryButton = el('showNewCategoryButton');
+    const newCategoryRow = el('newCategoryRow');
+    const newCategoryInput = el('newCategoryInput');
+    const addAndAssignCategoryButton = el('addAndAssignCategoryButton');
+    const quickCategoryButtons = el('quickCategoryButtons');
+    const categoryStatusText = el('categoryStatusText');
+    const transactionsBody = el('transactionsBody');
+    const sourceList = el('sourceList');
+    const categoryFilter = el('categoryFilter');
+    const directionFilter = el('directionFilter');
+    const directionGraphFilter = el('directionGraphFilter');
+    const startDateFilter = el('startDateFilter');
+    const endDateFilter = el('endDateFilter');
+    const rollingDaysInput = el('rollingDaysInput');
+    const activeLineList = el('activeLineList');
+    const graphCategoryToggles = el('graphCategoryToggles');
+    const comboModal = el('comboModal');
+    const comboCategoryChecks = el('comboCategoryChecks');
+    const showComboModalButton = el('showComboModalButton');
+    const createComboButton = el('createComboButton');
+    const cancelComboButton = el('cancelComboButton');
+    const comboStatusText = el('comboStatusText');
+    const sortBySelect = el('sortBySelect');
+    const dateSortSelect = el('dateSortSelect');
+    const directionSortSelect = el('directionSortSelect');
+    const showCustomTransactionButton = el('showCustomTransactionButton');
+    const downloadCsvButton = el('downloadCsvButton');
+    const downloadPdfButton = el('downloadPdfButton');
+    const customTransactionModal = el('customTransactionModal');
+    const customDateInput = el('customDateInput');
+    const customAmountInput = el('customAmountInput');
+    const customDescriptionInput = el('customDescriptionInput');
+    const customDirectionInput = el('customDirectionInput');
+    const customCategoryInput = el('customCategoryInput');
+    const customSourceInput = el('customSourceInput');
+    const saveCustomTransactionButton = el('saveCustomTransactionButton');
+    const cancelCustomTransactionButton = el('cancelCustomTransactionButton');
+    const customTransactionStatusText = el('customTransactionStatusText');
+    const loadingModal = el('loadingModal');
+    const loadingTitle = el('loadingTitle');
+    const loadingMessage = el('loadingMessage');
+    const authModal = el('authModal');
+    const authEmailInput = el('authEmailInput');
+    const authPasswordInput = el('authPasswordInput');
+    const authStatusText = el('authStatusText');
+    const signInButton = el('signInButton');
+    const signUpButton = el('signUpButton');
+    const logoutButton = el('logoutButton');
+    const userEmailText = el('userEmailText');
+    const pieColorControls = el('pieColorControls');
+    const pieCategoryToggles = el('pieCategoryToggles');
+    const projectionDaysInput = el('projectionDaysInput');
+    const projectionLookbackDaysInput = el('projectionLookbackDaysInput');
+
+    function init() {
+      Object.entries(BANK_FORMATS).forEach(([value, format]) => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = format.label;
+        bankFormatSelect.appendChild(option);
+      });
+
+      attachEvents();
+      setupAuthStateListener();
+    }
+
+    function attachEvents() {
+      uploadButton.addEventListener('click', startUpload);
+      confirmUploadNameButton.addEventListener('click', continueUploadWithName);
+      cancelUploadButton.addEventListener('click', cancelUpload);
+      showNewCategoryButton.addEventListener('click', () => newCategoryRow.classList.toggle('hidden'));
+      addAndAssignCategoryButton.addEventListener('click', addAndAssignCategory);
+      el('applyFiltersButton').addEventListener('click', renderAll);
+      el('resetFiltersButton').addEventListener('click', resetFilters);
+      rollingDaysInput.addEventListener('input', scheduleRenderAll);
+      projectionDaysInput.addEventListener('input', scheduleRenderAll);
+      projectionLookbackDaysInput.addEventListener('input', scheduleRenderAll);
+      directionGraphFilter.addEventListener('change', renderAll);
+      showComboModalButton.addEventListener('click', showComboModal);
+      createComboButton.addEventListener('click', createCategoryCombo);
+      cancelComboButton.addEventListener('click', () => comboModal.classList.remove('open'));
+      sortBySelect.addEventListener('change', renderAll);
+      dateSortSelect.addEventListener('change', renderAll);
+      directionSortSelect.addEventListener('change', renderAll);
+      showCustomTransactionButton.addEventListener('click', showCustomTransactionModal);
+      downloadCsvButton.addEventListener('click', downloadTransactionsCsv);
+      downloadPdfButton.addEventListener('click', downloadTransactionsPdf);
+      saveCustomTransactionButton.addEventListener('click', saveCustomTransaction);
+      cancelCustomTransactionButton.addEventListener('click', () => customTransactionModal.classList.remove('open'));
+      signInButton.addEventListener('click', signInUser);
+      signUpButton.addEventListener('click', signUpUser);
+      logoutButton.addEventListener('click', logoutUser);
+    }
+
+    function setupAuthStateListener() {
+      onAuthStateChanged(auth, async user => {
+        currentUser = user;
+        if (user) {
+          authModal.classList.remove('open');
+          logoutButton.classList.remove('hidden');
+          userEmailText.textContent = user.email || 'Signed in';
+          loadUserLocalState();
+          renderCategorySelects();
+          await loadTransactions();
+        } else {
+          logoutButton.classList.add('hidden');
+          userEmailText.textContent = 'Not signed in';
+          transactions = [];
+          loadUserLocalState();
+          renderCategorySelects();
+          renderAll();
+          authModal.classList.add('open');
+          setStatus('Sign in or sign up to load your tracker.');
+        }
+      });
+    }
+
+    async function signInUser() {
+      await runAuthAction(() => signInWithEmailAndPassword(auth, authEmailInput.value.trim(), authPasswordInput.value));
+    }
+
+    async function signUpUser() {
+      await runAuthAction(() => createUserWithEmailAndPassword(auth, authEmailInput.value.trim(), authPasswordInput.value));
+    }
+
+    async function logoutUser() {
+      await signOut(auth);
+    }
+
+    async function runAuthAction(action) {
+      authStatusText.textContent = '';
+      try {
+        await action();
+        authPasswordInput.value = '';
+      } catch (error) {
+        authStatusText.textContent = error.message;
+        authStatusText.style.color = 'var(--danger)';
+      }
+    }
+
+    function startUpload() {
+      if (!currentUser) {
+        authModal.classList.add('open');
+        setStatus('Sign in before uploading.', true);
+        return;
+      }
+      const file = csvInput.files?.[0];
+      if (!file) {
+        setStatus('Choose a CSV file first.', true);
+        return;
+      }
+      uploadNameInput.value = file.name.replace(/\.csv$/i, '');
+      uploadNameModal.classList.add('open');
+    }
+
+    async function continueUploadWithName() {
+      const file = csvInput.files?.[0];
+      const uploadName = uploadNameInput.value.trim();
+      if (!file || !uploadName) {
+        setStatus('File and upload name are required.', true);
+        return;
+      }
+
+      uploadNameModal.classList.remove('open');
+      setStatus('Reading CSV...');
+      showLoading('Reading CSV...', 'Your file is being read and parsed.');
+
+      try {
+        const text = await file.text();
+        const formatKey = bankFormatSelect.value;
+        const parsed = parseBankCsv(text, BANK_FORMATS[formatKey]);
+
+        pendingUpload = {
+          uploadId: makeUploadId(),
+          uploadName,
+          bankFormat: formatKey,
+          bankLabel: BANK_FORMATS[formatKey].label,
+          originalFileName: file.name,
+          parsed
+        };
+
+        applyKnownCategoryRules(pendingUpload.parsed);
+        pendingNeedsCategory = getTransactionsNeedingCategory(pendingUpload.parsed);
+        pendingIndex = 0;
+
+        if (!pendingUpload.parsed.length) {
+          hideLoading();
+          setStatus('No transactions found. Check the selected bank format.', true);
+          return;
+        }
+
+        if (pendingNeedsCategory.length) {
+          hideLoading();
+          showCategoryStep();
+        } else {
+          await savePendingUpload();
+        }
+      } catch (error) {
+        console.error(error);
+        hideLoading();
+        setStatus(`Upload failed: ${error.message}`, true);
+      }
+    }
+
+    function cancelUpload() {
+      pendingUpload = null;
+      pendingNeedsCategory = [];
+      pendingIndex = 0;
+      uploadNameModal.classList.remove('open');
+      categoryModal.classList.remove('open');
+      hideLoading();
+      setStatus('Upload cancelled.');
+    }
+
+    function parseBankCsv(text, format) {
+      let lines = text.replace(/^\uFEFF/, '').split(/\r?\n/).filter(line => line.trim() !== '');
+      if (format.skipFirstLine) lines = lines.slice(1);
+      if (!lines.length) return [];
+
+      const firstRow = parseCsvLine(lines[0]).map(clean);
+      const headerMatches = arraysSimilar(firstRow, format.columns);
+      const dataLines = headerMatches ? lines.slice(1) : lines;
+      const columns = headerMatches ? firstRow : format.columns;
+
+      return dataLines.map((line, index) => {
+        const values = parseCsvLine(line);
+        const row = {};
+        columns.forEach((col, colIndex) => row[col] = values[colIndex] ?? '');
+        const tx = format.parse(row);
+        tx.sourceRow = index + 1;
+        return tx;
+      }).filter(tx => tx.date && tx.description && Number.isFinite(tx.amount) && tx.amount > 0);
+    }
+
+    function parseCsvLine(line) {
+      const result = [];
+      let current = '';
+      let insideQuotes = false;
+
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        const next = line[i + 1];
+
+        if (char === '"' && insideQuotes && next === '"') {
+          current += '"';
+          i++;
+        } else if (char === '"') {
+          insideQuotes = !insideQuotes;
+        } else if (char === ',' && !insideQuotes) {
+          result.push(current);
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+
+      result.push(current);
+      return result.map(clean);
+    }
+
+    function arraysSimilar(a, b) {
+      if (a.length < b.length) return false;
+      return b.every((value, index) => clean(a[index]).toLowerCase() === clean(value).toLowerCase());
+    }
+
+    function makeTx({ date, description, amount, direction, balance, rawType }) {
+      return {
+        date,
+        description,
+        normalizedDescription: normalizeDescription(description),
+        amount: Math.abs(Number(amount) || 0),
+        direction,
+        category: 'Uncategorized',
+        balance: Number.isFinite(balance) ? balance : null,
+        rawType: clean(rawType)
+      };
+    }
+
+    function applyKnownCategoryRules(list) {
+      list.forEach(tx => {
+        const key = ruleKey(tx.direction, tx.normalizedDescription);
+        if (categoryRules[key]) tx.category = categoryRules[key];
+      });
+    }
+
+    function getTransactionsNeedingCategory(list) {
+      const seen = new Set();
+      const needs = [];
+      for (const tx of list) {
+        if (tx.category !== 'Uncategorized') continue;
+        const key = ruleKey(tx.direction, tx.normalizedDescription);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        needs.push(tx);
+      }
+      return needs;
+    }
+
+    function showCategoryStep() {
+      const tx = pendingNeedsCategory[pendingIndex];
+      if (!tx) {
+        savePendingUpload();
+        return;
+      }
+
+      categoryProgressText.textContent = `Description ${pendingIndex + 1} of ${pendingNeedsCategory.length}`;
+      categoryDescriptionBox.textContent = tx.description;
+      categoryDateText.textContent = tx.date || '';
+      categoryAmountText.textContent = formatMoney(tx.amount || 0);
+      categoryInOutText.textContent = tx.direction === 'income' ? 'In' : 'Out';
+      categoryDirectionText.textContent = tx.direction;
+      categoryStatusText.textContent = '';
+      newCategoryInput.value = '';
+      newCategoryRow.classList.add('hidden');
+      renderQuickCategoryButtons();
+      categoryModal.classList.add('open');
+    }
+
+    function suggestDefaultCategory(tx) {
+      if (tx.direction === 'income') return categories.includes('Other Income') ? 'Other Income' : categories[0];
+      return categories.includes('Other Spending') ? 'Other Spending' : categories[0];
+    }
+
+    function assignCurrentCategory(category) {
+      if (!category || !pendingUpload) return;
+      const sample = pendingNeedsCategory[pendingIndex];
+      if (!sample) return;
+
+      const key = ruleKey(sample.direction, sample.normalizedDescription);
+      categoryRules[key] = category;
+      saveJson('bankTrackerCategoryRules', categoryRules);
+
+      pendingUpload.parsed.forEach(tx => {
+        if (ruleKey(tx.direction, tx.normalizedDescription) === key) {
+          tx.category = category;
+        }
+      });
+
+      pendingIndex++;
+      showCategoryStep();
+    }
+
+    function addAndAssignCategory() {
+      const name = newCategoryInput.value.trim();
+      if (!name) {
+        categoryStatusText.textContent = 'Type a category name first.';
+        return;
+      }
+      if (!categories.some(c => c.toLowerCase() === name.toLowerCase())) {
+        categories.push(name);
+        categories.sort((a, b) => a.localeCompare(b));
+        saveJson('bankTrackerCategories', categories);
+        renderCategorySelects();
+      }
+      assignCurrentCategory(name);
+    }
+
+    function renderQuickCategoryButtons() {
+      quickCategoryButtons.innerHTML = '';
+      getGroupedCategories().forEach(group => {
+        const section = document.createElement('div');
+        section.className = 'category-section';
+
+        const title = document.createElement('div');
+        title.className = 'category-group-title';
+        title.textContent = `${group.name}:`;
+        section.appendChild(title);
+
+        const buttons = document.createElement('div');
+        buttons.className = 'category-section-buttons';
+        group.categories.forEach(category => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.textContent = category;
+          button.addEventListener('click', () => assignCurrentCategory(category));
+          buttons.appendChild(button);
+        });
+
+        section.appendChild(buttons);
+        quickCategoryButtons.appendChild(section);
+      });
+    }
+
+    async function savePendingUpload() {
+      if (!pendingUpload) return;
+      categoryModal.classList.remove('open');
+      setStatus(`Saving ${pendingUpload.parsed.length} transactions to Firestore...`);
+      showLoading('Saving upload...', `Saving 0 of ${pendingUpload.parsed.length} transactions.`);
+
+      let saved = 0;
+      for (const tx of pendingUpload.parsed) {
+        if (tx.category && !categories.includes(tx.category)) categories.push(tx.category);
+        const finalDirection = tx.category.toLowerCase() === 'transfers' ? 'transfer' : tx.direction;
+        await addDoc(collection(db, TRANSACTIONS_COLLECTION), {
+          ...tx,
+          userId: currentUser.uid,
+          direction: finalDirection,
+          originalDirection: tx.originalDirection || tx.direction,
+          uploadId: pendingUpload.uploadId,
+          uploadName: pendingUpload.uploadName,
+          bankFormat: pendingUpload.bankFormat,
+          bankLabel: pendingUpload.bankLabel,
+          originalFileName: pendingUpload.originalFileName,
+          createdAt: serverTimestamp()
+        });
+        saved++;
+        if (saved === pendingUpload.parsed.length || saved % 10 === 0) {
+          showLoading('Saving upload...', `Saving ${saved} of ${pendingUpload.parsed.length} transactions.`);
+        }
+      }
+
+      setStatus(`Upload complete. Added ${saved} transactions.`);
+      csvInput.value = '';
+      pendingUpload = null;
+      pendingNeedsCategory = [];
+      pendingIndex = 0;
+      await loadTransactions();
+      hideLoading();
+    }
+
+    async function loadTransactions(message = '') {
+      if (!currentUser) return;
+      try {
+        const q = query(collection(db, TRANSACTIONS_COLLECTION), where('userId', '==', currentUser.uid));
+        const snap = await getDocs(q);
+        transactions = snap.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }))
+          .sort((a, b) => String(b.date).localeCompare(String(a.date)));
+        applySavedDescriptionNames();
+        renderAll();
+        if (message) setStatus(message);
+        else setStatus(`Loaded ${transactions.length} transactions from Firestore.`);
+      } catch (error) {
+        console.error(error);
+        setStatus(`Could not load Firestore data: ${error.message}`, true);
+      }
+    }
+
+    async function deleteTransaction(id) {
+      if (!confirm('Delete this transaction from Firestore?')) return;
+      try {
+        await deleteDoc(doc(db, TRANSACTIONS_COLLECTION, id));
+        transactions = transactions.filter(tx => tx.id !== id);
+        renderAll();
+        setStatus('Transaction deleted.');
+      } catch (error) {
+        console.error(error);
+        setStatus(`Could not delete transaction: ${error.message}`, true);
+      }
+    }
+
+    function getFilteredTransactions() {
+      return transactions.filter(tx => {
+        if (startDateFilter.value && tx.date < startDateFilter.value) return false;
+        if (endDateFilter.value && tx.date > endDateFilter.value) return false;
+        if (categoryFilter.value !== 'all' && tx.category !== categoryFilter.value) return false;
+        if (directionFilter.value !== 'all' && tx.direction !== directionFilter.value) return false;
+        return true;
+      });
+    }
+
+    function renderAll() {
+      const filtered = getFilteredTransactions();
+      renderSources();
+      renderStats(filtered);
+      renderTransactions(filtered);
+      renderCategorySummary(filtered);
+      renderProjectionTable(filtered);
+      renderRollingChart(filtered);
+      renderNetWorthChart(filtered);
+      renderPieCharts(filtered);
+      renderPieColorControls(filtered);
+    }
+
+    function scheduleRenderAll() {
+      clearTimeout(renderTimer);
+      renderTimer = setTimeout(renderAll, 180);
+    }
+
+    function renderStats(list) {
+      const income = sumBy(list, tx => tx.direction === 'income');
+      const spending = sumBy(list, tx => tx.direction === 'spending');
+      const transfers = sumBy(list, tx => tx.direction === 'transfer' || tx.category === 'Transfers');
+      el('statTransactions').textContent = String(list.length);
+      el('statIncome').textContent = formatMoney(income);
+      el('statSpending').textContent = formatMoney(spending);
+      el('statTransfers').textContent = formatMoney(transfers);
+    }
+
+    function renderCategorySummary(list) {
+      const body = el('categorySummaryBody');
+      if (!list.length) {
+        body.innerHTML = '<tr><td colspan="5" style="color: var(--muted);">No category totals found.</td></tr>';
+        return;
+      }
+
+      const map = new Map();
+      list.forEach(tx => {
+        const category = tx.category || 'Uncategorized';
+        if (!map.has(category)) map.set(category, { category, income: 0, spending: 0, count: 0 });
+        const item = map.get(category);
+        item.count += 1;
+        if (tx.direction === 'income') item.income += Number(tx.amount) || 0;
+        if (tx.direction === 'spending') item.spending += Number(tx.amount) || 0;
+      });
+
+      body.innerHTML = [...map.values()]
+        .sort((a, b) => {
+          const groupCompare = CATEGORY_GROUP_ORDER.indexOf(getCategoryGroupName(a.category)) - CATEGORY_GROUP_ORDER.indexOf(getCategoryGroupName(b.category));
+          if (groupCompare) return groupCompare;
+          const priorityCompare = getCategoryPriority(a.category) - getCategoryPriority(b.category);
+          if (priorityCompare) return priorityCompare;
+          return (b.income + b.spending) - (a.income + a.spending);
+        })
+        .map(item => `
+          <tr>
+            <td>${escapeHtml(item.category)}</td>
+            <td>${formatMoney(item.income)}</td>
+            <td>${formatMoney(item.spending)}</td>
+            <td>${formatMoney(item.income - item.spending)}</td>
+            <td>${item.count}</td>
+          </tr>
+        `).join('');
+    }
+
+    function renderProjectionTable(list) {
+      const body = el('projectionBody');
+      const rows = getProjectionRows(list);
+      if (!rows.length) {
+        body.innerHTML = '<tr><td colspan="7" style="color: var(--muted);">No projected averages found.</td></tr>';
+        return;
+      }
+
+      body.innerHTML = rows.map(item => `
+        <tr>
+          <td>${escapeHtml(item.category)}</td>
+          <td>${escapeHtml(item.period)}</td>
+          <td>${formatMoney(item.projectedIncome)}</td>
+          <td>${formatMoney(item.projectedSpending)}</td>
+          <td>${formatMoney(item.projectedIncome - item.projectedSpending)}</td>
+          <td>${formatMoney(item.dailyIncome)}</td>
+          <td>${formatMoney(item.dailySpending)}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderTransactions(list) {
+      if (!list.length) {
+        transactionsBody.innerHTML = '<tr><td colspan="8" style="color: var(--muted);">No transactions found.</td></tr>';
+        return;
+      }
+
+      transactionsBody.innerHTML = sortTransactions(list).map(tx => `
+          <tr>
+            <td>${escapeHtml(tx.date || '')}</td>
+            <td class="description-cell" title="Click to set a custom name for this description in this CSV" data-description-cell="${tx.id}">${escapeHtml(getDisplayDescription(tx))}</td>
+            <td class="category-cell" title="Click to edit category" data-category-cell="${tx.id}">
+              <span class="pill ${tx.category === 'Transfers' ? 'transfer' : ''}">${escapeHtml(tx.category || '')}</span>
+            </td>
+            <td class="category-cell" title="Click to edit in/out" data-direction-cell="${tx.id}"><span class="pill ${tx.direction === 'income' ? 'income' : tx.direction === 'transfer' ? 'transfer' : 'spending'}">${escapeHtml(getInOutLabel(tx))}</span></td>
+            <td>${formatMoney(tx.amount || 0)}</td>
+            <td>${escapeHtml(tx.uploadName || tx.originalFileName || tx.bankLabel || '')}</td>
+            <td>${tx.balance === null || tx.balance === undefined ? '' : formatMoney(tx.balance)}</td>
+            <td><button class="small danger" data-delete-id="${tx.id}" type="button">Delete</button></td>
+          </tr>
+        `).join('');
+
+      transactionsBody.querySelectorAll('[data-delete-id]').forEach(button => {
+        button.addEventListener('click', () => deleteTransaction(button.dataset.deleteId));
+      });
+
+      transactionsBody.querySelectorAll('[data-category-cell]').forEach(cell => {
+        cell.addEventListener('click', () => showCategoryEditor(cell.dataset.categoryCell, cell));
+      });
+
+      transactionsBody.querySelectorAll('[data-direction-cell]').forEach(cell => {
+        cell.addEventListener('click', () => showDirectionEditor(cell.dataset.directionCell, cell));
+      });
+
+      transactionsBody.querySelectorAll('[data-description-cell]').forEach(cell => {
+        cell.addEventListener('click', () => editDescriptionName(cell.dataset.descriptionCell));
+      });
+    }
+
+    function sortTransactions(list) {
+      const sorted = [...list];
+      const directionRank = (tx) => tx.direction === 'income' ? 0 : tx.direction === 'spending' ? 1 : 2;
+
+      sorted.sort((a, b) => {
+        if (sortBySelect.value === 'description') {
+          return getDisplayDescription(a).localeCompare(getDisplayDescription(b)) || String(b.date).localeCompare(String(a.date));
+        }
+        if (sortBySelect.value === 'direction') {
+          const rankA = directionRank(a);
+          const rankB = directionRank(b);
+          return rankA - rankB || String(b.date).localeCompare(String(a.date));
+        }
+        const dateCompare = String(a.date).localeCompare(String(b.date));
+        return dateSortSelect.value === 'asc' ? dateCompare : -dateCompare;
+      });
+
+      if (directionSortSelect.value !== 'all') {
+        sorted.sort((a, b) => {
+          const aOut = a.direction === 'spending' ? 0 : 1;
+          const bOut = b.direction === 'spending' ? 0 : 1;
+          const aIn = a.direction === 'income' ? 0 : 1;
+          const bIn = b.direction === 'income' ? 0 : 1;
+          return directionSortSelect.value === 'spendingFirst' ? aOut - bOut : aIn - bIn;
+        });
+      }
+
+      return sorted;
+    }
+
+    function getInOutLabel(tx) {
+      if (tx.direction === 'income') return 'In';
+      if (tx.direction === 'transfer') return 'Transfer';
+      return 'Out';
+    }
+
+    function getDisplayDescription(tx) {
+      return tx.customDescription || descriptionNames[descriptionNameKey(tx)] || tx.description || '';
+    }
+
+    function descriptionNameKey(tx) {
+      return `${getSourceKey(tx)}::${normalizeDescription(tx.description)}`;
+    }
+
+    async function editDescriptionName(id) {
+      const tx = transactions.find(item => item.id === id);
+      if (!tx) return;
+      const current = getDisplayDescription(tx);
+      const next = prompt('Custom name for this description in this CSV:', current);
+      if (next === null) return;
+      const customDescription = next.trim();
+      if (!customDescription) return;
+
+      const key = descriptionNameKey(tx);
+      const matching = transactions.filter(item => descriptionNameKey(item) === key);
+      descriptionNames[key] = customDescription;
+      saveJson('bankTrackerDescriptionNames', descriptionNames);
+
+      try {
+        for (const item of matching) {
+          await updateDoc(doc(db, TRANSACTIONS_COLLECTION, item.id), { customDescription });
+          item.customDescription = customDescription;
+        }
+        renderAll();
+        setStatus(`Updated ${matching.length} transaction description name${matching.length === 1 ? '' : 's'}.`);
+      } catch (error) {
+        console.error(error);
+        setStatus(`Could not update description names: ${error.message}`, true);
+      }
+    }
+
+    function applySavedDescriptionNames() {
+      transactions.forEach(tx => {
+        const savedName = descriptionNames[descriptionNameKey(tx)];
+        if (savedName && !tx.customDescription) tx.customDescription = savedName;
+      });
+    }
+
+    function showDirectionEditor(id, cell) {
+      const tx = transactions.find(item => item.id === id);
+      if (!tx || cell.querySelector('select')) return;
+
+      const select = document.createElement('select');
+      select.className = 'category-edit-select';
+      [
+        { value: 'spending', label: 'Out' },
+        { value: 'income', label: 'In' },
+        { value: 'transfer', label: 'Transfer' }
+      ].forEach(item => {
+        const option = document.createElement('option');
+        option.value = item.value;
+        option.textContent = item.label;
+        select.appendChild(option);
+      });
+      select.value = tx.direction || 'spending';
+      cell.innerHTML = '';
+      cell.appendChild(select);
+      select.focus();
+
+      select.addEventListener('click', event => event.stopPropagation());
+      select.addEventListener('change', () => updateTransactionDirection(id, select.value));
+      select.addEventListener('blur', () => renderAll());
+    }
+
+    async function updateTransactionDirection(id, direction) {
+      const tx = transactions.find(item => item.id === id);
+      if (!tx) return;
+      const nextCategory = direction === 'transfer' && (!tx.category || tx.category === 'Uncategorized') && categories.includes('Transfers') ? 'Transfers' : tx.category;
+
+      try {
+        await updateDoc(doc(db, TRANSACTIONS_COLLECTION, id), {
+          direction,
+          originalDirection: direction === 'transfer' ? (tx.originalDirection || 'spending') : direction,
+          category: nextCategory
+        });
+        tx.direction = direction;
+        tx.originalDirection = direction === 'transfer' ? (tx.originalDirection || 'spending') : direction;
+        tx.category = nextCategory;
+        renderAll();
+        setStatus('Transaction in/out updated.');
+      } catch (error) {
+        console.error(error);
+        setStatus(`Could not update in/out: ${error.message}`, true);
+        renderAll();
+      }
+    }
+
+    function showCategoryEditor(id, cell) {
+      const tx = transactions.find(item => item.id === id);
+      if (!tx || cell.querySelector('select')) return;
+
+      const select = document.createElement('select');
+      select.className = 'category-edit-select';
+      appendGroupedCategoryOptions(select);
+      select.value = tx.category || 'Uncategorized';
+      cell.innerHTML = '';
+      cell.appendChild(select);
+      select.focus();
+
+      select.addEventListener('click', event => event.stopPropagation());
+      select.addEventListener('change', () => updateTransactionCategory(id, select.value));
+      select.addEventListener('blur', () => renderAll());
+    }
+
+    async function updateTransactionCategory(id, category) {
+      const tx = transactions.find(item => item.id === id);
+      if (!tx) return;
+
+      const storedOriginalDirection = tx.originalDirection || (tx.direction === 'transfer' ? 'spending' : tx.direction);
+      const nextDirection = category.toLowerCase() === 'transfers' ? 'transfer' : storedOriginalDirection;
+
+      try {
+        await updateDoc(doc(db, TRANSACTIONS_COLLECTION, id), {
+          category,
+          direction: nextDirection,
+          originalDirection: storedOriginalDirection
+        });
+        tx.category = category;
+        tx.direction = nextDirection;
+        tx.originalDirection = storedOriginalDirection;
+        renderCategorySelects();
+        renderAll();
+        setStatus('Transaction category updated.');
+      } catch (error) {
+        console.error(error);
+        setStatus(`Could not update category: ${error.message}`, true);
+        renderAll();
+      }
+    }
+
+    function renderSources() {
+      const groups = getSourceGroups();
+      if (!groups.length) {
+        sourceList.innerHTML = '<div style="color: var(--muted);">No source CSVs yet.</div>';
+        return;
+      }
+
+      sourceList.innerHTML = groups.map(source => `
+        <div class="source-item">
+          <div>
+            <div class="source-title">${escapeHtml(source.name)}</div>
+            <div class="source-meta">
+              ${source.count} transaction${source.count === 1 ? '' : 's'} · ${escapeHtml(source.bankLabel || 'Unknown bank')} · ${escapeHtml(source.originalFileName || 'No filename')} · ${formatMoney(source.total)} total
+            </div>
+          </div>
+          <button class="small danger" type="button" data-delete-source="${escapeHtml(source.key)}">Delete CSV</button>
+        </div>
+      `).join('');
+
+      sourceList.querySelectorAll('[data-delete-source]').forEach(button => {
+        button.addEventListener('click', () => deleteSourceUpload(button.dataset.deleteSource));
+      });
+    }
+
+    function getSourceGroups() {
+      const map = new Map();
+      transactions.forEach(tx => {
+        const key = getSourceKey(tx);
+        if (!map.has(key)) {
+          map.set(key, {
+            key,
+            uploadId: tx.uploadId || '',
+            name: tx.uploadName || tx.originalFileName || tx.bankLabel || 'Unnamed upload',
+            originalFileName: tx.originalFileName || '',
+            bankLabel: tx.bankLabel || '',
+            count: 0,
+            total: 0
+          });
+        }
+        const group = map.get(key);
+        group.count += 1;
+        group.total += Number(tx.amount) || 0;
+      });
+      return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    function getSourceKey(tx) {
+      if (tx.uploadId) return `id::${tx.uploadId}`;
+      return `legacy::${tx.uploadName || ''}::${tx.originalFileName || ''}::${tx.bankFormat || ''}`;
+    }
+
+    async function deleteSourceUpload(sourceKey) {
+      const matching = transactions.filter(tx => getSourceKey(tx) === sourceKey);
+      if (!matching.length) return;
+      const name = matching[0].uploadName || matching[0].originalFileName || matching[0].bankLabel || 'this CSV';
+      if (!confirm(`Delete ${matching.length} transaction(s) from ${name}?`)) return;
+
+      try {
+        for (const tx of matching) {
+          await deleteDoc(doc(db, TRANSACTIONS_COLLECTION, tx.id));
+        }
+        transactions = transactions.filter(tx => getSourceKey(tx) !== sourceKey);
+        renderAll();
+        setStatus(`Deleted ${matching.length} transaction(s) from ${name}.`);
+      } catch (error) {
+        console.error(error);
+        setStatus(`Could not delete source CSV: ${error.message}`, true);
+      }
+    }
+
+    function renderRollingChart(list) {
+      const rollingDays = Math.max(1, Number(rollingDaysInput.value) || 30);
+      const chartDirection = directionGraphFilter.value;
+      const labels = getDateRangeLabels(list);
+      const activeCategories = categories.filter(category => selectedGraphCategories.has(category));
+      const datasets = [];
+
+      activeCategories.forEach(category => {
+        const chartList = filterGraphList(list, [category], chartDirection);
+        datasets.push(makeRollingDataset(labels, chartList, `${category} (${rollingDays}-day avg)`, rollingDays, getLineColor(category)));
+      });
+
+      categoryCombos.forEach(combo => {
+        const comboCategories = (combo.categories || []).filter(category => categories.includes(category));
+        if (!comboCategories.length) return;
+        const chartList = filterGraphList(list, comboCategories, chartDirection);
+        datasets.push(makeRollingDataset(labels, chartList, `${combo.name} (${rollingDays}-day avg)`, rollingDays, getLineColor(`combo::${combo.name}`)));
+      });
+
+      const data = { labels, datasets };
+
+      if (rollingChart) {
+        rollingChart.data = data;
+        rollingChart.update('none');
+        return;
+      }
+
+      rollingChart = new Chart(el('rollingChart'), {
+        type: 'line',
+        data,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          scales: {
+            y: {
+              ticks: { callback: value => formatMoney(value) }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: ctx => `${ctx.dataset.label}: ${formatMoney(ctx.parsed.y)}`
+              }
+            },
+            legend: {
+              display: true,
+              labels: { usePointStyle: true }
+            }
+          }
+        }
+      });
+    }
+
+    function filterGraphList(list, categoryList, chartDirection) {
+      return list.filter(tx => {
+        if (!categoryList.includes(tx.category)) return false;
+        if (chartDirection === 'all') return tx.direction !== 'transfer';
+        return tx.direction === chartDirection;
+      });
+    }
+
+    function makeRollingDataset(labels, chartList, label, rollingDays, color) {
+      const daily = labels.map(date => sumBy(chartList.filter(tx => tx.date === date), () => true));
+      const rolling = daily.map((_, index) => {
+        const start = Math.max(0, index - rollingDays + 1);
+        const slice = daily.slice(start, index + 1);
+        return slice.reduce((sum, value) => sum + value, 0) / slice.length;
+      });
+
+      return {
+        label,
+        data: rolling,
+        borderWidth: 2,
+        tension: 0.25,
+        pointRadius: 0,
+        borderColor: color,
+        backgroundColor: color
+      };
+    }
+
+
+    function renderNetWorthChart(list) {
+      const labels = getDateRangeLabels(list);
+      const dailyNet = labels.map(date => {
+        return list.filter(tx => tx.date === date).reduce((sum, tx) => {
+          if (tx.direction === 'income') return sum + (Number(tx.amount) || 0);
+          if (tx.direction === 'spending') return sum - (Number(tx.amount) || 0);
+          return sum;
+        }, 0);
+      });
+      let running = 0;
+      const dataPoints = dailyNet.map(value => {
+        running += value;
+        return running;
+      });
+      const data = {
+        labels,
+        datasets: [{
+          label: 'Net worth',
+          data: dataPoints,
+          borderWidth: 2,
+          tension: 0.25,
+          pointRadius: 0
+        }]
+      };
+
+      if (netWorthChart) {
+        netWorthChart.data = data;
+        netWorthChart.update('none');
+        return;
+      }
+
+      netWorthChart = new Chart(el('netWorthChart'), {
+        type: 'line',
+        data,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          scales: { y: { ticks: { callback: value => formatMoney(value) } } },
+          plugins: {
+            tooltip: {
+              callbacks: { label: ctx => `${ctx.dataset.label}: ${formatMoney(ctx.parsed.y)}` }
+            },
+            legend: { display: true, labels: { usePointStyle: true } }
+          }
+        }
+      });
+    }
+
+    function renderPieCharts(list) {
+      renderPieChart('spendingPieChart', 'spending', list);
+      renderPieChart('incomePieChart', 'income', list);
+    }
+
+    function renderPieChart(canvasId, direction, list) {
+      const totals = getCategoryTotalsForDirection(list, direction);
+      const labels = totals.map(item => item.category);
+      const values = totals.map(item => item.total);
+      const colors = labels.map(category => getLineColor(category));
+      const data = {
+        labels: labels.length ? labels : ['No data'],
+        datasets: [{
+          data: values.length ? values : [1],
+          backgroundColor: values.length ? colors : ['#d9deea']
+        }]
+      };
+      const options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          tooltip: {
+            callbacks: { label: ctx => values.length ? `${ctx.label}: ${formatMoney(ctx.parsed)}` : 'No data' }
+          },
+          legend: { position: 'bottom' }
+        }
+      };
+
+      const existing = canvasId === 'spendingPieChart' ? spendingPieChart : incomePieChart;
+      if (existing) {
+        existing.data = data;
+        existing.options = options;
+        existing.update('none');
+        return;
+      }
+
+      const chart = new Chart(el(canvasId), { type: 'pie', data, options });
+      if (canvasId === 'spendingPieChart') spendingPieChart = chart;
+      else incomePieChart = chart;
+    }
+
+    function renderPieColorControls(list) {
+      pieColorControls.innerHTML = '';
+      pieCategoryToggles.innerHTML = '';
+
+      const activeCategories = getOrderedCategories().filter(category => selectedPieCategories.has(category));
+      if (!activeCategories.length) {
+        pieColorControls.innerHTML = '<div style="color: var(--muted);">No active pie categories.</div>';
+      }
+
+      activeCategories.forEach(category => {
+        pieColorControls.appendChild(makeActiveLineControl(category, category, () => {
+          selectedPieCategories.delete(category);
+          saveJson('bankTrackerPieCategories', [...selectedPieCategories]);
+          renderPieColorControls(list);
+          renderPieCharts(list);
+        }));
+      });
+
+      getGroupedCategories().forEach(group => {
+        const title = document.createElement('div');
+        title.className = 'category-group-title';
+        title.textContent = `${group.name}:`;
+        pieCategoryToggles.appendChild(title);
+
+        group.categories.forEach(category => {
+          if (selectedPieCategories.has(category)) return;
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.textContent = category;
+          button.addEventListener('click', () => {
+            selectedPieCategories.add(category);
+            saveJson('bankTrackerPieCategories', [...selectedPieCategories]);
+            renderPieColorControls(list);
+            renderPieCharts(list);
+          });
+          pieCategoryToggles.appendChild(button);
+        });
+      });
+
+      if (!pieCategoryToggles.querySelector('button')) {
+        pieCategoryToggles.innerHTML = '<div style="color: var(--muted);">All categories are active.</div>';
+      }
+    }
+
+    function getCategoryTotalsForDirection(list, direction) {
+      const map = new Map();
+      list.filter(tx => tx.direction === direction).forEach(tx => {
+        const category = tx.category || 'Uncategorized';
+        if (!selectedPieCategories.has(category)) return;
+        map.set(category, (map.get(category) || 0) + (Number(tx.amount) || 0));
+      });
+      return [...map.entries()]
+        .map(([category, total]) => ({ category, total }))
+        .filter(item => item.total > 0)
+        .sort((a, b) => b.total - a.total);
+    }
+
+    function getDateRangeLabels(list) {
+      if (!list.length) return [];
+      const sorted = [...list].sort((a, b) => String(a.date).localeCompare(String(b.date)));
+      const start = parseDateObject(sorted[0].date);
+      const end = parseDateObject(sorted[sorted.length - 1].date);
+      const labels = [];
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        labels.push(formatDate(d));
+      }
+      return labels;
+    }
+
+    function renderGraphControls() {
+      activeLineList.innerHTML = '';
+      graphCategoryToggles.innerHTML = '';
+      comboCategoryChecks.innerHTML = '';
+
+      const activeCategories = getOrderedCategories().filter(category => selectedGraphCategories.has(category));
+      if (!activeCategories.length && !categoryCombos.length) {
+        activeLineList.innerHTML = '<div style="color: var(--muted);">No active lines.</div>';
+      }
+
+      activeCategories.forEach(category => {
+        activeLineList.appendChild(makeActiveLineControl(category, category, () => {
+          selectedGraphCategories.delete(category);
+          saveJson('bankTrackerGraphCategories', [...selectedGraphCategories]);
+          renderGraphControls();
+          renderAll();
+        }));
+      });
+
+      categoryCombos.forEach((combo, index) => {
+        const key = `combo::${combo.name}`;
+        activeLineList.appendChild(makeActiveLineControl(combo.name, key, () => {
+          categoryCombos.splice(index, 1);
+          saveJson('bankTrackerCategoryCombos', categoryCombos);
+          renderGraphControls();
+          renderAll();
+        }));
+      });
+
+      getGroupedCategories().forEach(group => {
+        const toggleTitle = document.createElement('div');
+        toggleTitle.className = 'category-group-title';
+        toggleTitle.textContent = `${group.name}:`;
+        graphCategoryToggles.appendChild(toggleTitle);
+
+        const checkTitle = document.createElement('div');
+        checkTitle.className = 'category-group-title';
+        checkTitle.textContent = `${group.name}:`;
+        comboCategoryChecks.appendChild(checkTitle);
+
+        group.categories.forEach(category => {
+          if (!selectedGraphCategories.has(category)) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.textContent = category;
+            button.addEventListener('click', () => {
+              selectedGraphCategories.add(category);
+              saveJson('bankTrackerGraphCategories', [...selectedGraphCategories]);
+              renderGraphControls();
+              renderAll();
+            });
+            graphCategoryToggles.appendChild(button);
+          }
+
+          comboCategoryChecks.appendChild(makeCategoryCheck(category, false, null, `combo-check-${slugify(category)}`));
+        });
+      });
+
+      if (!graphCategoryToggles.querySelector('button')) {
+        graphCategoryToggles.innerHTML = '<div style="color: var(--muted);">All categories are active.</div>';
+      }
+    }
+
+    function showComboModal() {
+      comboStatusText.textContent = '';
+      comboCategoryChecks.querySelectorAll('input').forEach(input => input.checked = false);
+      comboModal.classList.add('open');
+    }
+
+    function makeActiveLineControl(labelText, colorKey, onRemove) {
+      const row = document.createElement('div');
+      row.className = 'line-pill';
+
+      const name = document.createElement('span');
+      name.textContent = labelText;
+
+      const color = document.createElement('input');
+      color.type = 'color';
+      color.value = getLineColor(colorKey);
+      color.title = 'Change line colour';
+      color.addEventListener('input', () => commitLineColor(colorKey, color));
+      color.addEventListener('change', () => commitLineColor(colorKey, color));
+
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.textContent = '×';
+      remove.title = 'Remove line';
+      remove.addEventListener('click', onRemove);
+
+      row.appendChild(name);
+      row.appendChild(color);
+      row.appendChild(remove);
+      return row;
+    }
+
+    function makeCategoryCheck(category, checked, onChange, id = `graph-check-${slugify(category)}`) {
+      const label = document.createElement('label');
+      label.className = 'check-item';
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.value = category;
+      input.checked = checked;
+      input.id = id;
+      if (onChange) input.addEventListener('change', () => onChange(input.checked));
+      const span = document.createElement('span');
+      span.textContent = category;
+      label.appendChild(input);
+      label.appendChild(span);
+      return label;
+    }
+
+    function createCategoryCombo() {
+      const selected = [...comboCategoryChecks.querySelectorAll('input:checked')].map(input => input.value);
+      if (selected.length < 2) {
+        comboStatusText.textContent = 'Choose at least 2 categories.';
+        comboStatusText.style.color = 'var(--danger)';
+        return;
+      }
+      const name = selected.join(' + ');
+      categoryCombos.push({ name, categories: selected });
+      saveJson('bankTrackerCategoryCombos', categoryCombos);
+      comboModal.classList.remove('open');
+      renderGraphControls();
+      renderAll();
+      setStatus(`Created combo line: ${name}.`);
+    }
+
+
+    function getExportRows() {
+      return transactions.map(tx => ({
+        Date: tx.date || '',
+        Description: getDisplayDescription(tx),
+        OriginalDescription: tx.description || '',
+        Category: tx.category || '',
+        InOut: getInOutLabel(tx),
+        Direction: tx.direction || '',
+        Amount: Number(tx.amount) || 0,
+        BankFile: tx.uploadName || tx.originalFileName || tx.bankLabel || '',
+        Balance: tx.balance === null || tx.balance === undefined ? '' : Number(tx.balance) || 0
+      }));
+    }
+
+    function downloadTransactionsCsv() {
+      const rows = getExportRows();
+      if (!rows.length) {
+        setStatus('No transactions to download.', true);
+        return;
+      }
+
+      const headers = Object.keys(rows[0]);
+      const csv = [
+        headers.join(','),
+        ...rows.map(row => headers.map(header => csvEscape(row[header])).join(','))
+      ].join('\n');
+
+      downloadTextFile(csv, `bank-transactions-${formatDate(new Date())}.csv`, 'text/csv;charset=utf-8;');
+      setStatus(`Downloaded CSV with ${rows.length} transaction${rows.length === 1 ? '' : 's'}.`);
+    }
+
+    function getCategorySummaryRows(list) {
+      const map = new Map();
+      list.forEach(tx => {
+        const category = tx.category || 'Uncategorized';
+        if (!map.has(category)) map.set(category, { category, income: 0, spending: 0, transfers: 0, count: 0 });
+        const item = map.get(category);
+        item.count += 1;
+        if (tx.direction === 'income') item.income += Number(tx.amount) || 0;
+        if (tx.direction === 'spending') item.spending += Number(tx.amount) || 0;
+        if (tx.direction === 'transfer' || category === 'Transfers') item.transfers += Number(tx.amount) || 0;
+      });
+      return [...map.values()].sort((a, b) => {
+        const groupCompare = CATEGORY_GROUP_ORDER.indexOf(getCategoryGroupName(a.category)) - CATEGORY_GROUP_ORDER.indexOf(getCategoryGroupName(b.category));
+        if (groupCompare) return groupCompare;
+        const priorityCompare = getCategoryPriority(a.category) - getCategoryPriority(b.category);
+        if (priorityCompare) return priorityCompare;
+        return (b.income + b.spending + b.transfers) - (a.income + a.spending + a.transfers);
+      });
+    }
+
+    function getActiveLineNamesForPdf() {
+      const active = getOrderedCategories().filter(category => selectedGraphCategories.has(category));
+      const combos = categoryCombos.map(combo => combo.name);
+      return [...active, ...combos];
+    }
+
+    function getProjectionRows(list) {
+      if (!list.length) return [];
+      const validDates = list.map(tx => tx.date).filter(Boolean).sort();
+      if (!validDates.length) return [];
+
+      const periodDays = Math.max(1, Number(projectionDaysInput.value) || 365);
+      const lookbackDays = Math.max(1, Number(projectionLookbackDaysInput.value) || 365);
+      const latestDate = parseDateObject(validDates[validDates.length - 1]);
+      const earliestAvailableDate = parseDateObject(validDates[0]);
+      const lookbackStart = new Date(latestDate);
+      lookbackStart.setDate(lookbackStart.getDate() - lookbackDays + 1);
+
+      const analysisStart = lookbackStart > earliestAvailableDate ? lookbackStart : earliestAvailableDate;
+      const analysisStartText = formatDate(analysisStart);
+      const latestDateText = formatDate(latestDate);
+      const analysisList = list.filter(tx => tx.date >= analysisStartText && tx.date <= latestDateText);
+      const daysInData = Math.max(1, Math.round((latestDate - analysisStart) / 86400000) + 1);
+      const period = `Next ${periodDays} day${periodDays === 1 ? '' : 's'} based on ${daysInData} day${daysInData === 1 ? '' : 's'}`;
+      const map = new Map();
+
+      analysisList.forEach(tx => {
+        const category = tx.category || 'Uncategorized';
+        if (!map.has(category)) map.set(category, { category, income: 0, spending: 0 });
+        const item = map.get(category);
+        if (tx.direction === 'income') item.income += Number(tx.amount) || 0;
+        if (tx.direction === 'spending') item.spending += Number(tx.amount) || 0;
+      });
+
+      return [...map.values()]
+        .map(item => {
+          const dailyIncome = item.income / daysInData;
+          const dailySpending = item.spending / daysInData;
+          return {
+            category: item.category,
+            period,
+            projectedIncome: dailyIncome * periodDays,
+            projectedSpending: dailySpending * periodDays,
+            dailyIncome,
+            dailySpending
+          };
+        })
+        .filter(item => item.projectedIncome > 0 || item.projectedSpending > 0)
+        .sort((a, b) => {
+          const groupCompare = CATEGORY_GROUP_ORDER.indexOf(getCategoryGroupName(a.category)) - CATEGORY_GROUP_ORDER.indexOf(getCategoryGroupName(b.category));
+          if (groupCompare) return groupCompare;
+          const priorityCompare = getCategoryPriority(a.category) - getCategoryPriority(b.category);
+          if (priorityCompare) return priorityCompare;
+          return (b.projectedIncome + b.projectedSpending) - (a.projectedIncome + a.projectedSpending);
+        });
+    }
+
+    function downloadTransactionsPdf() {
+      const rows = getExportRows();
+      if (!rows.length) {
+        setStatus('No transactions to download.', true);
+        return;
+      }
+
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        setStatus('Popup blocked. Allow popups to download the PDF.', true);
+        return;
+      }
+
+      const totalIncome = sumBy(transactions, tx => tx.direction === 'income');
+      const totalSpending = sumBy(transactions, tx => tx.direction === 'spending');
+      const totalTransfers = sumBy(transactions, tx => tx.direction === 'transfer' || tx.category === 'Transfers');
+      const chartImages = getChartImagesForPdf();
+      const categorySummaryRows = getCategorySummaryRows(transactions);
+      const sourceRows = getSourceGroups();
+      const activeLines = getActiveLineNamesForPdf();
+      const projectionRows = getProjectionRows(transactions);
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Bank Transactions PDF</title>
+          <style>
+            body { font-family: Arial, Helvetica, sans-serif; color: #172033; padding: 24px; }
+            h1 { margin: 0 0 8px; }
+            p { color: #667085; margin: 0 0 16px; }
+            .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
+            .stat { border: 1px solid #d9deea; border-radius: 3px; padding: 10px; }
+            .label { color: #667085; font-size: 11px; text-transform: uppercase; font-weight: 700; }
+            .value { font-weight: 800; margin-top: 6px; }
+            .chart-grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin: 18px 0; }
+            .pie-pdf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
+            .chart-card { border: 1px solid #d9deea; border-radius: 3px; padding: 10px; break-inside: avoid; }
+            .chart-card h2 { font-size: 14px; margin: 0 0 8px; }
+            .chart-card img { width: 100%; height: auto; display: block; }
+            .pdf-section { margin-top: 20px; break-inside: avoid; }
+            .line-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 18px; }
+            .line-pill-pdf { border: 1px solid #d9deea; border-radius: 3px; padding: 5px 8px; font-size: 11px; font-weight: 700; }
+            table { width: 100%; border-collapse: collapse; font-size: 11px; }
+            th, td { border-bottom: 1px solid #d9deea; padding: 7px; text-align: left; vertical-align: top; }
+            th { background: #f8fafc; color: #667085; text-transform: uppercase; font-size: 10px; }
+            @media print { body { padding: 0; } button { display: none; } }
+          </style>
+        </head>
+        <body>
+          <h1>Bank Transactions</h1>
+          <p>Generated ${escapeHtml(new Date().toLocaleString())} · ${rows.length} transaction${rows.length === 1 ? '' : 's'}</p>
+          <div class="stats">
+            <div class="stat"><div class="label">Transactions</div><div class="value">${rows.length}</div></div>
+            <div class="stat"><div class="label">Income</div><div class="value">${formatMoney(totalIncome)}</div></div>
+            <div class="stat"><div class="label">Spending</div><div class="value">${formatMoney(totalSpending)}</div></div>
+            <div class="stat"><div class="label">Transfers</div><div class="value">${formatMoney(totalTransfers)}</div></div>
+          </div>
+          <div class="chart-grid">
+            ${chartImages.rolling ? `<div class="chart-card"><h2>Rolling Average Comparison</h2><img src="${chartImages.rolling}" /></div>` : ''}
+            ${chartImages.netWorth ? `<div class="chart-card"><h2>Net Worth Over Time</h2><img src="${chartImages.netWorth}" /></div>` : ''}
+          </div>
+          <div class="pie-pdf-grid">
+            ${chartImages.spendingPie ? `<div class="chart-card"><h2>Spending by Category</h2><img src="${chartImages.spendingPie}" /></div>` : ''}
+            ${chartImages.incomePie ? `<div class="chart-card"><h2>Income by Category</h2><img src="${chartImages.incomePie}" /></div>` : ''}
+          </div>
+
+          <div class="pdf-section">
+            <h2>Active Graph Lines</h2>
+            <div class="line-list">
+              ${activeLines.length ? activeLines.map(name => `<span class="line-pill-pdf">${escapeHtml(name)}</span>`).join('') : '<span>No active graph lines</span>'}
+            </div>
+          </div>
+
+          <div class="pdf-section">
+            <h2>Source CSVs</h2>
+            <table>
+              <thead><tr><th>Source</th><th>Bank/File</th><th>Transactions</th><th>Total</th></tr></thead>
+              <tbody>
+                ${sourceRows.map(source => `
+                  <tr>
+                    <td>${escapeHtml(source.name)}</td>
+                    <td>${escapeHtml(source.bankLabel || '')} ${escapeHtml(source.originalFileName || '')}</td>
+                    <td>${source.count}</td>
+                    <td>${formatMoney(source.total)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pdf-section">
+            <h2>Projected Average Income / Spending</h2>
+            <table>
+              <thead><tr><th>Category</th><th>Period</th><th>Projected Income</th><th>Projected Spending</th><th>Projected Net</th><th>Daily Income Avg</th><th>Daily Spending Avg</th></tr></thead>
+              <tbody>
+                ${projectionRows.map(item => `
+                  <tr>
+                    <td>${escapeHtml(item.category)}</td>
+                    <td>${escapeHtml(item.period)}</td>
+                    <td>${formatMoney(item.projectedIncome)}</td>
+                    <td>${formatMoney(item.projectedSpending)}</td>
+                    <td>${formatMoney(item.projectedIncome - item.projectedSpending)}</td>
+                    <td>${formatMoney(item.dailyIncome)}</td>
+                    <td>${formatMoney(item.dailySpending)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pdf-section">
+            <h2>Category Totals</h2>
+            <table>
+              <thead><tr><th>Category</th><th>Received</th><th>Spent</th><th>Transfers</th><th>Net</th><th>Transactions</th></tr></thead>
+              <tbody>
+                ${categorySummaryRows.map(item => `
+                  <tr>
+                    <td>${escapeHtml(item.category)}</td>
+                    <td>${formatMoney(item.income)}</td>
+                    <td>${formatMoney(item.spending)}</td>
+                    <td>${formatMoney(item.transfers)}</td>
+                    <td>${formatMoney(item.income - item.spending)}</td>
+                    <td>${item.count}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pdf-section">
+            <h2>All Transactions</h2>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>In / Out</th>
+                <th>Amount</th>
+                <th>Bank/File</th>
+                <th>Balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${sortTransactions(transactions).map(tx => `
+                <tr>
+                  <td>${escapeHtml(tx.date || '')}</td>
+                  <td>${escapeHtml(getDisplayDescription(tx))}</td>
+                  <td>${escapeHtml(tx.category || '')}</td>
+                  <td>${escapeHtml(getInOutLabel(tx))}</td>
+                  <td>${formatMoney(tx.amount || 0)}</td>
+                  <td>${escapeHtml(tx.uploadName || tx.originalFileName || tx.bankLabel || '')}</td>
+                  <td>${tx.balance === null || tx.balance === undefined ? '' : formatMoney(tx.balance)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <script>
+            window.onload = () => { window.print(); };
+          <\/script>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+      setStatus(`Opened PDF print window with ${rows.length} transaction${rows.length === 1 ? '' : 's'}.`);
+    }
+
+    function getChartImagesForPdf() {
+      const toImage = chart => {
+        try { return chart ? chart.toBase64Image('image/png', 1) : ''; }
+        catch { return ''; }
+      };
+      return {
+        rolling: toImage(rollingChart),
+        netWorth: toImage(netWorthChart),
+        spendingPie: toImage(spendingPieChart),
+        incomePie: toImage(incomePieChart)
+      };
+    }
+
+    function csvEscape(value) {
+      const text = String(value ?? '');
+      return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
+    }
+
+    function downloadTextFile(content, filename, type) {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+
+    function showCustomTransactionModal() {
+      customDateInput.value = formatDate(new Date());
+      customAmountInput.value = '';
+      customDescriptionInput.value = '';
+      customDirectionInput.value = 'spending';
+      customCategoryInput.value = categories.includes('Uncategorized') ? 'Uncategorized' : categories[0];
+      customSourceInput.value = 'Manual Transaction';
+      customTransactionStatusText.textContent = '';
+      customTransactionModal.classList.add('open');
+    }
+
+    async function saveCustomTransaction() {
+      if (!currentUser) {
+        authModal.classList.add('open');
+        return;
+      }
+      const date = customDateInput.value;
+      const amount = Math.abs(Number(customAmountInput.value));
+      const description = customDescriptionInput.value.trim();
+      const direction = customDirectionInput.value;
+      const category = customCategoryInput.value || 'Uncategorized';
+      const uploadName = customSourceInput.value.trim() || 'Manual Transaction';
+
+      if (!date || !description || !Number.isFinite(amount) || amount <= 0) {
+        customTransactionStatusText.textContent = 'Date, description, and a positive amount are required.';
+        customTransactionStatusText.style.color = 'var(--danger)';
+        return;
+      }
+
+      const normalizedDescription = normalizeDescription(description);
+      const finalDirection = category.toLowerCase() === 'transfers' ? 'transfer' : direction;
+
+      try {
+        await addDoc(collection(db, TRANSACTIONS_COLLECTION), {
+          userId: currentUser.uid,
+          date,
+          description,
+          normalizedDescription,
+          amount,
+          direction: finalDirection,
+          originalDirection: direction,
+          category,
+          balance: null,
+          rawType: getInOutLabel({ direction }),
+          uploadId: `manual-${Date.now()}`,
+          uploadName,
+          bankFormat: 'manual',
+          bankLabel: 'Manual',
+          originalFileName: 'Manual entry',
+          sourceRow: 0,
+          createdAt: serverTimestamp()
+        });
+        customTransactionModal.classList.remove('open');
+        await loadTransactions('Custom transaction added.');
+      } catch (error) {
+        console.error(error);
+        customTransactionStatusText.textContent = `Could not save transaction: ${error.message}`;
+        customTransactionStatusText.style.color = 'var(--danger)';
+      }
+    }
+
+    function resetFilters() {
+      startDateFilter.value = '';
+      endDateFilter.value = '';
+      categoryFilter.value = 'all';
+      directionFilter.value = 'all';
+      renderAll();
+    }
+
+    function clearLocalRules() {
+      if (!confirm('Clear saved category rules and custom categories from this browser? Firestore transactions will not be deleted.')) return;
+      categoryRules = {};
+      categories = [...DEFAULT_CATEGORIES];
+      saveJson('bankTrackerCategoryRules', categoryRules);
+      saveJson('bankTrackerCategories', categories);
+      renderCategorySelects();
+      setStatus('Local category rules cleared.');
+    }
+
+    function normalizeCategoryName(category) {
+      return clean(category).toLowerCase();
+    }
+
+    function getCategoryGroupName(category) {
+      const normalized = normalizeCategoryName(category);
+      if (normalized === 'transfers' || normalized.includes('transfer')) return 'Transfers';
+      if (normalized.includes('income') || normalized.includes('pay') || normalized.includes('work')) return 'Income';
+      return 'Spending';
+    }
+
+    function getCategoryPriority(category) {
+      const normalized = normalizeCategoryName(category);
+      const index = CATEGORY_PRIORITY.findIndex(item => normalizeCategoryName(item) === normalized);
+      if (index >= 0) return index;
+      if (normalized === 'uncategorized') return 99;
+      return 50;
+    }
+
+    function getOrderedCategories() {
+      return Array.from(new Set(categories)).sort((a, b) => {
+        const groupCompare = CATEGORY_GROUP_ORDER.indexOf(getCategoryGroupName(a)) - CATEGORY_GROUP_ORDER.indexOf(getCategoryGroupName(b));
+        if (groupCompare) return groupCompare;
+        const priorityCompare = getCategoryPriority(a) - getCategoryPriority(b);
+        if (priorityCompare) return priorityCompare;
+        return a.localeCompare(b);
+      });
+    }
+
+    function getGroupedCategories() {
+      const ordered = getOrderedCategories();
+      return CATEGORY_GROUP_ORDER.map(name => ({
+        name,
+        categories: ordered.filter(category => getCategoryGroupName(category) === name)
+      })).filter(group => group.categories.length);
+    }
+
+    function appendGroupedCategoryOptions(select) {
+      getGroupedCategories().forEach(group => {
+        const optgroup = document.createElement('optgroup');
+        optgroup.label = `${group.name}:`;
+        group.categories.forEach(category => {
+          const option = document.createElement('option');
+          option.value = category;
+          option.textContent = category;
+          optgroup.appendChild(option);
+        });
+        select.appendChild(optgroup);
+      });
+    }
+
+    function renderCategorySelects() {
+      categories = getOrderedCategories();
+      saveJson('bankTrackerCategories', categories);
+
+      const fill = (select, includeAll = false) => {
+        const current = select.value;
+        select.innerHTML = '';
+        if (includeAll) {
+          const option = document.createElement('option');
+          option.value = 'all';
+          option.textContent = 'All categories';
+          select.appendChild(option);
+        }
+        appendGroupedCategoryOptions(select);
+        if ([...select.options].some(option => option.value === current)) select.value = current;
+      };
+
+      fill(categoryFilter, true);
+      fill(customCategoryInput, false);
+      selectedGraphCategories = new Set([...selectedGraphCategories].filter(category => categories.includes(category)));
+      selectedPieCategories = new Set([...selectedPieCategories].filter(category => categories.includes(category)));
+      if (!selectedPieCategories.size) selectedPieCategories = new Set(categories);
+      categoryCombos = categoryCombos.map(combo => ({
+        ...combo,
+        categories: (combo.categories || []).filter(category => categories.includes(category))
+      })).filter(combo => combo.categories.length);
+      saveJson('bankTrackerGraphCategories', [...selectedGraphCategories]);
+      saveJson('bankTrackerPieCategories', [...selectedPieCategories]);
+      saveJson('bankTrackerCategoryCombos', categoryCombos);
+      renderGraphControls();
+    }
+
+    function makeUploadId() {
+      return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    }
+
+    function clean(value) {
+      return String(value ?? '').trim();
+    }
+
+    function joinDescription(a, b) {
+      return [clean(a), clean(b)].filter(Boolean).join(' - ');
+    }
+
+    function normalizeDescription(value) {
+      return clean(value).toLowerCase().replace(/\s+/g, ' ');
+    }
+
+    function ruleKey(direction, description) {
+      return `${direction}::${description}`;
+    }
+
+    function parseMoney(value) {
+      const cleaned = clean(value).replace(/[$,]/g, '').replace(/^\((.*)\)$/, '-$1');
+      if (!cleaned) return 0;
+      const number = Number(cleaned);
+      return Number.isFinite(number) ? Math.abs(number) : 0;
+    }
+
+    function parseDate(value) {
+      const text = clean(value);
+      if (!text) return '';
+      const iso = text.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+      if (iso) return `${iso[1]}-${iso[2].padStart(2, '0')}-${iso[3].padStart(2, '0')}`;
+      const slash = text.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})$/);
+      if (slash) {
+        let year = slash[3];
+        if (year.length === 2) year = `20${year}`;
+        return `${year}-${slash[1].padStart(2, '0')}-${slash[2].padStart(2, '0')}`;
+      }
+      const date = new Date(text);
+      if (!Number.isNaN(date.getTime())) return formatDate(date);
+      return text;
+    }
+
+    function parseDateObject(dateString) {
+      const [year, month, day] = String(dateString).split('-').map(Number);
+      return new Date(year, month - 1, day);
+    }
+
+    function formatDate(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function formatMoney(value) {
+      return new Intl.NumberFormat('en-CA', {
+        style: 'currency',
+        currency: 'CAD'
+      }).format(Number(value) || 0);
+    }
+
+    function sumBy(list, predicate) {
+      return list.reduce((sum, tx) => predicate(tx) ? sum + (Number(tx.amount) || 0) : sum, 0);
+    }
+
+    function showLoading(title = 'Working...', message = 'Please wait while this finishes.') {
+      loadingTitle.textContent = title;
+      loadingMessage.textContent = message;
+      loadingModal.classList.add('open');
+    }
+
+    function hideLoading() {
+      loadingModal.classList.remove('open');
+    }
+
+    function setStatus(message, isError = false) {
+      statusText.textContent = message;
+      statusText.style.color = isError ? 'var(--danger)' : 'var(--muted)';
+    }
+
+    function loadUserLocalState() {
+      categories = loadJson('bankTrackerCategories', DEFAULT_CATEGORIES);
+      categoryRules = loadJson('bankTrackerCategoryRules', {});
+      descriptionNames = loadJson('bankTrackerDescriptionNames', {});
+      graphLineColors = loadJson('bankTrackerGraphLineColors', {});
+      categoryCombos = loadJson('bankTrackerCategoryCombos', []);
+      selectedGraphCategories = new Set(loadJson('bankTrackerGraphCategories', ['Groceries', 'Fast Food', 'Restaurants']).filter(c => categories.includes(c)));
+      selectedPieCategories = new Set(loadJson('bankTrackerPieCategories', categories).filter(c => categories.includes(c)));
+      if (!selectedPieCategories.size) selectedPieCategories = new Set(categories);
+    }
+
+    function storageKey(key) {
+      return `${currentUser?.uid || 'signed-out'}:${key}`;
+    }
+
+
+    function commitLineColor(colorKey, colorInput) {
+      const nextColor = colorInput.value;
+      if (!nextColor || graphLineColors[colorKey] === nextColor) return;
+      graphLineColors[colorKey] = nextColor;
+      saveJson('bankTrackerGraphLineColors', graphLineColors);
+      renderColorDependentCharts();
+    }
+
+    function renderColorDependentCharts() {
+      const filtered = getFilteredTransactions();
+      renderRollingChart(filtered);
+      renderPieCharts(filtered);
+    }
+
+    function cloneFallback(fallback) {
+      return Array.isArray(fallback) ? [...fallback] : { ...fallback };
+    }
+
+    function loadJson(key, fallback) {
+      try {
+        const saved = localStorage.getItem(storageKey(key));
+        return saved ? JSON.parse(saved) : cloneFallback(fallback);
+      } catch {
+        return cloneFallback(fallback);
+      }
+    }
+
+    function saveJson(key, value) {
+      localStorage.setItem(storageKey(key), JSON.stringify(value));
+    }
+
+    function getLineColor(key) {
+      if (!graphLineColors[key]) graphLineColors[key] = colorFromString(key);
+      return graphLineColors[key];
+    }
+
+    function colorFromString(value) {
+      let hash = 0;
+      for (let i = 0; i < String(value).length; i++) {
+        hash = String(value).charCodeAt(i) + ((hash << 5) - hash);
+      }
+      const hue = Math.abs(hash) % 360;
+      return hslToHex(hue, 70, 62);
+    }
+
+    function hslToHex(h, s, l) {
+      s /= 100;
+      l /= 100;
+      const k = n => (n + h / 30) % 12;
+      const a = s * Math.min(l, 1 - l);
+      const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+      return `#${[f(0), f(8), f(4)].map(x => {
+        const hex = Math.round(255 * x).toString(16);
+        return hex.length === 1 ? `0${hex}` : hex;
+      }).join('')}`;
+    }
+
+    function slugify(value) {
+      return String(value).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    init();
+  </script>
+</body>
+</html>
