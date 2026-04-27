@@ -528,9 +528,10 @@
         <p>Upload CSV statements, assign categories by description, save transactions to Firestore, and view your list of transactions.</p>
       </div>
       <div class="auth-box">
-        <span id="userEmailText">Not signed in</span>
-        <button id="logoutButton" type="button" class="small secondary hidden">Logout</button>
-      </div>
+  <span id="userEmailText">Not signed in</span>
+  <button onclick="window.location.href='https://williammaclean.ca/apps'" type="button" class="small secondary">Home</button>
+  <button id="logoutButton" type="button" class="small secondary hidden">Logout</button>
+</div>
     </div>
   </header>
 
@@ -884,9 +885,13 @@
         <input type="password" id="authPasswordInput" autocomplete="current-password" placeholder="Password" />
       </label>
       <div class="actions" style="margin-top:14px;">
-        <button id="signInButton" type="button">Sign In</button>
-        <button id="signUpButton" type="button" class="secondary">Sign Up</button>
-      </div>
+  <button id="signInButton" type="button">Sign In</button>
+  <button id="signUpButton" type="button" class="secondary">Sign Up</button>
+</div>
+
+<div class="actions" style="margin-top:10px;">
+  <button onclick="window.location.href='https://williammaclean.ca/apps'" type="button" class="secondary">Home</button>
+</div>
       <div class="status" id="authStatusText"></div>
     </div>
   </div>
