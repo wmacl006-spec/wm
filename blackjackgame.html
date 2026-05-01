@@ -44,13 +44,13 @@
     .bet-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.bet-label{color:#fff;font-size:.85rem;font-weight:700}.bet-value{color:var(--accent);font-size:.95rem;font-weight:700}
     .bet-controls{display:grid;grid-template-columns:1fr 110px 1fr;gap:10px;align-items:center} input[type="range"]{width:100%;accent-color:var(--accent);cursor:pointer}
     input[type="number"]{width:100%;min-height:44px;border:1px solid var(--line);background:#0a0a0a;color:#fff;padding:10px 12px;outline:none}
-    .controls{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .controls{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
     .action-btn{width:100%;min-height:48px;border:1px solid var(--line);background:#050505;color:#696969;padding:12px 10px;font-weight:700;cursor:pointer;transition:.14s ease}.action-btn:hover{transform:translateY(-1px)} .action-btn:disabled{background:#050505;color:#696969;border-color:var(--line);cursor:not-allowed;transform:none;opacity:1}
     .action-btn.live-check{border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff}.action-btn.live-call{border-color:rgba(176,11,85,.75);background:rgba(176,11,85,.16);color:#fff}.action-btn.live-bet{border-color:rgba(87,211,140,.58);background:rgba(87,211,140,.12);color:#fff}.action-btn.live-fold{border-color:rgba(255,107,129,.45);background:rgba(255,107,129,.10);color:#fff}
     .status-line{min-height:1.2em;color:var(--muted);font-size:.85rem;text-align:center;line-height:1.4}.tiny{font-size:.75rem;color:var(--muted);text-align:center}
     .hidden{display:none !important}
     @media (min-width:880px){.layout{grid-template-rows:auto 1fr auto}.players-panel{max-height:280px}.my-cards-wrap .card,.my-cards-wrap .card-slot{width:92px;height:134px}}
-    @media (max-width:560px){:root{--card-w:60px;--card-h:88px}header{padding:0 12px}.logo span{font-size:.82rem}.header-actions{gap:6px}.header-btn{min-width:78px;min-height:38px;padding:8px 10px;font-size:.82rem}.shell{width:min(100% - 16px,var(--max-w))}.player{padding:9px 10px}.player-sub{gap:8px;font-size:.72rem}.player-cards .card,.player-cards .card-slot{width:34px;height:50px}.card-row{gap:6px}.my-cards-wrap .card,.my-cards-wrap .card-slot{width:76px;height:110px}.bet-controls{grid-template-columns:1fr}.controls{grid-template-columns:1fr 1fr 1fr}.action-btn{min-height:46px;font-size:.9rem}}
+    @media (max-width:560px){:root{--card-w:60px;--card-h:88px}header{padding:0 12px}.logo span{font-size:.82rem}.header-actions{gap:6px}.header-btn{min-width:78px;min-height:38px;padding:8px 10px;font-size:.82rem}.shell{width:min(100% - 16px,var(--max-w))}.player{padding:9px 10px}.player-sub{gap:8px;font-size:.72rem}.player-cards .card,.player-cards .card-slot{width:34px;height:50px}.card-row{gap:6px}.my-cards-wrap .card,.my-cards-wrap .card-slot{width:76px;height:110px}.bet-controls{grid-template-columns:1fr}.controls{grid-template-columns:1fr 1fr}.action-btn{min-height:46px;font-size:.9rem}}
   </style>
 </head>
 <body>
@@ -97,6 +97,7 @@
             <button type="button" class="action-btn" id="hitBtn">Hit</button>
             <button type="button" class="action-btn" id="standBtn">Stand</button>
             <button type="button" class="action-btn" id="doubleBtn">Double</button>
+            <button type="button" class="action-btn" id="splitBtn">Split</button>
           </div>
         </div>
 
@@ -148,6 +149,7 @@
     const hitBtn = document.getElementById("hitBtn");
     const standBtn = document.getElementById("standBtn");
     const doubleBtn = document.getElementById("doubleBtn");
+    const splitBtn = document.getElementById("splitBtn");
     const startBtn = document.getElementById("startBtn");
     const leaveBtn = document.getElementById("leaveBtn");
 
@@ -175,13 +177,47 @@
     function buildShoe(deckCount=4){ const deck=[]; for(let d=0; d<deckCount; d++){ for(const v of VALUES){ for(const s of SUITS) deck.push(`${v}${s}`); } } for(let i=deck.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; } return deck; }
     function handTotals(cards=[]){ let total=0, aces=0; for(const c of cards){ const value=String(c).slice(0,-1); if (["J","Q","K"].includes(value)) total += 10; else if (value === "A") { total += 11; aces++; } else total += Number(value || 0); } while (total > 21 && aces > 0) { total -= 10; aces--; } return { total, soft: aces > 0 }; }
     function isBlackjack(cards=[]){ return cards.length === 2 && handTotals(cards).total === 21; }
+    function cardValue(code){ return String(code || "").slice(0,-1); }
+    function canSplitHand(player){
+      if (!player || player.status !== "active") return false;
+      if (Array.isArray(player.splitHands) && player.splitHands.length) return false;
+      const cards = Array.isArray(player.cards) ? player.cards : [];
+      return cards.length === 2 && cardValue(cards[0]) === cardValue(cards[1]) && Number(player.bank || 0) >= Number(player.currentBet || 0);
+    }
+    function activeCards(player){
+      if (Array.isArray(player?.splitHands) && player.splitHands.length) return player.splitHands[Number(player.activeHandIndex || 0)]?.cards || [];
+      return player?.cards || [];
+    }
+    function activeHand(player){
+      if (Array.isArray(player?.splitHands) && player.splitHands.length) return player.splitHands[Number(player.activeHandIndex || 0)] || null;
+      return null;
+    }
+    function handDone(hand){ return ["busted","stood","blackjack"].includes(String(hand?.status || "")); }
+    function syncSplitPlayerStatus(player){
+      if (!Array.isArray(player.splitHands) || !player.splitHands.length) return player;
+      const nextIndex = player.splitHands.findIndex(h => !handDone(h));
+      if (nextIndex >= 0) {
+        player.activeHandIndex = nextIndex;
+        player.status = "active";
+        player.cards = player.splitHands[nextIndex].cards;
+      } else {
+        player.activeHandIndex = player.splitHands.length - 1;
+        player.status = "stood";
+        player.cards = player.splitHands[player.activeHandIndex]?.cards || [];
+      }
+      return player;
+    }
     function drawCard(table){ if (!table.deck.length) table.deck = buildShoe(Number(table.deckCount || 4)); return table.deck.shift(); }
     function isRevealedPlayerStatus(status){ return ["active","stood","busted","blackjack","broke"].includes(String(status || "")); }
 
-    function nextTurnUid(table){ const players = getSortedPlayers(table).filter(p => !p.left && Number(p.currentBet || 0) > 0 && !["busted","stood","blackjack"].includes(String(p.status || ""))); return players[0]?.uid || ""; }
+    function nextTurnUid(table){
+      const players = getSortedPlayers(table).filter(p => !p.left && Number(p.currentBet || 0) > 0).map(syncSplitPlayerStatus).filter(p => !["busted","stood","blackjack"].includes(String(p.status || "")));
+      return players[0]?.uid || "";
+    }
     function setActionButtonState(button, enabled, liveClass){ button.disabled = !enabled; button.classList.remove("live-check","live-call","live-bet","live-fold"); if (enabled) button.classList.add(liveClass); }
 
     function advanceAfterPlayerAction(table){
+      table.players = getSortedPlayers(table).map(syncSplitPlayerStatus);
       const active = getSortedPlayers(table).filter(p => !p.left && Number(p.currentBet || 0) > 0);
       const pending = active.filter(p => !["busted","stood","blackjack"].includes(String(p.status || "")));
       if (!pending.length) {
@@ -212,33 +248,43 @@
       const dealerBJ = isBlackjack(table.dealerCards);
       const winnerUids = [];
       table.players = getSortedPlayers(table).map(player => {
-        if (player.left || Number(player.currentBet || 0) <= 0) return { ...player, cards:[], currentBet:0, pendingBet:Math.min(Number(table.minBet || 0), Number(player.bank || 0)), status: player.left ? "left" : "waiting", result:"" };
-        const total = handTotals(player.cards).total;
+        if (player.left || Number(player.currentBet || 0) <= 0) return { ...player, cards:[], splitHands:[], activeHandIndex:0, currentBet:0, pendingBet:Math.min(Number(table.minBet || 0), Number(player.bank || 0)), status: player.left ? "left" : "waiting", result:"" };
+        const hands = Array.isArray(player.splitHands) && player.splitHands.length ? player.splitHands : [{ cards:player.cards || [], bet:Number(player.currentBet || 0), status:player.status }];
         let bank = Number(player.bank || 0);
-        let result = "";
-        if (player.status === "busted") {
-          result = `Bust • lost ${money(player.currentBet)}`;
-        } else if (isBlackjack(player.cards) && !dealerBJ) {
-          bank += player.currentBet * 2.5;
-          result = `Blackjack • won ${money(player.currentBet * 1.5)}`;
-          winnerUids.push(player.uid);
-        } else if (dealerBust) {
-          bank += player.currentBet * 2;
-          result = `Dealer busted • won ${money(player.currentBet)}`;
-          winnerUids.push(player.uid);
-        } else if (dealerBJ && !isBlackjack(player.cards)) {
-          result = `Dealer blackjack • lost ${money(player.currentBet)}`;
-        } else if (total > dealer) {
-          bank += player.currentBet * 2;
-          result = `Won ${money(player.currentBet)}`;
-          winnerUids.push(player.uid);
-        } else if (total === dealer) {
-          bank += player.currentBet;
-          result = "Push";
-        } else {
-          result = `Lost ${money(player.currentBet)}`;
-        }
-        return { ...player, bank, currentBet:0, pendingBet:Math.min(Math.max(Number(table.minBet || 0), Number(player.pendingBet || table.minBet || 0)), bank || Number(table.minBet || 0)), status: bank > 0 ? "waiting" : "broke", result };
+        const results = [];
+        let wonAny = false;
+        hands.forEach((hand, handIndex) => {
+          const bet = Number(hand.bet || player.currentBet || 0);
+          const cards = hand.cards || [];
+          const total = handTotals(cards).total;
+          let result = "";
+          if (hand.status === "busted" || total > 21) {
+            result = `Hand ${handIndex + 1}: bust • lost ${money(bet)}`;
+          } else if (isBlackjack(cards) && !dealerBJ) {
+            bank += bet * 2.5;
+            result = `Hand ${handIndex + 1}: blackjack • won ${money(bet * 1.5)}`;
+            wonAny = true;
+          } else if (dealerBust) {
+            bank += bet * 2;
+            result = `Hand ${handIndex + 1}: dealer busted • won ${money(bet)}`;
+            wonAny = true;
+          } else if (dealerBJ && !isBlackjack(cards)) {
+            result = `Hand ${handIndex + 1}: dealer blackjack • lost ${money(bet)}`;
+          } else if (total > dealer) {
+            bank += bet * 2;
+            result = `Hand ${handIndex + 1}: won ${money(bet)}`;
+            wonAny = true;
+          } else if (total === dealer) {
+            bank += bet;
+            result = `Hand ${handIndex + 1}: push`;
+          } else {
+            result = `Hand ${handIndex + 1}: lost ${money(bet)}`;
+          }
+          results.push(result);
+        });
+        if (wonAny) winnerUids.push(player.uid);
+        const result = results.length === 1 ? results[0].replace(/^Hand 1: /i, "") : results.join(" • ");
+        return { ...player, bank, cards:[], splitHands:[], activeHandIndex:0, currentBet:0, pendingBet:Math.min(Math.max(Number(table.minBet || 0), Number(player.pendingBet || table.minBet || 0)), bank || Number(table.minBet || 0)), status: bank > 0 ? "waiting" : "broke", result };
       });
       table.status = "settle";
       table.phase = "settle";
@@ -250,7 +296,7 @@
 
     function startRoundState(table){
       table = normalizeTable(table);
-      const players = getSortedPlayers(table).map(player => ({ ...player, cards:[], result:"", currentBet:0, status: player.left ? "left" : (Number(player.bank || 0) > 0 ? "waiting" : "broke") }));
+      const players = getSortedPlayers(table).map(player => ({ ...player, cards:[], splitHands:[], activeHandIndex:0, result:"", currentBet:0, status: player.left ? "left" : (Number(player.bank || 0) > 0 ? "waiting" : "broke") }));
       let deck = Array.isArray(table.deck) && table.deck.length >= 20 ? [...table.deck] : buildShoe(Number(table.deckCount || 4));
       const dealerCards = [];
       let seated = 0;
@@ -288,9 +334,12 @@
       playersList.innerHTML = players.map(player => {
         const me = currentUser && player.uid === currentUser.uid;
         const turn = isTurn(table, player);
-        const total = player.cards?.length ? handTotals(player.cards).total : 0;
-        const showCards = isRevealedPlayerStatus(player.status) && player.cards?.length;
-        const rightText = [me ? "You" : "", player.status === "blackjack" ? "Blackjack" : "", player.status === "busted" ? "Busted" : "", player.status === "stood" ? "Stood" : "", player.status === "broke" ? "Broke" : "", turn ? "Turn" : ""].filter(Boolean).join(" • ");
+        const splitHands = Array.isArray(player.splitHands) && player.splitHands.length ? player.splitHands : [];
+        const shownCards = splitHands.length ? activeCards(player) : (player.cards || []);
+        const total = shownCards?.length ? handTotals(shownCards).total : 0;
+        const showCards = isRevealedPlayerStatus(player.status) && shownCards?.length;
+        const splitText = splitHands.length ? `Hand ${Number(player.activeHandIndex || 0) + 1}/${splitHands.length}` : "";
+        const rightText = [me ? "You" : "", splitText, player.status === "blackjack" ? "Blackjack" : "", player.status === "busted" ? "Busted" : "", player.status === "stood" ? "Stood" : "", player.status === "broke" ? "Broke" : "", turn ? "Turn" : ""].filter(Boolean).join(" • ");
         return `<div class="player ${me ? "me" : ""} ${turn ? "current-turn" : ""} ${winners.includes(player.uid) ? "winner" : ""}">
           <div class="player-main">
             <div class="player-name">${escapeHtml(getPublicName(player))}</div>
@@ -298,7 +347,7 @@
           </div>
           <div>
             ${rightText ? `<div class="player-sub" style="justify-content:flex-end;margin-bottom:${showCards ? "6px" : "0"}"><span>${escapeHtml(rightText)}</span></div>` : ``}
-            ${showCards ? `<div class="player-cards">${player.cards.map(code => renderCard(code)).join("")}</div>` : ``}
+            ${showCards ? `<div class="player-cards">${shownCards.map(code => renderCard(code)).join("")}</div>` : ``}
           </div>
         </div>`;
       }).join("");
@@ -315,7 +364,7 @@
       renderCardRow(dealerCardsEl, dealerCards, { hiddenIndex: currentTable.dealerReveal ? -1 : 1, minSlots: Math.max(2, dealerCards.length || 0) });
       dealerText.textContent = currentTable.dealerReveal ? `Dealer total ${handTotals(dealerCards).total}` : "Dealer hidden card face down";
       renderPlayers(currentTable);
-      renderCardRow(myCards, me?.cards || [], { minSlots: 2 });
+      renderCardRow(myCards, activeCards(me) || [], { minSlots: 2 });
       statusLine.textContent = currentTable.lastMessage || "Waiting...";
 
       const betBase = Math.max(Number(currentTable.minBet || 1), 1);
@@ -333,7 +382,10 @@
       const myTurn = !!me && currentTable.currentTurnUid === me.uid && currentTable.phase === "playerTurns";
       const canHit = myTurn && me.status === "active";
       const canStand = myTurn && me.status === "active";
-      const canDouble = myTurn && me.status === "active" && Array.isArray(me.cards) && me.cards.length === 2 && Number(me.bank || 0) >= Number(me.currentBet || 0);
+      const handCards = activeCards(me) || [];
+      const handBet = activeHand(me)?.bet || me?.currentBet || 0;
+      const canDouble = myTurn && me.status === "active" && handCards.length === 2 && Number(me.bank || 0) >= Number(handBet || 0);
+      const canSplit = myTurn && canSplitHand(me);
       const canPlaceBet = !!me && waiting && Number(me.bank || 0) >= Number(currentTable.minBet || 0);
       const canStart = waiting && isHost(currentTable, currentUser?.uid);
       const showBetPanel = canPlaceBet;
@@ -349,6 +401,7 @@
       setActionButtonState(hitBtn, canHit && !actionBusy, "live-call");
       setActionButtonState(standBtn, canStand && !actionBusy, "live-check");
       setActionButtonState(doubleBtn, canDouble && !actionBusy, "live-bet");
+      setActionButtonState(splitBtn, canSplit && !actionBusy, "live-bet");
       startBtn.disabled = !(canStart && !actionBusy);
       startBtn.classList.toggle("live-start", canStart && !actionBusy);
       startBtn.textContent = "Start";
@@ -408,19 +461,44 @@
         if (table.currentTurnUid !== currentUser.uid) throw new Error("Not your turn.");
         if (player.status !== "active") throw new Error("You cannot act right now.");
 
+        const splitHand = activeHand(player);
+        const cards = splitHand ? splitHand.cards : player.cards;
+        const bet = Number(splitHand?.bet || player.currentBet || 0);
         if (type === "hit") {
-          player.cards.push(drawCard(table));
-          if (handTotals(player.cards).total > 21) player.status = "busted";
+          cards.push(drawCard(table));
+          if (handTotals(cards).total > 21) {
+            if (splitHand) splitHand.status = "busted";
+            else player.status = "busted";
+          }
         } else if (type === "stand") {
-          player.status = "stood";
+          if (splitHand) splitHand.status = "stood";
+          else player.status = "stood";
         } else if (type === "double") {
-          if (player.cards.length !== 2) throw new Error("Double only allowed on first decision.");
-          if (Number(player.bank || 0) < Number(player.currentBet || 0)) throw new Error("Not enough bank to double.");
-          player.bank -= Number(player.currentBet || 0);
-          player.currentBet += Number(player.currentBet || 0);
-          player.cards.push(drawCard(table));
-          player.status = handTotals(player.cards).total > 21 ? "busted" : "stood";
+          if (cards.length !== 2) throw new Error("Double only allowed on first decision.");
+          if (Number(player.bank || 0) < bet) throw new Error("Not enough bank to double.");
+          player.bank -= bet;
+          if (splitHand) splitHand.bet += bet;
+          else player.currentBet += bet;
+          cards.push(drawCard(table));
+          const doneStatus = handTotals(cards).total > 21 ? "busted" : "stood";
+          if (splitHand) splitHand.status = doneStatus;
+          else player.status = doneStatus;
+        } else if (type === "split") {
+          if (!canSplitHand(player)) throw new Error("Split requires two matching cards and enough bank for another bet.");
+          const originalBet = Number(player.currentBet || 0);
+          player.bank -= originalBet;
+          player.currentBet += originalBet;
+          const first = player.cards[0];
+          const second = player.cards[1];
+          player.splitHands = [
+            { cards:[first, drawCard(table)], bet:originalBet, status:"active" },
+            { cards:[second, drawCard(table)], bet:originalBet, status:"active" }
+          ];
+          player.activeHandIndex = 0;
+          player.cards = player.splitHands[0].cards;
+          for (const hand of player.splitHands) if (isBlackjack(hand.cards)) hand.status = "blackjack";
         }
+        syncSplitPlayerStatus(player);
         table.players[index] = player;
         table.lastMessage = `${getPublicName(player)} chose ${type}.`;
         return advanceAfterPlayerAction(table);
@@ -435,7 +513,7 @@
           const snap = await tx.get(ref);
           if (!snap.exists()) return;
           const table = normalizeTable({ id:snap.id, ...snap.data() });
-          const players = getSortedPlayers(table).map(p => p.uid === currentUser.uid ? { ...p, left:true, status:"left", currentBet:0, cards:[], result:"", pendingBet:0 } : p);
+          const players = getSortedPlayers(table).map(p => p.uid === currentUser.uid ? { ...p, left:true, status:"left", currentBet:0, cards:[], splitHands:[], activeHandIndex:0, result:"", pendingBet:0 } : p);
           const seated = players.filter(p => !p.left);
           const nextHost = seated[0] || null;
           tx.update(ref, {
@@ -462,6 +540,7 @@
     hitBtn.addEventListener("click", () => playerAction("hit"));
     standBtn.addEventListener("click", () => playerAction("stand"));
     doubleBtn.addEventListener("click", () => playerAction("double"));
+    splitBtn.addEventListener("click", () => playerAction("split"));
     leaveBtn.addEventListener("click", leaveTable);
     betSlider.addEventListener("input", syncBetFromSlider);
     betInput.addEventListener("input", syncBetFromInput);
