@@ -51,6 +51,7 @@
     .status-line{min-height:1.2em;color:var(--muted);font-size:.85rem;text-align:center;line-height:1.4}
 
     .bottom-panel{padding:12px 10px 14px;display:grid;gap:12px;position:sticky;bottom:0;background:linear-gradient(180deg, rgba(5,5,5,.95), rgba(5,5,5,1));z-index:5}
+    .my-cards-scroll{max-height:34vh;overflow-y:auto;padding:2px 0}
     .my-cards-wrap{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
     .card,.card-slot{width:var(--card-w);height:var(--card-h);border:1px solid var(--line);background:#090909;flex:0 0 auto;position:relative;display:flex;align-items:center;justify-content:center}
     .card img{width:100%;height:100%;object-fit:cover}
@@ -70,7 +71,7 @@
     .hidden{display:none !important}
 
     @media (min-width:880px){.layout{grid-template-rows:auto 1fr auto}.players-panel{max-height:280px}.my-cards-wrap .card,.my-cards-wrap .card-slot{width:92px;height:134px}}
-    @media (max-width:560px){:root{--card-w:60px;--card-h:88px}header{padding:0 12px}.logo span{font-size:.82rem}.header-actions{gap:6px}.header-btn{min-width:78px;min-height:38px;padding:8px 10px;font-size:.82rem}.shell{width:min(100% - 16px,var(--max-w))}.player{padding:9px 10px}.player-sub{gap:8px;font-size:.72rem}.my-cards-wrap .card,.my-cards-wrap .card-slot{width:76px;height:110px}.action-row{grid-template-columns:1fr}.target-btn,.card-btn,.action-btn{font-size:.9rem}}
+    @media (max-width:560px){:root{--card-w:54px;--card-h:78px}header{padding:0 12px}.logo span{font-size:.82rem}.header-actions{gap:6px}.header-btn{min-width:78px;min-height:38px;padding:8px 10px;font-size:.82rem}.shell{width:min(100% - 16px,var(--max-w))}.player{padding:9px 10px}.player-sub{gap:8px;font-size:.72rem}.my-cards-wrap{justify-content:flex-start}.my-cards-wrap .card,.my-cards-wrap .card-slot{width:54px;height:78px}.bottom-panel{position:relative;bottom:auto}.action-row{grid-template-columns:1fr}.target-btn,.card-btn,.action-btn{font-size:.9rem}}
   </style>
 </head>
 <body>
@@ -100,7 +101,7 @@
       </section>
 
       <section class="panel bottom-panel">
-        <div class="my-cards-wrap" id="myCards"></div>
+        <div class="my-cards-scroll"><div class="my-cards-wrap" id="myCards"></div></div>
 
         <div class="control-panel">
           <div class="control-title">1. Choose a player</div>
@@ -173,6 +174,7 @@
     let actionBusy = false;
     let selectedTargetUid = "";
     let selectedRank = "";
+    let autoMatchBusy = false;
 
     function setGateMessage(message){ gateCard.textContent = message; }
     function escapeHtml(value){ return String(value ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;").replace(/'/g,"&#039;"); }
@@ -217,6 +219,21 @@
       return made;
     }
 
+    function autoMatchAllPlayers(game){
+      let made = 0;
+      const players = getSortedPlayers(game);
+      for (const player of players) {
+        made += removeAllAutoPairs(player);
+        player.cards = sortCards(player.cards || []);
+      }
+      game.players = players;
+      return made;
+    }
+
+    function hasAnyPair(game){
+      return getSortedPlayers(game).some(player => VALUES.some(rank => (player.cards || []).filter(card => getRank(card) === rank).length >= 2));
+    }
+
     function checkGameOver(game){
       const players = getSortedPlayers(game);
       const cardsLeft = players.reduce((sum,p) => sum + (p.cards?.length || 0), 0) + (game.deck?.length || 0);
@@ -248,12 +265,10 @@
         }
       }
 
-      for (const player of nextPlayers) {
-        player.cards = sortCards(player.cards);
-        removeAllAutoPairs(player);
-      }
+      for (const player of nextPlayers) player.cards = sortCards(player.cards);
 
       game.players = nextPlayers;
+      autoMatchAllPlayers(game);
       game.deck = deck;
       game.discard = [];
       game.status = "active";
@@ -310,6 +325,7 @@
       }
 
       game.players = players.map(p => ({ ...p, cards:sortCards(p.cards || []) }));
+      autoMatchAllPlayers(game);
       return checkGameOver(game);
     }
 
@@ -326,6 +342,7 @@
       const made = removePairsForRank(player, getRank(drawn));
       game.currentTurnUid = nextTurnUid(game, uid);
       game.players = players;
+      autoMatchAllPlayers(game);
       game.lastAsk = { askerUid:uid, targetUid:"", rank:getRank(drawn), at:new Date().toISOString(), drawOnly:true };
       game.lastMessage = `${getPublicName(player)} picked up a card${made ? ` and made ${made} match${made === 1 ? "" : "es"}` : ""}.`;
       return checkGameOver(game);
@@ -340,7 +357,9 @@
           const snap = await transaction.get(gameRef);
           if (!snap.exists()) throw new Error("Game not found.");
           const game = normalizeGame({ id:snap.id, ...snap.data() });
+          autoMatchAllPlayers(game);
           const updated = mutator(game);
+          autoMatchAllPlayers(updated);
           transaction.update(gameRef, { ...updated, updatedAt:serverTimestamp() });
         });
       } catch (error) {
@@ -396,6 +415,21 @@
 
       askBtn.disabled = !isMyTurn || !selectedTargetUid || !selectedRank;
       drawBtn.disabled = !isMyTurn || !game.deck.length;
+      drawBtn.classList.remove("hidden");
+    }
+
+    async function autoMatchPairsIfNeeded(game){
+      if (autoMatchBusy || !currentUser || !gameId || game.status !== "active" || !hasAnyPair(game)) return;
+      autoMatchBusy = true;
+      try {
+        await runGameTransaction(nextGame => {
+          const made = autoMatchAllPlayers(nextGame);
+          if (made) nextGame.lastMessage = `Auto matched ${made} pair${made === 1 ? "" : "s"}.`;
+          return checkGameOver(nextGame);
+        });
+      } finally {
+        autoMatchBusy = false;
+      }
     }
 
     function renderGame(game){
@@ -514,7 +548,9 @@
             authGate.classList.remove("hidden");
             return;
           }
-          renderGame({ id:snap.id, ...snap.data() });
+          const nextGame = normalizeGame({ id:snap.id, ...snap.data() });
+          renderGame(nextGame);
+          autoMatchPairsIfNeeded(nextGame).catch(console.error);
         }, error => {
           console.error(error);
           setGateMessage("Could not load game.");
