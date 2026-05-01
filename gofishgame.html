@@ -236,8 +236,8 @@
 
     function checkGameOver(game){
       const players = getSortedPlayers(game);
-      const cardsLeft = players.reduce((sum,p) => sum + (p.cards?.length || 0), 0) + (game.deck?.length || 0);
-      if (cardsLeft > 0) return game;
+      const someoneOutOfCards = players.some(p => (p.cards?.length || 0) === 0);
+      if (!someoneOutOfCards) return game;
 
       const highScore = Math.max(0, ...players.map(p => Number(p.score || 0)));
       const winners = players.filter(p => Number(p.score || 0) === highScore).map(p => p.uid);
@@ -246,8 +246,8 @@
       game.currentTurnUid = "";
       game.lastWinnerUids = winners;
       game.lastMessage = winners.length > 1
-        ? `Game over. Tie with ${highScore} matches.`
-        : `Game over. ${getPublicName(players.find(p => p.uid === winners[0]))} wins with ${highScore} matches.`;
+        ? `Game over. Someone ran out of cards. Tie with ${highScore} matches.`
+        : `Game over. Someone ran out of cards. ${getPublicName(players.find(p => p.uid === winners[0]))} wins with ${highScore} matches.`;
       return game;
     }
 
