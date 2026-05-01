@@ -379,7 +379,7 @@
     async function joinGame(gameId){
       if(!currentUser) return;
 
-      const ref = doc(db, "cardWarGames", gameId);
+      const ref = doc(db, "duelsgames", gameId);
       const snap = await getDoc(ref);
 
       if(!snap.exists()){
@@ -392,12 +392,12 @@
       const activePlayers = players.filter(p => !p.left);
 
       if(game.status !== "waiting"){
-        window.location.href = `cardwargame.html?game=${gameId}`;
+        window.location.href = `duelsgame.html?game=${gameId}`;
         return;
       }
 
       if(activePlayers.some(p => p.uid === currentUser.uid)){
-        window.location.href = `cardwargame.html?game=${gameId}`;
+        window.location.href = `duelsgame.html?game=${gameId}`;
         return;
       }
 
@@ -414,12 +414,12 @@
         lastMessage:`${getPublicName({ username:currentUsername, displayName:currentUser.displayName, email:currentUser.email })} joined the game.`
       });
 
-      window.location.href = `cardwargame.html?game=${gameId}`;
+      window.location.href = `duelsgame.html?game=${gameId}`;
     }
 
     async function deleteGame(gameId){
       if(!confirm("Delete this game?")) return;
-      await deleteDoc(doc(db, "cardWarGames", gameId));
+      await deleteDoc(doc(db, "duelsgames", gameId));
       await loadGames();
     }
 
@@ -473,7 +473,7 @@
       if(!currentUser) return;
 
       const q = query(
-        collection(db, "cardWarGames"),
+        collection(db, "duelsgames"),
         where("status", "in", ["waiting", "active"]),
         orderBy("createdAt", "desc"),
         limit(30)
@@ -567,8 +567,8 @@
           updatedAt:serverTimestamp()
         };
 
-        const ref = await addDoc(collection(db, "cardWarGames"), game);
-        window.location.href = `cardwargame.html?game=${ref.id}`;
+        const ref = await addDoc(collection(db, "duelsgames"), game);
+        window.location.href = `duelsgame.html?game=${ref.id}`;
       }catch(error){
         createStatus.textContent = error.message || "Could not create game.";
       }
