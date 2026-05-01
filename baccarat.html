@@ -34,6 +34,7 @@
     .header-btn{
       min-width:92px;min-height:40px;padding:10px 14px;border:1px solid var(--line);
       background:#050505;color:#fff;font-weight:700;cursor:pointer;transition:.14s ease;
+      display:inline-flex;align-items:center;justify-content:center;
     }
     .header-btn:hover{transform:translateY(-1px)}
     .header-btn:disabled{background:#050505;border-color:var(--line);color:#676767;cursor:not-allowed;transform:none;opacity:1}
@@ -80,9 +81,9 @@
     .bet-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
     .bet-label{color:#fff;font-size:.85rem;font-weight:700}
     .bet-value{color:var(--accent);font-size:.95rem;font-weight:700}
-    .bet-controls{display:grid;grid-template-columns:1fr 120px 140px;gap:10px;align-items:center}
+    .bet-controls{display:grid;grid-template-columns:1fr 120px;gap:10px;align-items:center}
     input[type="range"]{width:100%;accent-color:var(--accent);cursor:pointer}
-    input[type="number"],select{
+    input[type="number"]{
       width:100%;min-height:44px;border:1px solid var(--line);background:#0a0a0a;color:#fff;
       padding:10px 12px;outline:none;
     }
@@ -120,8 +121,8 @@
   <header>
     <div class="logo"><img src="logo.png" alt="Logo" /><span>Baccarat</span></div>
     <div class="header-actions">
-      <button type="button" class="header-btn live-start" id="dealBtn">Deal</button>
-      <button type="button" class="header-btn live-leave" id="resetBtn">Reset</button>
+      <button type="button" class="header-btn live-start" id="dealBtn">Reveal</button>
+      <a class="header-btn live-leave" href="https://williammaclean.ca/apps">Leave</a>
     </div>
   </header>
 
@@ -149,26 +150,25 @@
           </div>
         </div>
 
-        <div class="tiny" id="roundText">Choose a side and deal the round.</div>
+        <div class="tiny" id="roundText">Choose Banker or Player to lock in your bet.</div>
       </section>
 
       <section class="panel bottom-panel">
         <div class="bet-panel">
           <div class="bet-row">
             <div class="bet-label">Your Bet</div>
-            <div class="bet-value" id="betSizeText">$10 on Player</div>
+            <div class="bet-value" id="betSizeText">$10 unlocked</div>
           </div>
           <div class="bet-controls">
             <input type="range" id="betSlider" min="10" max="1000" step="1" value="10" />
             <input type="number" id="betInput" min="10" step="1" value="10" />
-            <select id="betSide">
-              <option value="player">Player</option>
-              <option value="banker">Banker</option>
-              <option value="tie">Tie</option>
-            </select>
           </div>
-          <button type="button" class="action-btn live-bet" id="dealRoundBtn">Deal Round</button>
-          <div class="tiny">Banker pays 0.95:1, Player pays 1:1, Tie pays 8:1.</div>
+          <div class="controls">
+            <button type="button" class="action-btn live-bet" id="bankerBetBtn">Banker</button>
+            <button type="button" class="action-btn live-bet" id="playerBetBtn">Player</button>
+            <button type="button" class="action-btn live-call" id="revealBtn">Reveal Next Card</button>
+          </div>
+          <div class="tiny">Banker win pays 1:0.95. Player win pays 1:1.</div>
         </div>
 
         <div class="controls-panel">
@@ -203,11 +203,11 @@
     const statusLine = document.getElementById("statusLine");
     const betSlider = document.getElementById("betSlider");
     const betInput = document.getElementById("betInput");
-    const betSide = document.getElementById("betSide");
     const betSizeText = document.getElementById("betSizeText");
     const dealBtn = document.getElementById("dealBtn");
-    const resetBtn = document.getElementById("resetBtn");
-    const dealRoundBtn = document.getElementById("dealRoundBtn");
+    const bankerBetBtn = document.getElementById("bankerBetBtn");
+    const playerBetBtn = document.getElementById("playerBetBtn");
+    const revealBtn = document.getElementById("revealBtn");
     const repeatBtn = document.getElementById("repeatBtn");
     const clearBtn = document.getElementById("clearBtn");
     const resetGameBtn = document.getElementById("resetGameBtn");
@@ -217,6 +217,10 @@
     let round = 0;
     let playerCards = [];
     let bankerCards = [];
+    let hiddenPlayerCards = [];
+    let hiddenBankerCards = [];
+    let revealQueue = [];
+    let currentBet = null;
     let lastWinner = "";
     let lastBet = { amount: MIN_BET, side: "player" };
     let lastResult = "Ready";
@@ -227,7 +231,6 @@
 
     function sideLabel(side){
       if (side === "banker") return "Banker";
-      if (side === "tie") return "Tie";
       return "Player";
     }
 
@@ -275,15 +278,29 @@
     function syncBetControls(){
       betSlider.max = String(Math.max(MIN_BET, bank));
       betInput.max = String(Math.max(MIN_BET, bank));
+
       let amount = Math.floor(Number(betInput.value || MIN_BET));
       amount = Math.max(MIN_BET, Math.min(bank, amount));
       if (bank < MIN_BET) amount = 0;
-      betInput.value = String(amount);
-      betSlider.value = String(amount);
-      betSizeText.textContent = `${money(amount)} on ${sideLabel(betSide.value)}`;
-      const canDeal = bank >= MIN_BET && amount >= MIN_BET;
-      dealBtn.disabled = !canDeal;
-      dealRoundBtn.disabled = !canDeal;
+
+      if (!currentBet) {
+        betInput.value = String(amount);
+        betSlider.value = String(amount);
+      }
+
+      betSizeText.textContent = currentBet
+        ? `${money(currentBet.amount)} locked on ${sideLabel(currentBet.side)}`
+        : `${money(amount)} unlocked`;
+
+      const canBet = bank >= MIN_BET && amount >= MIN_BET && !currentBet;
+      bankerBetBtn.disabled = !canBet;
+      playerBetBtn.disabled = !canBet;
+      betInput.disabled = !!currentBet;
+      betSlider.disabled = !!currentBet;
+
+      const canReveal = !!currentBet && revealQueue.length > 0;
+      dealBtn.disabled = !canReveal;
+      revealBtn.disabled = !canReveal;
     }
 
     function render(){
@@ -308,75 +325,113 @@
         <div class="player-sub"><span>${deck.length} cards left</span></div>
       </div>`;
 
-      roundText.textContent = lastResult === "Ready" ? "Choose a side and deal the round." : lastResult;
+      if (currentBet && revealQueue.length) roundText.textContent = `Bet locked. Reveal the next card.`;
+      else if (currentBet) roundText.textContent = `Round complete.`;
+      else roundText.textContent = lastResult === "Ready" ? "Choose Banker or Player to lock in your bet." : lastResult;
+
       statusLine.textContent = `Bank ${money(bank)} • ${bank < MIN_BET ? "Game over" : "Ready"}`;
       syncBetControls();
     }
 
-    function dealBaccaratRound(){
-      const amount = Math.floor(Number(betInput.value || 0));
-      const side = String(betSide.value || "player");
-      if (amount < MIN_BET) return;
-      if (amount > bank) return;
+    function buildRoundCards(){
+      hiddenPlayerCards = [];
+      hiddenBankerCards = [];
+      revealQueue = [];
 
-      bank -= amount;
-      lastBet = { amount, side };
-      playerCards = [];
-      bankerCards = [];
+      hiddenPlayerCards.push(drawCard());
+      hiddenBankerCards.push(drawCard());
+      hiddenPlayerCards.push(drawCard());
+      hiddenBankerCards.push(drawCard());
 
-      playerCards.push(drawCard());
-      bankerCards.push(drawCard());
-      playerCards.push(drawCard());
-      bankerCards.push(drawCard());
-
-      let pTotal = baccaratTotal(playerCards);
-      let bTotal = baccaratTotal(bankerCards);
+      let pTotal = baccaratTotal(hiddenPlayerCards);
+      let bTotal = baccaratTotal(hiddenBankerCards);
 
       if (pTotal < 8 && bTotal < 8) {
         let playerThird = null;
 
         if (pTotal <= 5) {
           playerThird = drawCard();
-          playerCards.push(playerThird);
-          pTotal = baccaratTotal(playerCards);
+          hiddenPlayerCards.push(playerThird);
+          pTotal = baccaratTotal(hiddenPlayerCards);
         }
 
         if (!playerThird) {
-          if (bTotal <= 5) bankerCards.push(drawCard());
+          if (bTotal <= 5) hiddenBankerCards.push(drawCard());
         } else {
           const pt = cardPoint(playerThird);
-          if (bTotal <= 2) bankerCards.push(drawCard());
-          else if (bTotal === 3 && pt !== 8) bankerCards.push(drawCard());
-          else if (bTotal === 4 && pt >= 2 && pt <= 7) bankerCards.push(drawCard());
-          else if (bTotal === 5 && pt >= 4 && pt <= 7) bankerCards.push(drawCard());
-          else if (bTotal === 6 && pt >= 6 && pt <= 7) bankerCards.push(drawCard());
+          if (bTotal <= 2) hiddenBankerCards.push(drawCard());
+          else if (bTotal === 3 && pt !== 8) hiddenBankerCards.push(drawCard());
+          else if (bTotal === 4 && pt >= 2 && pt <= 7) hiddenBankerCards.push(drawCard());
+          else if (bTotal === 5 && pt >= 4 && pt <= 7) hiddenBankerCards.push(drawCard());
+          else if (bTotal === 6 && pt >= 6 && pt <= 7) hiddenBankerCards.push(drawCard());
         }
       }
 
-      pTotal = baccaratTotal(playerCards);
-      bTotal = baccaratTotal(bankerCards);
+      revealQueue.push({ side:"player", card:hiddenPlayerCards[0] });
+      revealQueue.push({ side:"banker", card:hiddenBankerCards[0] });
+      revealQueue.push({ side:"player", card:hiddenPlayerCards[1] });
+      revealQueue.push({ side:"banker", card:hiddenBankerCards[1] });
 
-      lastWinner = "tie";
-      if (pTotal > bTotal) lastWinner = "player";
-      if (bTotal > pTotal) lastWinner = "banker";
+      if (hiddenPlayerCards[2]) revealQueue.push({ side:"player", card:hiddenPlayerCards[2] });
+      if (hiddenBankerCards[2]) revealQueue.push({ side:"banker", card:hiddenBankerCards[2] });
+    }
 
-      if (side === lastWinner) {
-        let profit = amount;
-        if (side === "banker") profit = Math.floor(amount * 0.95);
-        if (side === "tie") profit = amount * 8;
-        bank += amount + profit;
-        lastResult = `Won ${money(profit)} on ${sideLabel(side)}. ${sideLabel(lastWinner)} wins ${pTotal}-${bTotal}.`;
+    function lockBet(side){
+      const amount = Math.floor(Number(betInput.value || 0));
+      if (amount < MIN_BET || amount > bank || currentBet) return;
+
+      bank -= amount;
+      currentBet = { amount, side };
+      lastBet = { amount, side };
+      lastWinner = "";
+      lastResult = `${money(amount)} locked on ${sideLabel(side)}.`;
+      playerCards = [];
+      bankerCards = [];
+      buildRoundCards();
+      render();
+    }
+
+    function revealNextCard(){
+      if (!currentBet || !revealQueue.length) return;
+
+      const next = revealQueue.shift();
+      if (next.side === "player") playerCards.push(next.card);
+      else bankerCards.push(next.card);
+
+      if (!revealQueue.length) settleRound();
+      render();
+    }
+
+    function settleRound(){
+      const pTotal = baccaratTotal(hiddenPlayerCards);
+      const bTotal = baccaratTotal(hiddenBankerCards);
+
+      lastWinner = pTotal > bTotal ? "player" : "banker";
+      if (bTotal === pTotal) {
+        bank += currentBet.amount;
+        lastResult = `Push. Tie ${pTotal}-${bTotal}. Bet returned.`;
+      } else if (currentBet.side === lastWinner) {
+        let profit = currentBet.side === "banker"
+          ? Math.floor(currentBet.amount * 0.95)
+          : currentBet.amount;
+
+        bank += currentBet.amount + profit;
+        lastResult = `Won ${money(profit)} on ${sideLabel(currentBet.side)}. ${sideLabel(lastWinner)} wins ${pTotal}-${bTotal}.`;
       } else {
-        lastResult = `Lost ${money(amount)} on ${sideLabel(side)}. ${sideLabel(lastWinner)} wins ${pTotal}-${bTotal}.`;
+        lastResult = `Lost ${money(currentBet.amount)} on ${sideLabel(currentBet.side)}. ${sideLabel(lastWinner)} wins ${pTotal}-${bTotal}.`;
       }
 
       round++;
-      render();
+      currentBet = null;
     }
 
     function clearCards(){
       playerCards = [];
       bankerCards = [];
+      hiddenPlayerCards = [];
+      hiddenBankerCards = [];
+      revealQueue = [];
+      currentBet = null;
       lastWinner = "";
       lastResult = "Ready";
       render();
@@ -388,29 +443,37 @@
       round = 0;
       playerCards = [];
       bankerCards = [];
+      hiddenPlayerCards = [];
+      hiddenBankerCards = [];
+      revealQueue = [];
+      currentBet = null;
       lastWinner = "";
       lastBet = { amount: MIN_BET, side: "player" };
       lastResult = "Ready";
+      betInput.disabled = false;
+      betSlider.disabled = false;
       betInput.value = String(MIN_BET);
       betSlider.value = String(MIN_BET);
-      betSide.value = "player";
       render();
     }
 
     betInput.addEventListener("input", syncBetControls);
     betSlider.addEventListener("input", () => { betInput.value = betSlider.value; syncBetControls(); });
-    betSide.addEventListener("change", syncBetControls);
-    dealBtn.addEventListener("click", dealBaccaratRound);
-    dealRoundBtn.addEventListener("click", dealBaccaratRound);
+
+    bankerBetBtn.addEventListener("click", () => lockBet("banker"));
+    playerBetBtn.addEventListener("click", () => lockBet("player"));
+    dealBtn.addEventListener("click", revealNextCard);
+    revealBtn.addEventListener("click", revealNextCard);
+
     repeatBtn.addEventListener("click", () => {
+      if (currentBet) return;
       betInput.value = String(Math.min(bank, lastBet.amount));
       betSlider.value = betInput.value;
-      betSide.value = lastBet.side;
       syncBetControls();
-      dealBaccaratRound();
+      lockBet(lastBet.side);
     });
+
     clearBtn.addEventListener("click", clearCards);
-    resetBtn.addEventListener("click", resetGame);
     resetGameBtn.addEventListener("click", resetGame);
 
     resetGame();
