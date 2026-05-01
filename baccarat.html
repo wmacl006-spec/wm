@@ -12,14 +12,14 @@
       --bg:#000;--panel:#050505;--panel-2:rgba(255,255,255,.03);--text:#fff;--muted:#8d8d8d;
       --line:rgba(255,255,255,.08);--accent:#b00b55;--success:#57d38c;--danger:#ff6b81;
       --warning:#ffd166;--header-h:64px;--max-w:1100px;--shadow:0 18px 40px rgba(0,0,0,.24);
-      --card-w:72px;--card-h:104px;--player-h:76px;
+      --card-w:72px;--card-h:104px;
     }
 
     *{margin:0;padding:0;box-sizing:border-box}
     html,body{min-height:100%}
     body{font-family:"Comfortaa",sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
     a{color:inherit;text-decoration:none}
-    button,input,select{font:inherit}
+    button,input{font:inherit}
     img{display:block;max-width:100%}
 
     header{
@@ -41,78 +41,83 @@
     .header-btn.live-start{border-color:rgba(87,211,140,.65);background:rgba(87,211,140,.14)}
     .header-btn.live-leave{border-color:rgba(255,107,129,.45);background:rgba(255,107,129,.10)}
 
-    .page{min-height:100vh;padding-top:calc(var(--header-h) + 12px)}
-    .shell{width:min(var(--max-w), calc(100% - 24px));margin:0 auto;padding:0 0 18px;display:grid;gap:12px}
+    .page{min-height:100vh;padding-top:calc(var(--header-h) + 10px)}
+    .shell{width:min(var(--max-w), calc(100% - 24px));margin:0 auto;padding:0 0 14px;display:grid;gap:10px}
     .panel{border:1px solid var(--line);background:var(--panel-2);box-shadow:var(--shadow)}
-    .players-panel{padding:10px}
-    .players-list{display:grid;gap:8px}
-    .player{
-      min-height:var(--player-h);border:1px solid var(--line);background:rgba(255,255,255,.02);
-      padding:10px 12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;
-    }
-    .player.winner{border-color:rgba(87,211,140,.65);box-shadow:inset 0 0 0 1px rgba(87,211,140,.32);background:rgba(87,211,140,.09)}
-    .player-main{min-width:0}
-    .player-name{font-size:.92rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px}
-    .player-sub{display:flex;flex-wrap:wrap;gap:10px;color:var(--muted);font-size:.76rem;line-height:1.35}
 
-    .center-panel{padding:14px 10px 16px;display:grid;gap:14px;align-content:start}
-    .board-top{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;text-align:center}
-    .pot-box{border:1px solid rgba(176,11,85,.5);background:rgba(176,11,85,.12);padding:10px 14px;min-width:130px}
-    .pot-label{color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
-    .pot-value{font-size:1.3rem;font-weight:800;letter-spacing:-.04em}
+    .center-panel{padding:12px 10px;display:grid;gap:12px;align-content:start}
+    .board-top{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+    .pot-box{border:1px solid rgba(176,11,85,.5);background:rgba(176,11,85,.12);padding:9px 8px;min-width:0}
+    .pot-label{color:var(--muted);font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;white-space:nowrap}
+    .pot-value{font-size:1.05rem;font-weight:800;letter-spacing:-.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-    .hands{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .hand-box{border:1px solid var(--line);background:rgba(255,255,255,.02);padding:12px;display:grid;gap:10px}
-    .hand-title{display:flex;justify-content:space-between;gap:10px;color:#fff;font-weight:700;font-size:.9rem}
+    .hands{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .hand-box{border:1px solid var(--line);background:rgba(255,255,255,.02);padding:10px 8px;display:grid;gap:10px;min-width:0}
+    .hand-title{display:flex;justify-content:space-between;gap:8px;color:#fff;font-weight:700;font-size:.86rem}
     .hand-title span:last-child{color:var(--accent)}
-    .card-row{display:flex;justify-content:center;gap:8px;flex-wrap:nowrap;overflow:hidden}
+    .card-row{display:flex;justify-content:center;gap:6px;flex-wrap:nowrap;overflow:hidden}
     .card,.card-slot{
       width:var(--card-w);height:var(--card-h);border:1px solid var(--line);background:#090909;
       flex:0 0 auto;position:relative;display:flex;align-items:center;justify-content:center;
     }
     .card img{width:100%;height:100%;object-fit:cover}
     .card-slot{color:#5e5e5e;font-size:.72rem;letter-spacing:.12em}
+    .card-slot::after{content:"CARD";font-size:.62rem;color:#444}
 
     .bottom-panel{
-      padding:12px 10px 14px;display:grid;gap:12px;position:sticky;bottom:0;
+      padding:10px;display:grid;gap:10px;position:sticky;bottom:0;
       background:linear-gradient(180deg, rgba(5,5,5,.95), rgba(5,5,5,1));z-index:5;
     }
-    .bet-panel,.controls-panel{border:1px solid var(--line);background:rgba(255,255,255,.02);padding:12px;display:grid;gap:10px}
+    .bet-panel{border:1px solid var(--line);background:rgba(255,255,255,.02);padding:10px;display:grid;gap:10px}
     .bet-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
     .bet-label{color:#fff;font-size:.85rem;font-weight:700}
-    .bet-value{color:var(--accent);font-size:.95rem;font-weight:700}
-    .bet-controls{display:grid;grid-template-columns:1fr 120px;gap:10px;align-items:center}
+    .bet-value{color:var(--accent);font-size:.9rem;font-weight:700}
+    .bet-controls{display:grid;grid-template-columns:1fr 110px;gap:10px;align-items:center}
     input[type="range"]{width:100%;accent-color:var(--accent);cursor:pointer}
     input[type="number"]{
-      width:100%;min-height:44px;border:1px solid var(--line);background:#0a0a0a;color:#fff;
-      padding:10px 12px;outline:none;
+      width:100%;min-height:42px;border:1px solid var(--line);background:#0a0a0a;color:#fff;
+      padding:9px 10px;outline:none;
     }
-    .controls{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .bet-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .reveal-wrap{display:grid}
     .action-btn{
-      width:100%;min-height:48px;border:1px solid var(--line);background:#050505;color:#696969;
-      padding:12px 10px;font-weight:700;cursor:pointer;transition:.14s ease;
+      width:100%;min-height:46px;border:1px solid var(--line);background:#050505;color:#696969;
+      padding:11px 8px;font-weight:700;cursor:pointer;transition:.14s ease;
     }
     .action-btn:hover{transform:translateY(-1px)}
     .action-btn:disabled{background:#050505;color:#696969;border-color:var(--line);cursor:not-allowed;transform:none;opacity:1}
-    .action-btn.live-check{border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff}
     .action-btn.live-call{border-color:rgba(176,11,85,.75);background:rgba(176,11,85,.16);color:#fff}
     .action-btn.live-bet{border-color:rgba(87,211,140,.58);background:rgba(87,211,140,.12);color:#fff}
-    .action-btn.live-fold{border-color:rgba(255,107,129,.45);background:rgba(255,107,129,.10);color:#fff}
 
-    .status-line{min-height:1.2em;color:var(--muted);font-size:.85rem;text-align:center;line-height:1.4}
-    .tiny{font-size:.75rem;color:var(--muted);text-align:center}
+    .status-line{min-height:1.2em;color:var(--muted);font-size:.82rem;text-align:center;line-height:1.35}
+    .tiny{font-size:.72rem;color:var(--muted);text-align:center;line-height:1.35}
 
-    @media (min-width:880px){.card,.card-slot{width:82px;height:119px}}
+    @media (min-width:880px){
+      .card,.card-slot{width:82px;height:119px}
+    }
+
     @media (max-width:560px){
-      :root{--card-w:58px;--card-h:84px}
-      header{padding:0 12px}.logo span{font-size:.82rem}
-      .header-actions{gap:6px}.header-btn{min-width:78px;min-height:38px;padding:8px 10px;font-size:.82rem}
-      .shell{width:min(100% - 16px,var(--max-w))}
-      .player{padding:9px 10px}.player-sub{gap:8px;font-size:.72rem}
-      .hands{grid-template-columns:1fr}.card-row{gap:6px}
-      .bet-controls{grid-template-columns:1fr}
-      .controls{grid-template-columns:1fr}
-      .action-btn{min-height:46px;font-size:.9rem}
+      :root{--header-h:58px;--card-w:43px;--card-h:62px}
+      header{padding:0 10px}
+      .logo span{font-size:.82rem}
+      .header-actions{gap:6px}
+      .header-btn{min-width:72px;min-height:36px;padding:8px 9px;font-size:.8rem}
+      .shell{width:min(100% - 12px,var(--max-w));gap:8px}
+      .center-panel{padding:9px 7px;gap:9px}
+      .board-top{gap:6px}
+      .pot-box{padding:7px 5px}
+      .pot-label{font-size:.55rem;letter-spacing:.03em}
+      .pot-value{font-size:.82rem}
+      .hands{gap:6px}
+      .hand-box{padding:8px 5px;gap:7px}
+      .hand-title{font-size:.76rem}
+      .card-row{gap:4px}
+      .bottom-panel{padding:8px;gap:8px}
+      .bet-panel{padding:8px;gap:8px}
+      .bet-controls{grid-template-columns:1fr 86px;gap:8px}
+      input[type="number"]{min-height:38px;padding:7px 8px;font-size:.85rem}
+      .action-btn{min-height:42px;font-size:.82rem;padding:9px 6px}
+      .tiny,.status-line{font-size:.68rem}
     }
   </style>
 </head>
@@ -128,14 +133,10 @@
 
   <main class="page">
     <section class="shell">
-      <section class="panel players-panel">
-        <div class="players-list" id="playersList"></div>
-      </section>
-
       <section class="panel center-panel">
         <div class="board-top">
           <div class="pot-box"><div class="pot-label">Round</div><div class="pot-value" id="roundValue">0</div></div>
-          <div class="pot-box"><div class="pot-label">Minimum Bet</div><div class="pot-value" id="minBetValue">$10</div></div>
+          <div class="pot-box"><div class="pot-label">Bank</div><div class="pot-value" id="bankValue">$1000</div></div>
           <div class="pot-box"><div class="pot-label">Winner</div><div class="pot-value" id="winnerValue">—</div></div>
         </div>
 
@@ -150,7 +151,7 @@
           </div>
         </div>
 
-        <div class="tiny" id="roundText">Choose Banker or Player to lock in your bet.</div>
+        <div class="tiny" id="roundText">Choose Player or Banker to lock in your bet.</div>
       </section>
 
       <section class="panel bottom-panel">
@@ -159,24 +160,22 @@
             <div class="bet-label">Your Bet</div>
             <div class="bet-value" id="betSizeText">$10 unlocked</div>
           </div>
+
           <div class="bet-controls">
             <input type="range" id="betSlider" min="10" max="1000" step="1" value="10" />
             <input type="number" id="betInput" min="10" step="1" value="10" />
           </div>
-          <div class="controls">
-            <button type="button" class="action-btn live-bet" id="bankerBetBtn">Banker</button>
+
+          <div class="bet-buttons">
             <button type="button" class="action-btn live-bet" id="playerBetBtn">Player</button>
+            <button type="button" class="action-btn live-bet" id="bankerBetBtn">Banker</button>
+          </div>
+
+          <div class="reveal-wrap">
             <button type="button" class="action-btn live-call" id="revealBtn">Reveal Next Card</button>
           </div>
-          <div class="tiny">Banker win pays 1:0.95. Player win pays 1:1.</div>
-        </div>
 
-        <div class="controls-panel">
-          <div class="controls">
-            <button type="button" class="action-btn live-call" id="repeatBtn">Repeat Bet</button>
-            <button type="button" class="action-btn live-check" id="clearBtn">Clear Cards</button>
-            <button type="button" class="action-btn live-fold" id="resetGameBtn">Reset Game</button>
-          </div>
+          <div class="tiny">Banker pays 1:0.95. Player pays 1:1.</div>
         </div>
 
         <div class="status-line" id="statusLine">Bank $1000 • Ready</div>
@@ -191,9 +190,8 @@
     const SUITS = ["S","C","H","D"];
     const VALUES = ["2","3","4","5","6","7","8","9","10","J","Q","K","A"];
 
-    const playersList = document.getElementById("playersList");
     const roundValue = document.getElementById("roundValue");
-    const minBetValue = document.getElementById("minBetValue");
+    const bankValue = document.getElementById("bankValue");
     const winnerValue = document.getElementById("winnerValue");
     const playerCardsEl = document.getElementById("playerCards");
     const bankerCardsEl = document.getElementById("bankerCards");
@@ -208,9 +206,6 @@
     const bankerBetBtn = document.getElementById("bankerBetBtn");
     const playerBetBtn = document.getElementById("playerBetBtn");
     const revealBtn = document.getElementById("revealBtn");
-    const repeatBtn = document.getElementById("repeatBtn");
-    const clearBtn = document.getElementById("clearBtn");
-    const resetGameBtn = document.getElementById("resetGameBtn");
 
     let deck = [];
     let bank = STARTING_BANK;
@@ -222,7 +217,6 @@
     let revealQueue = [];
     let currentBet = null;
     let lastWinner = "";
-    let lastBet = { amount: MIN_BET, side: "player" };
     let lastResult = "Ready";
 
     function money(value){
@@ -230,8 +224,7 @@
     }
 
     function sideLabel(side){
-      if (side === "banker") return "Banker";
-      return "Player";
+      return side === "banker" ? "Banker" : "Player";
     }
 
     function cardUrl(code){ return code ? `/cards/${code}.png` : ""; }
@@ -243,7 +236,7 @@
 
     function renderCardRow(container, cards, slots=3){
       const html = [];
-      for (let i = 0; i < Math.max(slots, cards.length); i++) html.push(renderCard(cards[i] || ""));
+      for (let i = 0; i < slots; i++) html.push(renderCard(cards[i] || ""));
       container.innerHTML = html.join("");
     }
 
@@ -304,30 +297,17 @@
     }
 
     function render(){
-      minBetValue.textContent = money(MIN_BET);
       roundValue.textContent = String(round);
+      bankValue.textContent = money(bank);
       winnerValue.textContent = lastWinner ? sideLabel(lastWinner) : "—";
       playerScore.textContent = playerCards.length ? baccaratTotal(playerCards) : "0";
       bankerScore.textContent = bankerCards.length ? baccaratTotal(bankerCards) : "0";
       renderCardRow(playerCardsEl, playerCards, 3);
       renderCardRow(bankerCardsEl, bankerCards, 3);
 
-      const winClass = lastResult.startsWith("Won") ? "winner" : "";
-      playersList.innerHTML = `<div class="player ${winClass}">
-        <div class="player-main">
-          <div class="player-name">You</div>
-          <div class="player-sub">
-            <span>Bank ${money(bank)}</span>
-            <span>Last bet ${money(lastBet.amount)} on ${sideLabel(lastBet.side)}</span>
-            <span>${lastResult}</span>
-          </div>
-        </div>
-        <div class="player-sub"><span>${deck.length} cards left</span></div>
-      </div>`;
-
       if (currentBet && revealQueue.length) roundText.textContent = `Bet locked. Reveal the next card.`;
       else if (currentBet) roundText.textContent = `Round complete.`;
-      else roundText.textContent = lastResult === "Ready" ? "Choose Banker or Player to lock in your bet." : lastResult;
+      else roundText.textContent = lastResult === "Ready" ? "Choose Player or Banker to lock in your bet." : lastResult;
 
       statusLine.textContent = `Bank ${money(bank)} • ${bank < MIN_BET ? "Game over" : "Ready"}`;
       syncBetControls();
@@ -382,7 +362,6 @@
 
       bank -= amount;
       currentBet = { amount, side };
-      lastBet = { amount, side };
       lastWinner = "";
       lastResult = `${money(amount)} locked on ${sideLabel(side)}.`;
       playerCards = [];
@@ -409,6 +388,7 @@
       lastWinner = pTotal > bTotal ? "player" : "banker";
       if (bTotal === pTotal) {
         bank += currentBet.amount;
+        lastWinner = "";
         lastResult = `Push. Tie ${pTotal}-${bTotal}. Bet returned.`;
       } else if (currentBet.side === lastWinner) {
         let profit = currentBet.side === "banker"
@@ -416,25 +396,13 @@
           : currentBet.amount;
 
         bank += currentBet.amount + profit;
-        lastResult = `Won ${money(profit)} on ${sideLabel(currentBet.side)}. ${sideLabel(lastWinner)} wins ${pTotal}-${bTotal}.`;
+        lastResult = `Won ${money(profit)}. ${sideLabel(lastWinner)} wins ${pTotal}-${bTotal}.`;
       } else {
-        lastResult = `Lost ${money(currentBet.amount)} on ${sideLabel(currentBet.side)}. ${sideLabel(lastWinner)} wins ${pTotal}-${bTotal}.`;
+        lastResult = `Lost ${money(currentBet.amount)}. ${sideLabel(lastWinner)} wins ${pTotal}-${bTotal}.`;
       }
 
       round++;
       currentBet = null;
-    }
-
-    function clearCards(){
-      playerCards = [];
-      bankerCards = [];
-      hiddenPlayerCards = [];
-      hiddenBankerCards = [];
-      revealQueue = [];
-      currentBet = null;
-      lastWinner = "";
-      lastResult = "Ready";
-      render();
     }
 
     function resetGame(){
@@ -448,7 +416,6 @@
       revealQueue = [];
       currentBet = null;
       lastWinner = "";
-      lastBet = { amount: MIN_BET, side: "player" };
       lastResult = "Ready";
       betInput.disabled = false;
       betSlider.disabled = false;
@@ -458,23 +425,15 @@
     }
 
     betInput.addEventListener("input", syncBetControls);
-    betSlider.addEventListener("input", () => { betInput.value = betSlider.value; syncBetControls(); });
-
-    bankerBetBtn.addEventListener("click", () => lockBet("banker"));
-    playerBetBtn.addEventListener("click", () => lockBet("player"));
-    dealBtn.addEventListener("click", revealNextCard);
-    revealBtn.addEventListener("click", revealNextCard);
-
-    repeatBtn.addEventListener("click", () => {
-      if (currentBet) return;
-      betInput.value = String(Math.min(bank, lastBet.amount));
-      betSlider.value = betInput.value;
+    betSlider.addEventListener("input", () => {
+      betInput.value = betSlider.value;
       syncBetControls();
-      lockBet(lastBet.side);
     });
 
-    clearBtn.addEventListener("click", clearCards);
-    resetGameBtn.addEventListener("click", resetGame);
+    playerBetBtn.addEventListener("click", () => lockBet("player"));
+    bankerBetBtn.addEventListener("click", () => lockBet("banker"));
+    dealBtn.addEventListener("click", revealNextCard);
+    revealBtn.addEventListener("click", revealNextCard);
 
     resetGame();
   </script>
