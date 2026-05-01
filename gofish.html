@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Go Fish Lobby | William MacLean</title>
+  <link rel="icon" href="logo.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root{
+      --bg:#000;--panel:#050505;--panel-2:rgba(255,255,255,.03);--text:#fff;--muted:#8d8d8d;
+      --line:rgba(255,255,255,.08);--accent:#b00b55;--success:#57d38c;--danger:#ff6b81;
+      --warning:#ffd166;--header-h:64px;--max-w:980px;--shadow:0 18px 40px rgba(0,0,0,.24);
+      --player-h:72px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{min-height:100%}
+    body{font-family:"Comfortaa",sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+    a{color:inherit;text-decoration:none}
+    button,input,select{font:inherit}
+    img{display:block;max-width:100%}
+
+    header{position:fixed;inset:0 0 auto 0;height:var(--header-h);display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:rgba(0,0,0,.72);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.05);z-index:200}
+    .logo{display:flex;align-items:center;gap:10px;min-width:0}
+    .logo img{width:28px;height:28px}
+    .logo span{font-size:.95rem;font-weight:700;white-space:nowrap}
+    nav{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+    nav a{font-size:.84rem;color:#cfcfcf;transition:.2s}
+    nav a:hover{color:#fff}
+    .status-pill{font-size:.72rem;padding:7px 10px;border:1px solid rgba(255,255,255,.1);color:#fff;background:rgba(255,255,255,.04)}
+
+    .page{min-height:100vh;padding-top:var(--header-h)}
+    #authGate{position:fixed;inset:var(--header-h) 0 0 0;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;z-index:150;backdrop-filter:blur(8px)}
+    #authGate.hidden{display:none}
+    .gate-card{border:1px solid var(--line);background:rgba(255,255,255,.03);padding:24px 26px;color:#d8d8d8;font-size:.92rem;text-align:center;max-width:420px;line-height:1.5}
+
+    .hero-wrap{width:100%;border-bottom:1px solid rgba(255,255,255,.05);background:radial-gradient(circle at top left, rgba(176,11,85,.14), transparent 32%),radial-gradient(circle at top right, rgba(255,255,255,.04), transparent 28%),linear-gradient(180deg, rgba(255,255,255,.015), transparent)}
+    .hero{width:min(var(--max-w), calc(100% - 24px));margin:0 auto;padding:28px 0 18px}
+    .hero h1{font-size:clamp(2rem,8vw,3.7rem);line-height:.95;letter-spacing:-.05em;margin-bottom:8px}
+    .hero p{color:var(--muted);font-size:.88rem;line-height:1.45}
+
+    .shell{width:min(var(--max-w), calc(100% - 24px));margin:0 auto;padding:14px 0 18px;display:grid;gap:12px}
+    .panel{border:1px solid var(--line);background:var(--panel-2);box-shadow:var(--shadow)}
+    .section-head{padding:12px 14px 0;display:flex;flex-direction:column;gap:6px}
+    .tag{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);font-weight:700}
+    .section-title{font-size:1.02rem;font-weight:700;letter-spacing:-.03em}
+    .section-sub,.signed-in,.status-line{color:var(--muted);font-size:.82rem;line-height:1.4}
+    .panel-body{padding:12px 14px 14px}
+
+    form{display:grid;gap:10px}
+    .form-grid{display:grid;grid-template-columns:1fr;gap:10px}
+    .input-label{display:grid;gap:8px;font-size:.82rem;color:var(--muted);font-weight:600}
+    input,select{width:100%;border:1px solid var(--line);background:#0a0a0a;color:var(--text);padding:12px 13px}
+    input:focus,select:focus{outline:none;border-color:rgba(176,11,85,.7);box-shadow:inset 0 0 0 1px rgba(176,11,85,.45)}
+
+    .button-row,.game-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    button{width:100%;min-height:48px;border:1px solid var(--line);background:#0a0a0a;color:var(--text);padding:12px 10px;font-weight:700;cursor:pointer;transition:.14s ease}
+    button:hover{transform:translateY(-1px)}
+    button:disabled{opacity:.5;cursor:not-allowed;transform:none}
+    .primary-btn{border-color:rgba(176,11,85,.75);background:rgba(176,11,85,.16)}
+    .ghost-btn{background:rgba(255,255,255,.03)}
+    .danger-btn{border-color:rgba(255,107,129,.45);background:rgba(255,107,129,.10)}
+
+    .games-list{display:grid;gap:8px}
+    .game-card{min-height:var(--player-h);border:1px solid var(--line);background:rgba(255,255,255,.02);padding:10px 12px;display:grid;gap:10px}
+    .game-top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:start}
+    .game-name{font-size:.95rem;font-weight:700;line-height:1.2;margin-bottom:6px;word-break:break-word}
+    .game-sub{display:flex;flex-wrap:wrap;gap:10px;color:var(--muted);font-size:.75rem;line-height:1.35}
+    .pill{display:inline-flex;align-items:center;padding:5px 8px;border:1px solid rgba(255,255,255,.1);font-size:.72rem;white-space:nowrap;background:rgba(255,255,255,.03);height:fit-content}
+    .pill.success{border-color:rgba(87,211,140,.4);background:rgba(87,211,140,.1)}
+    .pill.warning{border-color:rgba(255,209,102,.4);background:rgba(255,209,102,.1)}
+    .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .meta-box{border:1px solid var(--line);background:#0a0a0a;padding:10px}
+    .meta-box-label{font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;font-weight:700}
+    .meta-box-value{font-size:.86rem;font-weight:700;line-height:1.25;word-break:break-word}
+    .empty{border:1px solid var(--line);background:rgba(255,255,255,.02);padding:14px 12px;color:var(--muted);font-size:.85rem}
+    .footer-space{height:6px}
+
+    @media (min-width:720px){
+      .form-grid.two{grid-template-columns:1fr 1fr}
+      .game-actions{grid-template-columns:repeat(3,1fr)}
+    }
+    @media (max-width:560px){
+      header{padding:0 14px}
+      .logo span{font-size:.88rem}
+      nav{gap:10px}
+      nav a{font-size:.78rem}
+      .hero,.shell{width:min(100% - 16px,var(--max-w))}
+      .hero{padding:22px 0 14px}
+      .button-row,.game-actions{grid-template-columns:1fr}
+      button{min-height:46px;font-size:.9rem}
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="logo">
+      <img src="logo.png" alt="Logo" />
+      <span>William MacLean</span>
+    </div>
+    <nav>
+      <a href="index">Home</a>
+      <a href="apps">Apps</a>
+      <span class="status-pill" id="statusPill">Status: loading</span>
+    </nav>
+  </header>
+
+  <div id="authGate">
+    <div class="gate-card" id="gateCard">Checking access...</div>
+  </div>
+
+  <main class="page">
+    <section class="hero-wrap">
+      <div class="hero">
+        <h1>Go Fish Lobby</h1>
+        <p>Create a Go Fish room, choose the rules, and let friends join before starting.</p>
+      </div>
+    </section>
+
+    <section class="shell">
+      <section class="panel">
+        <div class="section-head">
+          <div class="tag">You</div>
+          <div class="section-title">Profile</div>
+          <div class="signed-in" id="signedInAs">Not signed in</div>
+        </div>
+        <div class="panel-body">
+          <form id="usernameForm">
+            <label class="input-label">
+              Username
+              <input type="text" id="usernameInput" maxlength="20" placeholder="pick a username" />
+            </label>
+            <div class="button-row">
+              <button type="submit" class="primary-btn">Save Username</button>
+              <button type="button" class="ghost-btn" id="clearUsernameBtn">Clear</button>
+            </div>
+          </form>
+          <div class="status-line" id="usernameStatus"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div class="tag">Create</div>
+          <div class="section-title">New Game</div>
+          <div class="section-sub">Choose players, starting hand size, and number of decks.</div>
+        </div>
+        <div class="panel-body">
+          <form id="createGameForm">
+            <label class="input-label">
+              Game Name
+              <input type="text" id="gameNameInput" maxlength="40" placeholder="Friday Night Go Fish" required />
+            </label>
+
+            <div class="form-grid two">
+              <label class="input-label">
+                Max Players
+                <input type="number" id="maxPlayersInput" min="2" max="10" step="1" value="4" required />
+              </label>
+
+              <label class="input-label">
+                Starting Cards Each
+                <input type="number" id="startingCardsInput" min="1" max="20" step="1" value="7" required />
+              </label>
+            </div>
+
+            <div class="form-grid two">
+              <label class="input-label">
+                Decks Used
+                <input type="number" id="deckCountInput" min="1" max="6" step="1" value="1" required />
+              </label>
+
+              <label class="input-label">
+                Turn Time
+                <input type="number" id="turnTimeInput" min="10" max="300" step="5" value="45" required />
+              </label>
+            </div>
+
+            <div class="button-row">
+              <button type="submit" class="primary-btn">Create Game</button>
+              <button type="button" class="ghost-btn" id="resetGameFormBtn">Reset</button>
+            </div>
+          </form>
+          <div class="status-line" id="createStatus"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div class="tag">Games</div>
+          <div class="section-title">Join Game</div>
+          <div class="section-sub">Open Go Fish games you can hop into.</div>
+        </div>
+        <div class="panel-body">
+          <div class="games-list" id="gamesList">
+            <div class="empty">No active games.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div class="tag">Host</div>
+          <div class="section-title">Your Games</div>
+          <div class="section-sub">Games you created.</div>
+        </div>
+        <div class="panel-body">
+          <div class="games-list" id="myGamesList">
+            <div class="empty">No games created by you.</div>
+          </div>
+        </div>
+      </section>
+
+      <div class="footer-space"></div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getAnalytics, isSupported as analyticsSupported } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-analytics.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      doc,
+      addDoc,
+      getDoc,
+      getDocs,
+      setDoc,
+      deleteDoc,
+      updateDoc,
+      serverTimestamp,
+      query,
+      where,
+      orderBy,
+      limit
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBLQmCVdVkz_sxxdfvXshDmoe3PeYIUMAY",
+      authDomain: "site-78972.firebaseapp.com",
+      projectId: "site-78972",
+      storageBucket: "site-78972.firebasestorage.app",
+      messagingSenderId: "519857042562",
+      appId: "1:519857042562:web:64ff26e5f795208081f09b",
+      measurementId: "G-TSQ1FNH5W1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    if (await analyticsSupported()) getAnalytics(app);
+
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const statusPill = document.getElementById("statusPill");
+    const signedInAs = document.getElementById("signedInAs");
+    const authGate = document.getElementById("authGate");
+    const gateCard = document.getElementById("gateCard");
+
+    const usernameForm = document.getElementById("usernameForm");
+    const usernameInput = document.getElementById("usernameInput");
+    const usernameStatus = document.getElementById("usernameStatus");
+    const clearUsernameBtn = document.getElementById("clearUsernameBtn");
+
+    const createGameForm = document.getElementById("createGameForm");
+    const resetGameFormBtn = document.getElementById("resetGameFormBtn");
+    const createStatus = document.getElementById("createStatus");
+
+    const gameNameInput = document.getElementById("gameNameInput");
+    const maxPlayersInput = document.getElementById("maxPlayersInput");
+    const startingCardsInput = document.getElementById("startingCardsInput");
+    const deckCountInput = document.getElementById("deckCountInput");
+    const turnTimeInput = document.getElementById("turnTimeInput");
+
+    const gamesList = document.getElementById("gamesList");
+    const myGamesList = document.getElementById("myGamesList");
+
+    const statusRank = { default:0, plus:1, me:2 };
+
+    let currentUser = null;
+    let currentUserStatus = "default";
+    let currentPlayerProfile = null;
+    let currentGames = [];
+
+    function normalizeStatus(status){
+      const clean = String(status || "default").trim().toLowerCase();
+      return ["default","plus","me"].includes(clean) ? clean : "default";
+    }
+
+    function setGateMessage(message){ gateCard.textContent = message; }
+
+    function showCreateStatus(message, isError=false){
+      createStatus.textContent = message;
+      createStatus.style.color = isError ? "var(--danger)" : "var(--muted)";
+    }
+
+    function showUsernameStatus(message, isError=false){
+      usernameStatus.textContent = message;
+      usernameStatus.style.color = isError ? "var(--danger)" : "var(--muted)";
+    }
+
+    function escapeHtml(value){
+      return String(value ?? "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+    }
+
+    function formatDate(value){
+      if (!value) return "—";
+      try {
+        const date = typeof value?.toDate === "function" ? value.toDate() : new Date(value);
+        if (Number.isNaN(date.getTime())) return "—";
+        return new Intl.DateTimeFormat("en-CA", {
+          year:"numeric",
+          month:"short",
+          day:"numeric",
+          hour:"numeric",
+          minute:"2-digit"
+        }).format(date);
+      } catch {
+        return "—";
+      }
+    }
+
+    function normalizeUsername(value){
+      return String(value || "")
+        .trim()
+        .replace(/\s+/g,"_")
+        .replace(/[^a-zA-Z0-9_]/g,"")
+        .slice(0,20);
+    }
+
+    function fallbackNameFromUser(user){
+      if (!user) return "Player";
+      return String(user.displayName || "").trim() || "Player";
+    }
+
+    function getPublicName(data, fallback="Player"){
+      return String(data?.username || "").trim() || String(data?.displayName || "").trim() || fallback;
+    }
+
+    async function getUserStatus(uid){
+      try {
+        const snap = await getDoc(doc(db, "users", uid));
+        return snap.exists() ? normalizeStatus(snap.data()?.status) : "default";
+      } catch {
+        return "default";
+      }
+    }
+
+    async function getPlayerProfile(uid){
+      const snap = await getDoc(doc(db, "goFishPlayers", uid));
+      return snap.exists() ? { id:snap.id, ...snap.data() } : null;
+    }
+
+    async function ensurePlayerProfile(user){
+      const ref = doc(db, "goFishPlayers", user.uid);
+      const snap = await getDoc(ref);
+      const base = {
+        uid:user.uid,
+        email:user.email || "",
+        displayName:fallbackNameFromUser(user),
+        updatedAt:serverTimestamp()
+      };
+
+      if (!snap.exists()) {
+        await setDoc(ref, {
+          ...base,
+          username:"",
+          usernameLower:"",
+          gamesPlayed:0,
+          gamesWon:0,
+          createdAt:serverTimestamp()
+        });
+      } else {
+        const existing = snap.data() || {};
+        await setDoc(ref, {
+          ...base,
+          username:existing.username || "",
+          usernameLower:existing.usernameLower || ""
+        }, { merge:true });
+      }
+
+      currentPlayerProfile = await getPlayerProfile(user.uid);
+      usernameInput.value = currentPlayerProfile?.username || "";
+    }
+
+    async function protectPlusPage(user){
+      currentUserStatus = await getUserStatus(user.uid);
+      statusPill.textContent = `Status: ${currentUserStatus}`;
+
+      if (statusRank[currentUserStatus] < statusRank.plus) {
+        setGateMessage("This page is for Plus users.");
+        authGate.classList.remove("hidden");
+        return false;
+      }
+
+      authGate.classList.add("hidden");
+      signedInAs.textContent = `Signed in as ${getPublicName(currentPlayerProfile, fallbackNameFromUser(user))}`;
+      return true;
+    }
+
+    function renderJoinButton(game){
+      const players = Array.isArray(game.players) ? game.players : [];
+      const alreadyIn = currentUser && players.some(player => player.uid === currentUser.uid);
+      const full = players.length >= Number(game.maxPlayers || 0);
+      const waiting = String(game.status || "waiting") === "waiting";
+
+      if (alreadyIn) {
+        return `<button class="primary-btn" data-join-game="${game.id}">Enter</button>`;
+      }
+
+      if (!waiting) {
+        return `<button disabled>In Progress</button>`;
+      }
+
+      if (full) {
+        return `<button disabled>Full</button>`;
+      }
+
+      return `<button class="primary-btn" data-join-game="${game.id}">Join</button>`;
+    }
+
+    function renderGameCard(game, isMine=false){
+      const players = Array.isArray(game.players) ? game.players : [];
+      const playerCount = players.filter(player => !player.left).length;
+      const hostName = getPublicName({
+        username:game.hostUsername,
+        displayName:game.hostDisplayName
+      }, "Host");
+      const isWaiting = String(game.status || "waiting") === "waiting";
+
+      return `
+        <div class="game-card">
+          <div class="game-top">
+            <div>
+              <div class="game-name">${escapeHtml(game.name || "Untitled Game")}</div>
+              <div class="game-sub">
+                <span>Host ${escapeHtml(hostName)}</span>
+                <span>${formatDate(game.createdAt)}</span>
+              </div>
+            </div>
+            <span class="pill ${isWaiting ? "warning" : "success"}">${escapeHtml(game.status || "waiting")}</span>
+          </div>
+
+          <div class="meta-grid">
+            <div class="meta-box">
+              <div class="meta-box-label">Players</div>
+              <div class="meta-box-value">${playerCount} / ${Number(game.maxPlayers || 0)}</div>
+            </div>
+            <div class="meta-box">
+              <div class="meta-box-label">Starting Cards</div>
+              <div class="meta-box-value">${Number(game.startingCards || 0)} each</div>
+            </div>
+            <div class="meta-box">
+              <div class="meta-box-label">Decks</div>
+              <div class="meta-box-value">${Number(game.deckCount || 1)}</div>
+            </div>
+            <div class="meta-box">
+              <div class="meta-box-label">Turn Time</div>
+              <div class="meta-box-value">${Number(game.turnTime || 0)}s</div>
+            </div>
+          </div>
+
+          <div class="game-actions">
+            ${renderJoinButton(game)}
+            ${isMine ? `<button class="danger-btn" data-delete-game="${game.id}">Delete</button>` : ``}
+          </div>
+        </div>
+      `;
+    }
+
+    async function loadGames(){
+      const snap = await getDocs(query(collection(db, "goFishGames"), orderBy("createdAt", "desc")));
+      currentGames = snap.docs.map(docSnap => ({ id:docSnap.id, ...docSnap.data() }));
+
+      const activeGames = currentGames.filter(game => game.status !== "deleted" && game.status !== "finished");
+      const myGames = currentUser ? activeGames.filter(game => game.hostUid === currentUser.uid) : [];
+
+      gamesList.innerHTML = activeGames.length
+        ? activeGames.map(game => renderGameCard(game, false)).join("")
+        : `<div class="empty">No active games.</div>`;
+
+      myGamesList.innerHTML = myGames.length
+        ? myGames.map(game => renderGameCard(game, true)).join("")
+        : `<div class="empty">No games created by you.</div>`;
+    }
+
+    async function refreshLobby(){
+      await loadGames();
+    }
+
+    function resetGameForm(){
+      gameNameInput.value = "";
+      maxPlayersInput.value = 4;
+      startingCardsInput.value = 7;
+      deckCountInput.value = 1;
+      turnTimeInput.value = 45;
+    }
+
+    async function saveUsername(nextUsername){
+      if (!currentUser) return false;
+
+      const clean = normalizeUsername(nextUsername);
+      if (nextUsername.trim() && clean.length < 3) {
+        showUsernameStatus("Username must be at least 3 characters.", true);
+        return false;
+      }
+
+      if (clean) {
+        const existing = await getDocs(
+          query(collection(db, "goFishPlayers"), where("usernameLower", "==", clean.toLowerCase()), limit(1))
+        );
+
+        const taken = existing.docs.find(d => d.id !== currentUser.uid);
+        if (taken) {
+          showUsernameStatus("That username is already taken.", true);
+          return false;
+        }
+      }
+
+      const displayName = currentPlayerProfile?.displayName || fallbackNameFromUser(currentUser);
+
+      await setDoc(doc(db, "goFishPlayers", currentUser.uid), {
+        username:clean,
+        usernameLower:clean.toLowerCase(),
+        displayName,
+        updatedAt:serverTimestamp()
+      }, { merge:true });
+
+      currentPlayerProfile = await getPlayerProfile(currentUser.uid);
+      usernameInput.value = currentPlayerProfile?.username || "";
+      signedInAs.textContent = `Signed in as ${getPublicName(currentPlayerProfile, fallbackNameFromUser(currentUser))}`;
+      showUsernameStatus(clean ? "Username saved." : "Username cleared.");
+      return true;
+    }
+
+    async function joinGame(gameId){
+      if (!currentUser) return;
+
+      const gameRef = doc(db, "goFishGames", gameId);
+      const gameSnap = await getDoc(gameRef);
+
+      if (!gameSnap.exists()) {
+        showCreateStatus("Game not found.", true);
+        return;
+      }
+
+      const game = { id:gameSnap.id, ...gameSnap.data() };
+      const players = Array.isArray(game.players) ? [...game.players] : [];
+
+      if (players.some(player => player.uid === currentUser.uid)) {
+        window.location.href = `gofishgame.html?game=${encodeURIComponent(gameId)}`;
+        return;
+      }
+
+      if (String(game.status || "waiting") !== "waiting") {
+        showCreateStatus("That game already started.", true);
+        return;
+      }
+
+      if (players.length >= Number(game.maxPlayers || 0)) {
+        showCreateStatus("Game is full.", true);
+        return;
+      }
+
+      const publicName = getPublicName(currentPlayerProfile, fallbackNameFromUser(currentUser));
+
+      players.push({
+        uid:currentUser.uid,
+        username:currentPlayerProfile?.username || "",
+        displayName:publicName,
+        email:currentUser.email || "",
+        seat:players.length + 1,
+        cards:[],
+        books:[],
+        score:0,
+        joinedAt:new Date().toISOString(),
+        isHost:false,
+        left:false
+      });
+
+      await updateDoc(gameRef, {
+        players,
+        updatedAt:serverTimestamp()
+      });
+
+      window.location.href = `gofishgame.html?game=${encodeURIComponent(gameId)}`;
+    }
+
+    createGameForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      if (!currentUser) return;
+
+      const gameName = gameNameInput.value.trim();
+      const maxPlayers = Number(maxPlayersInput.value);
+      const startingCards = Number(startingCardsInput.value);
+      const deckCount = Number(deckCountInput.value);
+      const turnTime = Number(turnTimeInput.value);
+
+      if (!gameName) {
+        showCreateStatus("Enter a game name.", true);
+        return;
+      }
+
+      if (maxPlayers < 2 || maxPlayers > 10) {
+        showCreateStatus("Players must be between 2 and 10.", true);
+        return;
+      }
+
+      if (startingCards < 1 || startingCards > 20) {
+        showCreateStatus("Starting cards must be between 1 and 20.", true);
+        return;
+      }
+
+      if (deckCount < 1 || deckCount > 6) {
+        showCreateStatus("Decks must be between 1 and 6.", true);
+        return;
+      }
+
+      if (startingCards * maxPlayers > deckCount * 52) {
+        showCreateStatus("Not enough cards. Use fewer starting cards, fewer players, or more decks.", true);
+        return;
+      }
+
+      try {
+        showCreateStatus("Creating game...");
+
+        const hostName = getPublicName(currentPlayerProfile, fallbackNameFromUser(currentUser));
+
+        await addDoc(collection(db, "goFishGames"), {
+          name:gameName,
+          hostUid:currentUser.uid,
+          hostUsername:currentPlayerProfile?.username || "",
+          hostDisplayName:hostName,
+          hostEmail:currentUser.email || "",
+          createdAt:serverTimestamp(),
+          updatedAt:serverTimestamp(),
+          status:"waiting",
+          phase:"waiting",
+          maxPlayers,
+          startingCards,
+          deckCount,
+          turnTime,
+          deck:[],
+          discard:[],
+          currentTurnUid:"",
+          lastAsk:null,
+          lastMessage:"Waiting for players.",
+          roundNumber:0,
+          players:[
+            {
+              uid:currentUser.uid,
+              username:currentPlayerProfile?.username || "",
+              displayName:hostName,
+              email:currentUser.email || "",
+              seat:1,
+              cards:[],
+              books:[],
+              score:0,
+              joinedAt:new Date().toISOString(),
+              isHost:true,
+              left:false
+            }
+          ]
+        });
+
+        resetGameForm();
+        showCreateStatus("Game created.");
+        await loadGames();
+      } catch (error) {
+        console.error(error);
+        showCreateStatus("Could not create game.", true);
+      }
+    });
+
+    resetGameFormBtn.addEventListener("click", () => {
+      resetGameForm();
+      showCreateStatus("");
+    });
+
+    usernameForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      try {
+        showUsernameStatus("Saving...");
+        const ok = await saveUsername(usernameInput.value);
+        if (ok) await refreshLobby();
+      } catch (error) {
+        console.error(error);
+        showUsernameStatus("Could not save username.", true);
+      }
+    });
+
+    clearUsernameBtn.addEventListener("click", async () => {
+      try {
+        showUsernameStatus("Clearing...");
+        const ok = await saveUsername("");
+        if (ok) await refreshLobby();
+      } catch (error) {
+        console.error(error);
+        showUsernameStatus("Could not clear username.", true);
+      }
+    });
+
+    document.addEventListener("click", async event => {
+      const joinBtn = event.target.closest("[data-join-game]");
+      const deleteBtn = event.target.closest("[data-delete-game]");
+
+      if (joinBtn) {
+        try {
+          showCreateStatus("Joining game...");
+          await joinGame(joinBtn.dataset.joinGame);
+        } catch (error) {
+          console.error(error);
+          showCreateStatus("Could not join game.", true);
+        }
+      }
+
+      if (deleteBtn) {
+        const gameId = deleteBtn.dataset.deleteGame;
+        const game = currentGames.find(item => item.id === gameId);
+
+        if (!game || !currentUser || game.hostUid !== currentUser.uid) return;
+
+        const confirmed = window.confirm(`Delete "${game.name || "this game"}"?`);
+        if (!confirmed) return;
+
+        try {
+          await deleteDoc(doc(db, "goFishGames", gameId));
+          await loadGames();
+        } catch (error) {
+          console.error(error);
+          showCreateStatus("Could not delete game.", true);
+        }
+      }
+    });
+
+    onAuthStateChanged(auth, async user => {
+      currentUser = user;
+
+      if (!user) {
+        statusPill.textContent = "Status: signed out";
+        signedInAs.textContent = "Not signed in";
+        setGateMessage("Please sign in to use Go Fish.");
+        authGate.classList.remove("hidden");
+        return;
+      }
+
+      try {
+        setGateMessage("Checking access...");
+        await ensurePlayerProfile(user);
+        const allowed = await protectPlusPage(user);
+        if (!allowed) return;
+        await refreshLobby();
+      } catch (error) {
+        console.error(error);
+        setGateMessage("Could not load lobby.");
+      }
+    });
+
+    setInterval(() => {
+      if (currentUser && authGate.classList.contains("hidden")) {
+        refreshLobby().catch(error => console.error("Auto refresh failed:", error));
+      }
+    }, 10000);
+  </script>
+</body>
+</html>
