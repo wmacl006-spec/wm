@@ -996,7 +996,7 @@
     }
 
     function getPlayerCount(game) {
-      return Array.isArray(game?.players) ? game.players.length : 0;
+      return Array.isArray(game?.players) ? game.players.filter(p => !p.out && Number(p.stack ?? 1) > 0).length : 0;
     }
 
     function nextIndex(players, fromIndex, predicate) {
@@ -1013,6 +1013,7 @@
     }
 
     function getPlayerStartStack(game, player) {
+      if (player?.out) return 0;
       const buyIn = Number(game?.buyIn || game?.startingStack || 0);
       const existing = Number(player?.stack);
       if (Number.isFinite(existing) && existing > 0) return existing;
@@ -1039,11 +1040,34 @@
       return players.filter(p => !p.out && !p.folded).length;
     }
 
-    function removeBustedPlayers(players) {
+    function kickBustedPlayers(players) {
+      return players.filter(p => Number(p.stack || 0) > 0);
+    }
+
+    function markBustedPlayers(players) {
       return players.map(p => ({
         ...p,
         out: Number(p.stack || 0) <= 0
       }));
+    }
+
+    function onlyOnePlayerCanStillBet(game) {
+      const active = game.players.filter(p => !p.out && !p.folded);
+      const canAct = active.filter(p => !p.allIn);
+      if (active.length <= 1) return false;
+      if (canAct.length === 0) return true;
+      if (canAct.length > 1) return false;
+      return getCallAmount(game, canAct[0]) === 0;
+    }
+
+    function finishBoardAndShowdown(game) {
+      while (game.communityCards.length < 5) {
+        const card = game.deck.shift();
+        if (!card) break;
+        game.communityCards.push(card);
+      }
+      game.phase = "showdown";
+      return resolveShowdown(game);
     }
 
     function postForcedBet(players, index, amount) {
@@ -1115,7 +1139,7 @@
       winner.handResult = "Won";
       winner.winningText = `Won ${money(pot)} (everyone folded)`;
 
-      game.players = removeBustedPlayers(game.players);
+      game.players = kickBustedPlayers(game.players);
       game.phase = "finished";
       game.status = "waiting";
       game.currentTurnIndex = -1;
@@ -1215,7 +1239,7 @@
         }
       }
 
-      game.players = removeBustedPlayers(game.players);
+      game.players = kickBustedPlayers(game.players);
       game.phase = "finished";
       game.status = "waiting";
       game.currentTurnIndex = -1;
@@ -1240,7 +1264,7 @@
         out: Number(getPlayerStartStack(game, p)) <= 0
       }));
 
-      players = removeBustedPlayers(players);
+      players = kickBustedPlayers(players);
 
       const alive = players.filter(p => !p.out);
       if (alive.length < 2) {
@@ -1341,12 +1365,8 @@
 
         if (String(game.phase || "") === "finished") return game;
 
-        if (canAct.length === 0) {
-          if (String(game.phase || "") === "river" || String(game.phase || "") === "showdown") {
-            return resolveShowdown(game);
-          }
-          game = moveToNextStreet(game);
-          continue;
+        if (canAct.length === 0 || onlyOnePlayerCanStillBet(game)) {
+          return finishBoardAndShowdown(game);
         }
 
         if (roundComplete(game)) {
@@ -1430,6 +1450,7 @@
       const toCall = Math.max(0, currentBet - myBet);
       const stack = Number(player.stack || 0);
       const minRaise = Math.max(1, Number(game.minRaise || game.bigBlind || 1));
+      const liveOpponentsWhoCanRespond = game.players.filter((p, i) => i !== index && !p.out && !p.folded && !p.allIn).length;
 
       if (actionType === "fold") {
         player.folded = true;
@@ -1450,6 +1471,7 @@
           player.actedThisRound = true;
         }
       } else if (actionType === "bet") {
+        if (liveOpponentsWhoCanRespond === 0) throw new Error("Betting is closed because nobody can call or raise.");
         const entered = Math.max(0, Math.floor(Number(rawAmount || 0)));
         if (!Number.isFinite(entered) || entered <= 0) throw new Error("Enter a bet.");
 
@@ -1784,6 +1806,7 @@
       const callAmount = getCallAmount(currentGame, me);
       const canCheck = !!me && playerCanCheck(currentGame, me);
       const minRaise = getMinRaise(currentGame);
+      const opponentsCanRespond = !!me && seatOrderPlayers(currentGame).some(p => p.uid !== me.uid && !p.out && !p.folded && !p.allIn);
 
       checkBtn.textContent = "Check";
       callBtn.textContent = callAmount > 0 ? `Call ${money(callAmount)}` : "Call";
@@ -1792,7 +1815,7 @@
       const disableActions = actionBusy || !started || !itIsMyTurn || myFolded || handDone || !!me?.allIn || !!me?.out;
       setActionButtonState(checkBtn, !disableActions && canCheck, "live-check");
       setActionButtonState(callBtn, !disableActions && !canCheck, "live-call");
-      setActionButtonState(betBtn, !disableActions && Number(me?.stack || 0) > 0, "live-bet");
+      setActionButtonState(betBtn, !disableActions && opponentsCanRespond && Number(me?.stack || 0) > 0, "live-bet");
       setActionButtonState(foldBtn, !disableActions, "live-fold");
 
       leaveBtn.disabled = actionBusy;
