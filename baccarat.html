@@ -41,25 +41,14 @@
     .header-btn.live-leave{border-color:rgba(255,107,129,.45);background:rgba(255,107,129,.10)}
 
     .page{min-height:100vh;padding-top:calc(var(--header-h) + 12px)}
-    #authGate{
-      position:fixed;inset:var(--header-h) 0 0 0;background:rgba(0,0,0,.82);
-      display:flex;align-items:center;justify-content:center;z-index:150;backdrop-filter:blur(8px);
-    }
-    #authGate.hidden{display:none}
-    .gate-card{
-      border:1px solid var(--line);background:rgba(255,255,255,.03);padding:24px 26px;
-      color:#d8d8d8;font-size:.92rem;text-align:center;max-width:420px;line-height:1.5;
-    }
-
     .shell{width:min(var(--max-w), calc(100% - 24px));margin:0 auto;padding:0 0 18px;display:grid;gap:12px}
     .panel{border:1px solid var(--line);background:var(--panel-2);box-shadow:var(--shadow)}
-    .players-panel{padding:10px;max-height:250px;overflow:auto}
+    .players-panel{padding:10px}
     .players-list{display:grid;gap:8px}
     .player{
       min-height:var(--player-h);border:1px solid var(--line);background:rgba(255,255,255,.02);
       padding:10px 12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;
     }
-    .player.me{box-shadow:inset 0 0 0 1px rgba(255,255,255,.07)}
     .player.winner{border-color:rgba(87,211,140,.65);box-shadow:inset 0 0 0 1px rgba(87,211,140,.32);background:rgba(87,211,140,.09)}
     .player-main{min-width:0}
     .player-name{font-size:.92rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px}
@@ -111,12 +100,8 @@
 
     .status-line{min-height:1.2em;color:var(--muted);font-size:.85rem;text-align:center;line-height:1.4}
     .tiny{font-size:.75rem;color:var(--muted);text-align:center}
-    .hidden{display:none !important}
 
-    @media (min-width:880px){
-      .players-panel{max-height:280px}
-      .card,.card-slot{width:82px;height:119px}
-    }
+    @media (min-width:880px){.card,.card-slot{width:82px;height:119px}}
     @media (max-width:560px){
       :root{--card-w:58px;--card-h:84px}
       header{padding:0 12px}.logo span{font-size:.82rem}
@@ -133,27 +118,23 @@
 
 <body>
   <header>
-    <div class="logo"><img src="logo.png" alt="Logo" /><span id="headerTitle">Baccarat</span></div>
+    <div class="logo"><img src="logo.png" alt="Logo" /><span>Baccarat</span></div>
     <div class="header-actions">
-      <button type="button" class="header-btn" id="startBtn">Start</button>
-      <button type="button" class="header-btn live-leave" id="leaveBtn">Leave</button>
+      <button type="button" class="header-btn live-start" id="dealBtn">Deal</button>
+      <button type="button" class="header-btn live-leave" id="resetBtn">Reset</button>
     </div>
   </header>
-
-  <div id="authGate"><div class="gate-card" id="gateCard">Checking access...</div></div>
 
   <main class="page">
     <section class="shell">
       <section class="panel players-panel">
-        <div class="players-list" id="playersList">
-          <div class="player"><div class="player-main"><div class="player-name">Loading players...</div></div></div>
-        </div>
+        <div class="players-list" id="playersList"></div>
       </section>
 
       <section class="panel center-panel">
         <div class="board-top">
           <div class="pot-box"><div class="pot-label">Round</div><div class="pot-value" id="roundValue">0</div></div>
-          <div class="pot-box"><div class="pot-label">Minimum Bet</div><div class="pot-value" id="minBetValue">$0</div></div>
+          <div class="pot-box"><div class="pot-label">Minimum Bet</div><div class="pot-value" id="minBetValue">$10</div></div>
           <div class="pot-box"><div class="pot-label">Winner</div><div class="pot-value" id="winnerValue">—</div></div>
         </div>
 
@@ -168,129 +149,116 @@
           </div>
         </div>
 
-        <div class="tiny" id="tableText">Place bets, then the host starts the round.</div>
+        <div class="tiny" id="roundText">Choose a side and deal the round.</div>
       </section>
 
       <section class="panel bottom-panel">
         <div class="bet-panel">
           <div class="bet-row">
             <div class="bet-label">Your Bet</div>
-            <div class="bet-value" id="betSizeText">$0 on Player</div>
+            <div class="bet-value" id="betSizeText">$10 on Player</div>
           </div>
           <div class="bet-controls">
-            <input type="range" id="betSlider" min="0" max="100" step="1" value="0" />
-            <input type="number" id="betInput" min="0" step="1" value="0" />
+            <input type="range" id="betSlider" min="10" max="1000" step="1" value="10" />
+            <input type="number" id="betInput" min="10" step="1" value="10" />
             <select id="betSide">
               <option value="player">Player</option>
               <option value="banker">Banker</option>
               <option value="tie">Tie</option>
             </select>
           </div>
-          <button type="button" class="action-btn live-bet" id="placeBetBtn">Place Bet</button>
-          <div class="tiny" id="betHint">Banker pays 0.95:1, Player pays 1:1, Tie pays 8:1.</div>
+          <button type="button" class="action-btn live-bet" id="dealRoundBtn">Deal Round</button>
+          <div class="tiny">Banker pays 0.95:1, Player pays 1:1, Tie pays 8:1.</div>
         </div>
 
         <div class="controls-panel">
           <div class="controls">
-            <button type="button" class="action-btn" id="repeatBtn">Repeat Bet</button>
-            <button type="button" class="action-btn" id="clearBtn">Clear Bet</button>
-            <button type="button" class="action-btn" id="newRoundBtn">New Round</button>
+            <button type="button" class="action-btn live-call" id="repeatBtn">Repeat Bet</button>
+            <button type="button" class="action-btn live-check" id="clearBtn">Clear Cards</button>
+            <button type="button" class="action-btn live-fold" id="resetGameBtn">Reset Game</button>
           </div>
         </div>
 
-        <div class="status-line" id="statusLine">Loading table...</div>
+        <div class="status-line" id="statusLine">Bank $1000 • Ready</div>
       </section>
     </section>
   </main>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-    import { getAnalytics, isSupported as analyticsSupported } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-analytics.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-    import { getFirestore, doc, onSnapshot, serverTimestamp, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  <script>
+    const STARTING_BANK = 1000;
+    const MIN_BET = 10;
+    const DECK_COUNT = 6;
+    const SUITS = ["S","C","H","D"];
+    const VALUES = ["2","3","4","5","6","7","8","9","10","J","Q","K","A"];
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBLQmCVdVkz_sxxdfvXshDmoe3PeYIUMAY",
-      authDomain: "site-78972.firebaseapp.com",
-      projectId: "site-78972",
-      storageBucket: "site-78972.firebasestorage.app",
-      messagingSenderId: "519857042562",
-      appId: "1:519857042562:web:64ff26e5f795208081f09b",
-      measurementId: "G-TSQ1FNH5W1"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    if (await analyticsSupported()) getAnalytics(app);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    const query = new URLSearchParams(window.location.search);
-    const tableId = query.get("table") || query.get("game") || "";
-
-    const authGate = document.getElementById("authGate");
-    const gateCard = document.getElementById("gateCard");
-    const headerTitle = document.getElementById("headerTitle");
     const playersList = document.getElementById("playersList");
     const roundValue = document.getElementById("roundValue");
     const minBetValue = document.getElementById("minBetValue");
     const winnerValue = document.getElementById("winnerValue");
-    const playerCards = document.getElementById("playerCards");
-    const bankerCards = document.getElementById("bankerCards");
+    const playerCardsEl = document.getElementById("playerCards");
+    const bankerCardsEl = document.getElementById("bankerCards");
     const playerScore = document.getElementById("playerScore");
     const bankerScore = document.getElementById("bankerScore");
-    const tableText = document.getElementById("tableText");
+    const roundText = document.getElementById("roundText");
     const statusLine = document.getElementById("statusLine");
-
     const betSlider = document.getElementById("betSlider");
     const betInput = document.getElementById("betInput");
     const betSide = document.getElementById("betSide");
     const betSizeText = document.getElementById("betSizeText");
-    const placeBetBtn = document.getElementById("placeBetBtn");
-
-    const startBtn = document.getElementById("startBtn");
-    const leaveBtn = document.getElementById("leaveBtn");
+    const dealBtn = document.getElementById("dealBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const dealRoundBtn = document.getElementById("dealRoundBtn");
     const repeatBtn = document.getElementById("repeatBtn");
     const clearBtn = document.getElementById("clearBtn");
-    const newRoundBtn = document.getElementById("newRoundBtn");
+    const resetGameBtn = document.getElementById("resetGameBtn");
 
-    let currentUser = null;
-    let currentTable = null;
-    let unsubscribeTable = null;
-    let actionBusy = false;
-    let lastBet = { amount:0, side:"player" };
+    let deck = [];
+    let bank = STARTING_BANK;
+    let round = 0;
+    let playerCards = [];
+    let bankerCards = [];
+    let lastWinner = "";
+    let lastBet = { amount: MIN_BET, side: "player" };
+    let lastResult = "Ready";
 
-    const SUITS = ["S","C","H","D"];
-    const VALUES = ["2","3","4","5","6","7","8","9","10","J","Q","K","A"];
+    function money(value){
+      return new Intl.NumberFormat("en-CA",{style:"currency",currency:"CAD",maximumFractionDigits:0}).format(Number(value || 0));
+    }
 
-    function setGateMessage(message){ gateCard.textContent = message; }
-    function money(value){ return new Intl.NumberFormat("en-CA",{style:"currency",currency:"CAD",maximumFractionDigits:0}).format(Number(value || 0)); }
-    function escapeHtml(value){ return String(value ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
-    function clone(value){ return JSON.parse(JSON.stringify(value)); }
-    function getPublicName(player, fallback="Player"){ return String(player?.username || "").trim() || String(player?.displayName || "").trim() || String(player?.email || "").trim() || fallback; }
-    function isHost(table, uid){ return !!table && !!uid && (table.hostUid === uid || table.createdByUid === uid || table.ownerUid === uid); }
+    function sideLabel(side){
+      if (side === "banker") return "Banker";
+      if (side === "tie") return "Tie";
+      return "Player";
+    }
+
     function cardUrl(code){ return code ? `/cards/${code}.png` : ""; }
 
     function renderCard(code){
       if (!code) return `<div class="card-slot"></div>`;
-      return `<div class="card"><img src="${cardUrl(code)}" alt="${escapeHtml(code)}"></div>`;
+      return `<div class="card"><img src="${cardUrl(code)}" alt="${code}"></div>`;
     }
 
     function renderCardRow(container, cards, slots=3){
       const html = [];
-      for (let i = 0; i < Math.max(slots, cards?.length || 0); i++) html.push(renderCard(cards?.[i] || ""));
+      for (let i = 0; i < Math.max(slots, cards.length); i++) html.push(renderCard(cards[i] || ""));
       container.innerHTML = html.join("");
     }
 
-    function buildShoe(deckCount=6){
-      const deck = [];
+    function buildShoe(deckCount=DECK_COUNT){
+      const shoe = [];
       for(let d=0; d<deckCount; d++){
-        for(const v of VALUES) for(const s of SUITS) deck.push(`${v}${s}`);
+        for(const v of VALUES) for(const s of SUITS) shoe.push(`${v}${s}`);
       }
-      for(let i=deck.length-1;i>0;i--){
+      for(let i=shoe.length-1;i>0;i--){
         const j = Math.floor(Math.random() * (i + 1));
-        [deck[i], deck[j]] = [deck[j], deck[i]];
+        [shoe[i], shoe[j]] = [shoe[j], shoe[i]];
       }
-      return deck;
+      return shoe;
+    }
+
+    function drawCard(){
+      if (!deck.length || deck.length < 20) deck = buildShoe();
+      return deck.shift();
     }
 
     function cardPoint(code){
@@ -304,365 +272,148 @@
       return cards.reduce((sum, card) => sum + cardPoint(card), 0) % 10;
     }
 
-    function drawCard(table){
-      if (!Array.isArray(table.deck) || table.deck.length < 12) table.deck = buildShoe(Number(table.deckCount || 6));
-      return table.deck.shift();
+    function syncBetControls(){
+      betSlider.max = String(Math.max(MIN_BET, bank));
+      betInput.max = String(Math.max(MIN_BET, bank));
+      let amount = Math.floor(Number(betInput.value || MIN_BET));
+      amount = Math.max(MIN_BET, Math.min(bank, amount));
+      if (bank < MIN_BET) amount = 0;
+      betInput.value = String(amount);
+      betSlider.value = String(amount);
+      betSizeText.textContent = `${money(amount)} on ${sideLabel(betSide.value)}`;
+      const canDeal = bank >= MIN_BET && amount >= MIN_BET;
+      dealBtn.disabled = !canDeal;
+      dealRoundBtn.disabled = !canDeal;
     }
 
-    function getSortedPlayers(table){
-      const players = Array.isArray(table?.players) ? clone(table.players) : [];
-      players.sort((a,b) => Number(a.seat ?? 999) - Number(b.seat ?? 999));
-      return players;
+    function render(){
+      minBetValue.textContent = money(MIN_BET);
+      roundValue.textContent = String(round);
+      winnerValue.textContent = lastWinner ? sideLabel(lastWinner) : "—";
+      playerScore.textContent = playerCards.length ? baccaratTotal(playerCards) : "0";
+      bankerScore.textContent = bankerCards.length ? baccaratTotal(bankerCards) : "0";
+      renderCardRow(playerCardsEl, playerCards, 3);
+      renderCardRow(bankerCardsEl, bankerCards, 3);
+
+      const winClass = lastResult.startsWith("Won") ? "winner" : "";
+      playersList.innerHTML = `<div class="player ${winClass}">
+        <div class="player-main">
+          <div class="player-name">You</div>
+          <div class="player-sub">
+            <span>Bank ${money(bank)}</span>
+            <span>Last bet ${money(lastBet.amount)} on ${sideLabel(lastBet.side)}</span>
+            <span>${lastResult}</span>
+          </div>
+        </div>
+        <div class="player-sub"><span>${deck.length} cards left</span></div>
+      </div>`;
+
+      roundText.textContent = lastResult === "Ready" ? "Choose a side and deal the round." : lastResult;
+      statusLine.textContent = `Bank ${money(bank)} • ${bank < MIN_BET ? "Game over" : "Ready"}`;
+      syncBetControls();
     }
 
-    function findMe(table){
-      return getSortedPlayers(table).find(player => player.uid === currentUser?.uid && !player.left) || null;
-    }
+    function dealBaccaratRound(){
+      const amount = Math.floor(Number(betInput.value || 0));
+      const side = String(betSide.value || "player");
+      if (amount < MIN_BET) return;
+      if (amount > bank) return;
 
-    function normalizeTable(raw){
-      const table = clone(raw || {});
-      table.players = getSortedPlayers(table).map(p => ({
-        uid:"", username:"", displayName:"", email:"", seat:0, bank:1000, betAmount:0, betSide:"player",
-        lastBetAmount:0, lastBetSide:"player", result:"", left:false, ...p
-      }));
-      table.status = String(table.status || "waiting");
-      table.phase = String(table.phase || "betting");
-      table.minBet = Math.max(1, Number(table.minBet || 10));
-      table.deckCount = Number(table.deckCount || 6);
-      table.roundNumber = Number(table.roundNumber || 0);
-      table.playerCards = Array.isArray(table.playerCards) ? table.playerCards : [];
-      table.bankerCards = Array.isArray(table.bankerCards) ? table.bankerCards : [];
-      table.deck = Array.isArray(table.deck) ? table.deck : [];
-      return table;
-    }
+      bank -= amount;
+      lastBet = { amount, side };
+      playerCards = [];
+      bankerCards = [];
 
-    function sideLabel(side){
-      if (side === "banker") return "Banker";
-      if (side === "tie") return "Tie";
-      return "Player";
-    }
+      playerCards.push(drawCard());
+      bankerCards.push(drawCard());
+      playerCards.push(drawCard());
+      bankerCards.push(drawCard());
 
-    function makeBetText(player){
-      const amount = Number(player?.betAmount || 0);
-      if (!amount) return "No bet";
-      return `${money(amount)} on ${sideLabel(player.betSide)}`;
-    }
-
-    function dealBaccaratRound(table){
-      table = normalizeTable(table);
-      table.playerCards = [];
-      table.bankerCards = [];
-      if (!table.deck.length || table.deck.length < 20) table.deck = buildShoe(Number(table.deckCount || 6));
-
-      const active = table.players.filter(p => !p.left && Number(p.betAmount || 0) > 0);
-      if (!active.length) throw new Error("At least one player needs to place a bet.");
-
-      table.playerCards.push(drawCard(table));
-      table.bankerCards.push(drawCard(table));
-      table.playerCards.push(drawCard(table));
-      table.bankerCards.push(drawCard(table));
-
-      let pTotal = baccaratTotal(table.playerCards);
-      let bTotal = baccaratTotal(table.bankerCards);
+      let pTotal = baccaratTotal(playerCards);
+      let bTotal = baccaratTotal(bankerCards);
 
       if (pTotal < 8 && bTotal < 8) {
         let playerThird = null;
 
         if (pTotal <= 5) {
-          playerThird = drawCard(table);
-          table.playerCards.push(playerThird);
-          pTotal = baccaratTotal(table.playerCards);
+          playerThird = drawCard();
+          playerCards.push(playerThird);
+          pTotal = baccaratTotal(playerCards);
         }
 
         if (!playerThird) {
-          if (bTotal <= 5) table.bankerCards.push(drawCard(table));
+          if (bTotal <= 5) bankerCards.push(drawCard());
         } else {
           const pt = cardPoint(playerThird);
-          if (bTotal <= 2) table.bankerCards.push(drawCard(table));
-          else if (bTotal === 3 && pt !== 8) table.bankerCards.push(drawCard(table));
-          else if (bTotal === 4 && pt >= 2 && pt <= 7) table.bankerCards.push(drawCard(table));
-          else if (bTotal === 5 && pt >= 4 && pt <= 7) table.bankerCards.push(drawCard(table));
-          else if (bTotal === 6 && pt >= 6 && pt <= 7) table.bankerCards.push(drawCard(table));
+          if (bTotal <= 2) bankerCards.push(drawCard());
+          else if (bTotal === 3 && pt !== 8) bankerCards.push(drawCard());
+          else if (bTotal === 4 && pt >= 2 && pt <= 7) bankerCards.push(drawCard());
+          else if (bTotal === 5 && pt >= 4 && pt <= 7) bankerCards.push(drawCard());
+          else if (bTotal === 6 && pt >= 6 && pt <= 7) bankerCards.push(drawCard());
         }
       }
 
-      pTotal = baccaratTotal(table.playerCards);
-      bTotal = baccaratTotal(table.bankerCards);
+      pTotal = baccaratTotal(playerCards);
+      bTotal = baccaratTotal(bankerCards);
 
-      let winner = "tie";
-      if (pTotal > bTotal) winner = "player";
-      if (bTotal > pTotal) winner = "banker";
+      lastWinner = "tie";
+      if (pTotal > bTotal) lastWinner = "player";
+      if (bTotal > pTotal) lastWinner = "banker";
 
-      const winnerUids = [];
-      table.players = getSortedPlayers(table).map(player => {
-        if (player.left) return player;
-
-        const bet = Number(player.betAmount || 0);
-        const side = String(player.betSide || "player");
-        let bank = Number(player.bank || 0);
-        let result = "";
-
-        if (bet > 0) {
-          if (side === winner) {
-            let profit = bet;
-            if (side === "banker") profit = Math.floor(bet * 0.95);
-            if (side === "tie") profit = bet * 8;
-            bank += bet + profit;
-            result = `Won ${money(profit)} on ${sideLabel(side)}`;
-            winnerUids.push(player.uid);
-          } else {
-            result = `Lost ${money(bet)} on ${sideLabel(side)}`;
-          }
-        }
-
-        return {
-          ...player,
-          bank,
-          lastBetAmount: bet || Number(player.lastBetAmount || 0),
-          lastBetSide: side || String(player.lastBetSide || "player"),
-          betAmount: 0,
-          result,
-          broke: bank <= 0
-        };
-      });
-
-      table.status = "settle";
-      table.phase = "settle";
-      table.roundNumber = Number(table.roundNumber || 0) + 1;
-      table.lastWinner = winner;
-      table.lastWinnerUids = winnerUids;
-      table.lastMessage = `${sideLabel(winner)} wins ${pTotal}-${bTotal}.`;
-      return table;
-    }
-
-    function renderPlayers(table){
-      const players = getSortedPlayers(table).filter(p => !p.left);
-      if (!players.length) {
-        playersList.innerHTML = `<div class="player"><div class="player-main"><div class="player-name">No players</div></div></div>`;
-        return;
+      if (side === lastWinner) {
+        let profit = amount;
+        if (side === "banker") profit = Math.floor(amount * 0.95);
+        if (side === "tie") profit = amount * 8;
+        bank += amount + profit;
+        lastResult = `Won ${money(profit)} on ${sideLabel(side)}. ${sideLabel(lastWinner)} wins ${pTotal}-${bTotal}.`;
+      } else {
+        lastResult = `Lost ${money(amount)} on ${sideLabel(side)}. ${sideLabel(lastWinner)} wins ${pTotal}-${bTotal}.`;
       }
 
-      const winners = Array.isArray(table.lastWinnerUids) ? table.lastWinnerUids : [];
-      playersList.innerHTML = players.map(player => {
-        const me = currentUser && player.uid === currentUser.uid;
-        return `<div class="player ${me ? "me" : ""} ${winners.includes(player.uid) ? "winner" : ""}">
-          <div class="player-main">
-            <div class="player-name">${escapeHtml(getPublicName(player))}</div>
-            <div class="player-sub">
-              <span>Bank ${money(player.bank)}</span>
-              <span>${escapeHtml(makeBetText(player))}</span>
-              ${player.result ? `<span>${escapeHtml(player.result)}</span>` : ``}
-              ${player.broke ? `<span>Broke</span>` : ``}
-            </div>
-          </div>
-          <div class="player-sub" style="justify-content:flex-end"><span>${me ? "You" : ""}</span></div>
-        </div>`;
-      }).join("");
+      round++;
+      render();
     }
 
-    function renderTable(table){
-      currentTable = normalizeTable(table);
-      const me = findMe(currentTable);
-      const host = isHost(currentTable, currentUser?.uid);
-
-      headerTitle.textContent = `Baccarat${tableId ? ` • ${tableId}` : ""}`;
-      roundValue.textContent = String(currentTable.roundNumber || 0);
-      minBetValue.textContent = money(currentTable.minBet);
-      winnerValue.textContent = currentTable.lastWinner ? sideLabel(currentTable.lastWinner) : "—";
-
-      const pTotal = baccaratTotal(currentTable.playerCards);
-      const bTotal = baccaratTotal(currentTable.bankerCards);
-      playerScore.textContent = currentTable.playerCards.length ? pTotal : "0";
-      bankerScore.textContent = currentTable.bankerCards.length ? bTotal : "0";
-      renderCardRow(playerCards, currentTable.playerCards, 3);
-      renderCardRow(bankerCards, currentTable.bankerCards, 3);
-
-      renderPlayers(currentTable);
-
-      const maxBet = Math.max(0, Number(me?.bank || 0));
-      betSlider.max = String(maxBet);
-      betInput.max = String(maxBet);
-      const currentAmount = Math.min(Number(betInput.value || currentTable.minBet), maxBet);
-      if (Number(betInput.value || 0) > maxBet) {
-        betInput.value = String(maxBet);
-        betSlider.value = String(maxBet);
-      }
-      betSizeText.textContent = `${money(betInput.value || 0)} on ${sideLabel(betSide.value)}`;
-
-      const canBet = !!me && Number(me.bank || 0) > 0 && currentTable.phase !== "dealing";
-      const canStart = host && currentTable.players.some(p => !p.left && Number(p.betAmount || 0) > 0);
-      const canNew = host && currentTable.phase === "settle";
-
-      placeBetBtn.disabled = !canBet || actionBusy;
-      placeBetBtn.classList.toggle("live-bet", !placeBetBtn.disabled);
-
-      startBtn.disabled = !canStart || actionBusy;
-      startBtn.classList.toggle("live-start", !startBtn.disabled);
-
-      newRoundBtn.disabled = !canNew || actionBusy;
-      newRoundBtn.classList.toggle("live-check", !newRoundBtn.disabled);
-
-      repeatBtn.disabled = !canBet || !Number(me?.lastBetAmount || 0) || actionBusy;
-      repeatBtn.classList.toggle("live-call", !repeatBtn.disabled);
-
-      clearBtn.disabled = !me || !Number(me?.betAmount || 0) || actionBusy;
-      clearBtn.classList.toggle("live-fold", !clearBtn.disabled);
-
-      leaveBtn.disabled = !me || actionBusy;
-
-      tableText.textContent = currentTable.lastMessage || "Place bets, then the host starts the round.";
-      statusLine.textContent = me
-        ? `${getPublicName(me)} • ${money(me.bank)} • ${makeBetText(me)}`
-        : "You are not seated at this table.";
+    function clearCards(){
+      playerCards = [];
+      bankerCards = [];
+      lastWinner = "";
+      lastResult = "Ready";
+      render();
     }
 
-    function syncBetControls(){
-      const max = Number(betSlider.max || 0);
-      let amount = Math.floor(Number(betInput.value || 0));
-      amount = Math.max(0, Math.min(max, amount));
-      betInput.value = String(amount);
-      betSlider.value = String(amount);
-      betSizeText.textContent = `${money(amount)} on ${sideLabel(betSide.value)}`;
+    function resetGame(){
+      deck = buildShoe();
+      bank = STARTING_BANK;
+      round = 0;
+      playerCards = [];
+      bankerCards = [];
+      lastWinner = "";
+      lastBet = { amount: MIN_BET, side: "player" };
+      lastResult = "Ready";
+      betInput.value = String(MIN_BET);
+      betSlider.value = String(MIN_BET);
+      betSide.value = "player";
+      render();
     }
 
     betInput.addEventListener("input", syncBetControls);
     betSlider.addEventListener("input", () => { betInput.value = betSlider.value; syncBetControls(); });
     betSide.addEventListener("change", syncBetControls);
-
-    async function updateTable(mutator){
-      if (!currentUser || !tableId || actionBusy) return;
-      actionBusy = true;
-      try {
-        const ref = doc(db, "baccaratTables", tableId);
-        await runTransaction(db, async tx => {
-          const snap = await tx.get(ref);
-          if (!snap.exists()) throw new Error("Table not found.");
-          let table = normalizeTable(snap.data());
-          table = await mutator(table);
-          table.updatedAt = serverTimestamp();
-          tx.update(ref, table);
-        });
-      } catch (err) {
-        statusLine.textContent = err?.message || "Action failed.";
-      } finally {
-        actionBusy = false;
-        if (currentTable) renderTable(currentTable);
-      }
-    }
-
-    placeBetBtn.addEventListener("click", () => updateTable(table => {
-      const amount = Math.floor(Number(betInput.value || 0));
-      const side = String(betSide.value || "player");
-      const player = table.players.find(p => p.uid === currentUser.uid && !p.left);
-      if (!player) throw new Error("You are not seated.");
-      if (amount < Number(table.minBet || 0)) throw new Error(`Minimum bet is ${money(table.minBet)}.`);
-      if (amount > Number(player.bank || 0)) throw new Error("Not enough money.");
-
-      player.bank = Number(player.bank || 0) + Number(player.betAmount || 0) - amount;
-      player.betAmount = amount;
-      player.betSide = side;
-      player.lastBetAmount = amount;
-      player.lastBetSide = side;
-      player.result = "";
-      table.phase = table.phase === "settle" ? "betting" : table.phase;
-      table.status = "waiting";
-      table.lastMessage = `${getPublicName(player)} bet ${money(amount)} on ${sideLabel(side)}.`;
-      lastBet = { amount, side };
-      return table;
-    }));
-
-    repeatBtn.addEventListener("click", () => updateTable(table => {
-      const player = table.players.find(p => p.uid === currentUser.uid && !p.left);
-      if (!player) throw new Error("You are not seated.");
-
-      const amount = Math.floor(Number(player.lastBetAmount || lastBet.amount || 0));
-      const side = String(player.lastBetSide || lastBet.side || "player");
-      if (amount < Number(table.minBet || 0)) throw new Error("No valid previous bet.");
-      if (amount > Number(player.bank || 0) + Number(player.betAmount || 0)) throw new Error("Not enough money.");
-
-      player.bank = Number(player.bank || 0) + Number(player.betAmount || 0) - amount;
-      player.betAmount = amount;
-      player.betSide = side;
-      player.result = "";
-      table.phase = table.phase === "settle" ? "betting" : table.phase;
-      table.status = "waiting";
-      table.lastMessage = `${getPublicName(player)} repeated ${money(amount)} on ${sideLabel(side)}.`;
-      return table;
-    }));
-
-    clearBtn.addEventListener("click", () => updateTable(table => {
-      const player = table.players.find(p => p.uid === currentUser.uid && !p.left);
-      if (!player) throw new Error("You are not seated.");
-
-      player.bank = Number(player.bank || 0) + Number(player.betAmount || 0);
-      player.betAmount = 0;
-      player.result = "";
-      table.lastMessage = `${getPublicName(player)} cleared their bet.`;
-      return table;
-    }));
-
-    startBtn.addEventListener("click", () => updateTable(table => {
-      if (!isHost(table, currentUser.uid)) throw new Error("Only the host can start.");
-      table.phase = "dealing";
-      table.status = "active";
-      return dealBaccaratRound(table);
-    }));
-
-    newRoundBtn.addEventListener("click", () => updateTable(table => {
-      if (!isHost(table, currentUser.uid)) throw new Error("Only the host can reset.");
-      table.phase = "betting";
-      table.status = "waiting";
-      table.playerCards = [];
-      table.bankerCards = [];
-      table.lastWinner = "";
-      table.lastWinnerUids = [];
-      table.lastMessage = "New betting round.";
-      table.players = getSortedPlayers(table).map(p => ({ ...p, result:"" }));
-      return table;
-    }));
-
-    leaveBtn.addEventListener("click", () => updateTable(table => {
-      const player = table.players.find(p => p.uid === currentUser.uid);
-      if (!player) return table;
-      player.bank = Number(player.bank || 0) + Number(player.betAmount || 0);
-      player.betAmount = 0;
-      player.left = true;
-      player.result = "Left table";
-      table.lastMessage = `${getPublicName(player)} left the table.`;
-      return table;
-    }));
-
-    onAuthStateChanged(auth, user => {
-      currentUser = user;
-      if (!user) {
-        authGate.classList.remove("hidden");
-        setGateMessage("Please sign in to play.");
-        return;
-      }
-
-      if (!tableId) {
-        authGate.classList.remove("hidden");
-        setGateMessage("Missing table id. Add ?table=YOUR_TABLE_ID to the URL.");
-        return;
-      }
-
-      authGate.classList.add("hidden");
-
-      if (unsubscribeTable) unsubscribeTable();
-      const ref = doc(db, "baccaratTables", tableId);
-      unsubscribeTable = onSnapshot(ref, snap => {
-        if (!snap.exists()) {
-          authGate.classList.remove("hidden");
-          setGateMessage("Baccarat table not found.");
-          return;
-        }
-        authGate.classList.add("hidden");
-        renderTable(snap.data());
-      }, err => {
-        authGate.classList.remove("hidden");
-        setGateMessage(err?.message || "Could not load table.");
-      });
+    dealBtn.addEventListener("click", dealBaccaratRound);
+    dealRoundBtn.addEventListener("click", dealBaccaratRound);
+    repeatBtn.addEventListener("click", () => {
+      betInput.value = String(Math.min(bank, lastBet.amount));
+      betSlider.value = betInput.value;
+      betSide.value = lastBet.side;
+      syncBetControls();
+      dealBaccaratRound();
     });
+    clearBtn.addEventListener("click", clearCards);
+    resetBtn.addEventListener("click", resetGame);
+    resetGameBtn.addEventListener("click", resetGame);
+
+    resetGame();
   </script>
 </body>
 </html>
