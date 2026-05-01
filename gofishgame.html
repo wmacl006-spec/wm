@@ -175,6 +175,7 @@
     let selectedTargetUid = "";
     let selectedRank = "";
     let autoMatchBusy = false;
+    let resolvingAskBusy = false;
 
     function setGateMessage(message){ gateCard.textContent = message; }
     function escapeHtml(value){ return String(value ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;").replace(/'/g,"&#039;"); }
@@ -187,7 +188,7 @@
     function sortCards(cards=[]){ return [...cards].sort((a,b) => VALUES.indexOf(getRank(a)) - VALUES.indexOf(getRank(b)) || String(a).localeCompare(String(b))); }
     function getSortedPlayers(game){ const players = Array.isArray(game?.players) ? clone(game.players) : []; return players.filter(p => !p.left).sort((a,b) => Number(a.seat ?? 999) - Number(b.seat ?? 999)); }
     function findMe(game){ return getSortedPlayers(game).find(player => player.uid === currentUser?.uid) || null; }
-    function normalizeGame(raw){ const game = clone(raw || {}); game.players = getSortedPlayers(game).map(p => ({ uid:"", username:"", displayName:"", email:"", seat:0, cards:[], books:[], score:0, left:false, isHost:false, ...p })); game.deck = Array.isArray(game.deck) ? game.deck : []; game.discard = Array.isArray(game.discard) ? game.discard : []; game.status = String(game.status || "waiting"); game.phase = String(game.phase || "waiting"); game.currentTurnUid = String(game.currentTurnUid || ""); game.lastMessage = String(game.lastMessage || "Waiting..."); return game; }
+    function normalizeGame(raw){ const game = clone(raw || {}); game.players = getSortedPlayers(game).map(p => ({ uid:"", username:"", displayName:"", email:"", seat:0, cards:[], books:[], score:0, left:false, isHost:false, ...p })); game.deck = Array.isArray(game.deck) ? game.deck : []; game.discard = Array.isArray(game.discard) ? game.discard : []; game.status = String(game.status || "waiting"); game.phase = String(game.phase || "waiting"); game.currentTurnUid = String(game.currentTurnUid || ""); game.lastMessage = String(game.lastMessage || "Waiting..."); game.pendingAsk = game.pendingAsk || null; return game; }
     function uniqueRanks(cards=[]){ return [...new Set(sortCards(cards).map(getRank))]; }
     function buildShoe(deckCount=1){ const deck=[]; for(let d=0; d<Number(deckCount || 1); d++){ for(const v of VALUES){ for(const s of SUITS) deck.push(`${v}${s}`); } } for(let i=deck.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; } return deck; }
     function nextTurnUid(game, fromUid){ const players = getSortedPlayers(game).filter(p => (p.cards?.length || 0) > 0 || (game.deck?.length || 0) > 0); if (!players.length) return ""; const index = Math.max(0, players.findIndex(p => p.uid === fromUid)); for(let step=1; step<=players.length; step++){ const p = players[(index + step) % players.length]; if (!p.left) return p.uid; } return players[0]?.uid || ""; }
@@ -281,8 +282,9 @@
       return checkGameOver(game);
     }
 
-    function askForRankState(game, askerUid, targetUid, rank){
+    function beginAskForRankState(game, askerUid, targetUid, rank){
       if (game.status !== "active") throw new Error("Game is not active.");
+      if (game.phase === "asking") throw new Error("Another ask is being shown.");
       if (game.currentTurnUid !== askerUid) throw new Error("Not your turn.");
       if (!targetUid || !rank) throw new Error("Choose a player and card first.");
 
@@ -292,10 +294,35 @@
       if (!asker || !target || asker.uid === target.uid) throw new Error("Invalid player.");
       if (!asker.cards.some(c => getRank(c) === rank)) throw new Error("You can only ask for a rank in your hand.");
 
+      const askId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      game.pendingAsk = { id:askId, askerUid, targetUid, rank, at:new Date().toISOString() };
+      game.phase = "asking";
+      game.lastAsk = { askerUid, targetUid, rank, at:new Date().toISOString(), pending:true };
+      game.lastMessage = `${getPublicName(asker)} asked ${getPublicName(target)} for ${RANK_LABELS[rank]} card${rank === "A" ? "s" : "s"}.`;
+      return game;
+    }
+
+    function finalizeAskForRankState(game, askId){
+      if (game.status !== "active") throw new Error("Game is not active.");
+      if (game.phase !== "asking" || !game.pendingAsk || game.pendingAsk.id !== askId) return game;
+
+      const { askerUid, targetUid, rank } = game.pendingAsk;
+      const players = getSortedPlayers(game);
+      const asker = players.find(p => p.uid === askerUid);
+      const target = players.find(p => p.uid === targetUid);
+      if (!asker || !target || asker.uid === target.uid) {
+        game.phase = "playing";
+        game.pendingAsk = null;
+        game.lastMessage = "Ask could not be completed.";
+        return game;
+      }
+
       const targetCards = Array.isArray(target.cards) ? target.cards : [];
       const matches = targetCards.filter(c => getRank(c) === rank);
 
       game.lastAsk = { askerUid, targetUid, rank, at:new Date().toISOString(), hit:matches.length > 0 };
+      game.pendingAsk = null;
+      game.phase = "playing";
 
       if (matches.length > 0) {
         target.cards = targetCards.filter(c => getRank(c) !== rank);
@@ -331,6 +358,7 @@
 
     function drawCardState(game, uid){
       if (game.status !== "active") throw new Error("Game is not active.");
+      if (game.phase === "asking") throw new Error("Wait for the ask to finish.");
       if (game.currentTurnUid !== uid) throw new Error("Not your turn.");
       if (!game.deck.length) throw new Error("Deck is empty.");
       const players = getSortedPlayers(game);
@@ -398,7 +426,7 @@
 
     function renderControls(game){
       const me = findMe(game);
-      const isMyTurn = !!me && game.status === "active" && game.currentTurnUid === me.uid;
+      const isMyTurn = !!me && game.status === "active" && game.phase !== "asking" && game.currentTurnUid === me.uid;
       const players = getSortedPlayers(game).filter(p => p.uid !== me?.uid && !p.left);
       const myRanks = uniqueRanks(me?.cards || []);
 
@@ -419,7 +447,7 @@
     }
 
     async function autoMatchPairsIfNeeded(game){
-      if (autoMatchBusy || !currentUser || !gameId || game.status !== "active" || !hasAnyPair(game)) return;
+      if (autoMatchBusy || !currentUser || !gameId || game.status !== "active" || game.phase === "asking" || !hasAnyPair(game)) return;
       autoMatchBusy = true;
       try {
         await runGameTransaction(nextGame => {
@@ -443,7 +471,7 @@
       matchesValue.textContent = String(totalMatches(currentGame));
       turnValue.textContent = turnPlayer ? getPublicName(turnPlayer).slice(0, 12) : "-";
       lastAskText.textContent = currentGame.lastMessage || "Waiting...";
-      statusLine.textContent = currentGame.status === "waiting" ? "Waiting for host to start." : currentGame.status === "finished" ? currentGame.lastMessage : (currentGame.currentTurnUid === currentUser?.uid ? "Your turn. Choose a player, choose a rank, then ask." : "Waiting for your turn.");
+      statusLine.textContent = currentGame.status === "waiting" ? "Waiting for host to start." : currentGame.status === "finished" ? currentGame.lastMessage : currentGame.phase === "asking" ? "Showing the ask to all players..." : (currentGame.currentTurnUid === currentUser?.uid ? "Your turn. Choose a player, choose a rank, then ask." : "Waiting for your turn.");
       renderPlayers(currentGame);
       myCards.innerHTML = me?.cards?.length ? sortCards(me.cards).map(renderCard).join("") : `<div class="card-slot">EMPTY</div>`;
       renderControls(currentGame);
@@ -452,6 +480,21 @@
       startBtn.disabled = !canStart;
       startBtn.classList.toggle("live-start", canStart);
       startBtn.textContent = currentGame.status === "finished" ? "Restart" : "Start";
+    }
+
+    async function resolvePendingAskIfNeeded(game){
+      if (resolvingAskBusy || !currentUser || !gameId || game.status !== "active" || game.phase !== "asking" || !game.pendingAsk?.id) return;
+      resolvingAskBusy = true;
+      const askId = game.pendingAsk.id;
+      window.setTimeout(async () => {
+        try {
+          await runGameTransaction(nextGame => finalizeAskForRankState(nextGame, askId));
+        } catch (error) {
+          console.error(error);
+        } finally {
+          resolvingAskBusy = false;
+        }
+      }, 2000);
     }
 
     async function leaveGame(){
@@ -484,7 +527,7 @@
     });
 
     askBtn.addEventListener("click", () => {
-      runGameTransaction(game => askForRankState(game, currentUser.uid, selectedTargetUid, selectedRank));
+      runGameTransaction(game => beginAskForRankState(game, currentUser.uid, selectedTargetUid, selectedRank));
     });
 
     drawBtn.addEventListener("click", () => {
@@ -551,6 +594,7 @@
           const nextGame = normalizeGame({ id:snap.id, ...snap.data() });
           renderGame(nextGame);
           autoMatchPairsIfNeeded(nextGame).catch(console.error);
+          resolvePendingAskIfNeeded(nextGame).catch(console.error);
         }, error => {
           console.error(error);
           setGateMessage("Could not load game.");
