@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Go Fish Game | William MacLean</title>
+  <link rel="icon" href="logo.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --bg:#000;--panel:#050505;--panel-2:rgba(255,255,255,.03);--text:#fff;--muted:#8d8d8d;--line:rgba(255,255,255,.08);--accent:#b00b55;--accent-soft:rgba(176,11,85,.16);--success:#57d38c;--danger:#ff6b81;--warning:#ffd166;--header-h:64px;--max-w:1100px;--shadow:0 18px 40px rgba(0,0,0,.24);--card-w:72px;--card-h:104px;--player-h:82px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{min-height:100%}
+    body{font-family:"Comfortaa",sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+    a{color:inherit;text-decoration:none}
+    button,select{font:inherit}
+    img{display:block;max-width:100%}
+
+    header{position:fixed;inset:0 0 auto 0;height:var(--header-h);display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:rgba(0,0,0,.72);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.05);z-index:200;gap:12px}
+    .logo{display:flex;align-items:center;gap:10px;min-width:0}.logo img{width:28px;height:28px}.logo span{font-size:.95rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .header-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+    .header-btn{min-width:92px;min-height:40px;padding:10px 14px;border:1px solid var(--line);background:#050505;color:#fff;font-weight:700;cursor:pointer;transition:.14s ease}
+    .header-btn:hover{transform:translateY(-1px)}
+    .header-btn:disabled{background:#050505;border-color:var(--line);color:#676767;cursor:not-allowed;transform:none;opacity:1}
+    .header-btn.live-start{border-color:rgba(87,211,140,.65);background:rgba(87,211,140,.14)}
+    .header-btn.live-leave{border-color:rgba(255,107,129,.45);background:rgba(255,107,129,.10)}
+
+    .page{min-height:100vh;padding-top:calc(var(--header-h) + 12px)}
+    #authGate{position:fixed;inset:var(--header-h) 0 0 0;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;z-index:150;backdrop-filter:blur(8px)}
+    #authGate.hidden{display:none}
+    .gate-card{border:1px solid var(--line);background:rgba(255,255,255,.03);padding:24px 26px;color:#d8d8d8;font-size:.92rem;text-align:center;max-width:420px;line-height:1.5}
+
+    .shell{width:min(var(--max-w), calc(100% - 24px));margin:0 auto;padding:0 0 18px;display:grid;gap:12px}
+    .panel{border:1px solid var(--line);background:var(--panel-2);box-shadow:var(--shadow)}
+    .layout{display:grid;grid-template-rows:auto auto auto;gap:12px;min-height:calc(100vh - var(--header-h) - 48px)}
+    .players-panel{padding:10px;max-height:260px;overflow:auto}
+    .players-list{display:grid;gap:8px}
+    .player{min-height:var(--player-h);border:1px solid var(--line);background:rgba(255,255,255,.02);padding:10px 12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
+    .player.current-turn{border-color:rgba(176,11,85,.65);background:rgba(176,11,85,.10)}
+    .player.winner{border-color:rgba(87,211,140,.65);box-shadow:inset 0 0 0 1px rgba(87,211,140,.32);background:rgba(87,211,140,.09)}
+    .player.me{box-shadow:inset 0 0 0 1px rgba(255,255,255,.07)}
+    .player-main{min-width:0}.player-name{font-size:.92rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px}.player-sub{display:flex;flex-wrap:wrap;gap:10px;color:var(--muted);font-size:.76rem;line-height:1.35}
+
+    .center-panel{padding:14px 10px 16px;display:grid;gap:14px;align-content:start}
+    .board-top{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;text-align:center}
+    .pot-box{border:1px solid rgba(176,11,85,.5);background:rgba(176,11,85,.12);padding:10px 14px;min-width:130px}
+    .pot-label{color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+    .pot-value{font-size:1.3rem;font-weight:800;letter-spacing:-.04em}
+    .tiny{font-size:.75rem;color:var(--muted);text-align:center;line-height:1.4}
+    .status-line{min-height:1.2em;color:var(--muted);font-size:.85rem;text-align:center;line-height:1.4}
+
+    .bottom-panel{padding:12px 10px 14px;display:grid;gap:12px;position:sticky;bottom:0;background:linear-gradient(180deg, rgba(5,5,5,.95), rgba(5,5,5,1));z-index:5}
+    .my-cards-wrap{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+    .card,.card-slot{width:var(--card-w);height:var(--card-h);border:1px solid var(--line);background:#090909;flex:0 0 auto;position:relative;display:flex;align-items:center;justify-content:center}
+    .card img{width:100%;height:100%;object-fit:cover}
+    .card-slot{color:#5e5e5e;font-size:.72rem;letter-spacing:.12em}
+    .card-btn{width:76px;min-height:44px;border:1px solid var(--line);background:#050505;color:#fff;font-weight:700;cursor:pointer;transition:.14s ease}
+    .card-btn:hover,.target-btn:hover,.action-btn:hover{transform:translateY(-1px)}
+    .card-btn.selected,.target-btn.selected{border-color:rgba(176,11,85,.85);background:rgba(176,11,85,.2)}
+    .card-btn:disabled,.target-btn:disabled,.action-btn:disabled{opacity:.48;cursor:not-allowed;transform:none}
+
+    .control-panel{border:1px solid var(--line);background:rgba(255,255,255,.02);padding:12px;display:grid;gap:10px}
+    .control-title{font-size:.85rem;font-weight:700;color:#fff}
+    .target-list,.rank-list{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+    .target-btn,.action-btn{min-height:46px;border:1px solid var(--line);background:#050505;color:#fff;padding:10px 12px;font-weight:700;cursor:pointer;transition:.14s ease}
+    .action-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .action-btn.live-ask{border-color:rgba(176,11,85,.75);background:rgba(176,11,85,.16)}
+    .action-btn.live-draw{border-color:rgba(87,211,140,.58);background:rgba(87,211,140,.12)}
+    .hidden{display:none !important}
+
+    @media (min-width:880px){.layout{grid-template-rows:auto 1fr auto}.players-panel{max-height:280px}.my-cards-wrap .card,.my-cards-wrap .card-slot{width:92px;height:134px}}
+    @media (max-width:560px){:root{--card-w:60px;--card-h:88px}header{padding:0 12px}.logo span{font-size:.82rem}.header-actions{gap:6px}.header-btn{min-width:78px;min-height:38px;padding:8px 10px;font-size:.82rem}.shell{width:min(100% - 16px,var(--max-w))}.player{padding:9px 10px}.player-sub{gap:8px;font-size:.72rem}.my-cards-wrap .card,.my-cards-wrap .card-slot{width:76px;height:110px}.action-row{grid-template-columns:1fr}.target-btn,.card-btn,.action-btn{font-size:.9rem}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo"><img src="logo.png" alt="Logo" /><span id="headerTitle">Go Fish</span></div>
+    <div class="header-actions">
+      <button type="button" class="header-btn" id="startBtn">Start</button>
+      <button type="button" class="header-btn live-leave" id="leaveBtn">Leave</button>
+    </div>
+  </header>
+
+  <div id="authGate"><div class="gate-card" id="gateCard">Checking access...</div></div>
+
+  <main class="page">
+    <section class="shell">
+      <section class="panel players-panel">
+        <div class="players-list" id="playersList"><div class="player"><div class="player-main"><div class="player-name">Loading players...</div></div></div></div>
+      </section>
+
+      <section class="panel center-panel">
+        <div class="board-top">
+          <div class="pot-box"><div class="pot-label">Deck</div><div class="pot-value" id="deckValue">0</div></div>
+          <div class="pot-box"><div class="pot-label">Matches</div><div class="pot-value" id="matchesValue">0</div></div>
+          <div class="pot-box"><div class="pot-label">Turn</div><div class="pot-value" id="turnValue">-</div></div>
+        </div>
+        <div class="tiny" id="lastAskText">Waiting...</div>
+      </section>
+
+      <section class="panel bottom-panel">
+        <div class="my-cards-wrap" id="myCards"></div>
+
+        <div class="control-panel">
+          <div class="control-title">1. Choose a player</div>
+          <div class="target-list" id="targetList"></div>
+        </div>
+
+        <div class="control-panel">
+          <div class="control-title">2. Choose a card rank from your hand</div>
+          <div class="rank-list" id="rankList"></div>
+        </div>
+
+        <div class="action-row">
+          <button type="button" class="action-btn live-ask" id="askBtn">Ask For Card</button>
+          <button type="button" class="action-btn live-draw" id="drawBtn">Pick Up Card</button>
+        </div>
+
+        <div class="status-line" id="statusLine">Loading game...</div>
+      </section>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getAnalytics, isSupported as analyticsSupported } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-analytics.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import { getFirestore, doc, getDoc, updateDoc, onSnapshot, serverTimestamp, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBLQmCVdVkz_sxxdfvXshDmoe3PeYIUMAY",
+      authDomain: "site-78972.firebaseapp.com",
+      projectId: "site-78972",
+      storageBucket: "site-78972.firebasestorage.app",
+      messagingSenderId: "519857042562",
+      appId: "1:519857042562:web:64ff26e5f795208081f09b",
+      measurementId: "G-TSQ1FNH5W1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    if (await analyticsSupported()) getAnalytics(app);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const SUITS = ["S","C","H","D"];
+    const VALUES = ["2","3","4","5","6","7","8","9","10","J","Q","K","A"];
+    const RANK_LABELS = { "2":"2","3":"3","4":"4","5":"5","6":"6","7":"7","8":"8","9":"9","10":"10","J":"J","Q":"Q","K":"K","A":"A" };
+
+    const queryParams = new URLSearchParams(window.location.search);
+    const gameId = queryParams.get("game") || "";
+
+    const authGate = document.getElementById("authGate");
+    const gateCard = document.getElementById("gateCard");
+    const headerTitle = document.getElementById("headerTitle");
+    const playersList = document.getElementById("playersList");
+    const deckValue = document.getElementById("deckValue");
+    const matchesValue = document.getElementById("matchesValue");
+    const turnValue = document.getElementById("turnValue");
+    const lastAskText = document.getElementById("lastAskText");
+    const myCards = document.getElementById("myCards");
+    const targetList = document.getElementById("targetList");
+    const rankList = document.getElementById("rankList");
+    const askBtn = document.getElementById("askBtn");
+    const drawBtn = document.getElementById("drawBtn");
+    const startBtn = document.getElementById("startBtn");
+    const leaveBtn = document.getElementById("leaveBtn");
+    const statusLine = document.getElementById("statusLine");
+
+    let currentUser = null;
+    let currentGame = null;
+    let unsubscribeGame = null;
+    let actionBusy = false;
+    let selectedTargetUid = "";
+    let selectedRank = "";
+
+    function setGateMessage(message){ gateCard.textContent = message; }
+    function escapeHtml(value){ return String(value ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;").replace(/'/g,"&#039;"); }
+    function clone(value){ return JSON.parse(JSON.stringify(value)); }
+    function getPublicName(player, fallback="Player"){ return String(player?.username || "").trim() || String(player?.displayName || "").trim() || String(player?.email || "").trim() || fallback; }
+    function isHost(game, uid){ return !!game && !!uid && game.hostUid === uid; }
+    function getRank(code){ return String(code || "").slice(0, -1); }
+    function cardUrl(code){ return code ? `/cards/${code}.png` : ""; }
+    function renderCard(code){ return code ? `<div class="card"><img src="${cardUrl(code)}" alt="${escapeHtml(code)}"></div>` : `<div class="card-slot"></div>`; }
+    function sortCards(cards=[]){ return [...cards].sort((a,b) => VALUES.indexOf(getRank(a)) - VALUES.indexOf(getRank(b)) || String(a).localeCompare(String(b))); }
+    function getSortedPlayers(game){ const players = Array.isArray(game?.players) ? clone(game.players) : []; return players.filter(p => !p.left).sort((a,b) => Number(a.seat ?? 999) - Number(b.seat ?? 999)); }
+    function findMe(game){ return getSortedPlayers(game).find(player => player.uid === currentUser?.uid) || null; }
+    function normalizeGame(raw){ const game = clone(raw || {}); game.players = getSortedPlayers(game).map(p => ({ uid:"", username:"", displayName:"", email:"", seat:0, cards:[], books:[], score:0, left:false, isHost:false, ...p })); game.deck = Array.isArray(game.deck) ? game.deck : []; game.discard = Array.isArray(game.discard) ? game.discard : []; game.status = String(game.status || "waiting"); game.phase = String(game.phase || "waiting"); game.currentTurnUid = String(game.currentTurnUid || ""); game.lastMessage = String(game.lastMessage || "Waiting..."); return game; }
+    function uniqueRanks(cards=[]){ return [...new Set(sortCards(cards).map(getRank))]; }
+    function buildShoe(deckCount=1){ const deck=[]; for(let d=0; d<Number(deckCount || 1); d++){ for(const v of VALUES){ for(const s of SUITS) deck.push(`${v}${s}`); } } for(let i=deck.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; } return deck; }
+    function nextTurnUid(game, fromUid){ const players = getSortedPlayers(game).filter(p => (p.cards?.length || 0) > 0 || (game.deck?.length || 0) > 0); if (!players.length) return ""; const index = Math.max(0, players.findIndex(p => p.uid === fromUid)); for(let step=1; step<=players.length; step++){ const p = players[(index + step) % players.length]; if (!p.left) return p.uid; } return players[0]?.uid || ""; }
+    function totalMatches(game){ return getSortedPlayers(game).reduce((sum,p) => sum + Number(p.score || 0), 0); }
+
+    function removePairsForRank(player, rank){
+      const cards = Array.isArray(player.cards) ? [...player.cards] : [];
+      const matching = cards.filter(c => getRank(c) === rank);
+      const pairCount = Math.floor(matching.length / 2);
+      if (pairCount <= 0) return 0;
+
+      let toRemove = pairCount * 2;
+      const kept = [];
+      for (const card of cards) {
+        if (getRank(card) === rank && toRemove > 0) toRemove--;
+        else kept.push(card);
+      }
+
+      player.cards = kept;
+      player.score = Number(player.score || 0) + pairCount;
+      player.books = Array.isArray(player.books) ? player.books : [];
+      for (let i = 0; i < pairCount; i++) player.books.push(rank);
+      return pairCount;
+    }
+
+    function removeAllAutoPairs(player){
+      let made = 0;
+      for (const rank of VALUES) made += removePairsForRank(player, rank);
+      return made;
+    }
+
+    function checkGameOver(game){
+      const players = getSortedPlayers(game);
+      const cardsLeft = players.reduce((sum,p) => sum + (p.cards?.length || 0), 0) + (game.deck?.length || 0);
+      if (cardsLeft > 0) return game;
+
+      const highScore = Math.max(0, ...players.map(p => Number(p.score || 0)));
+      const winners = players.filter(p => Number(p.score || 0) === highScore).map(p => p.uid);
+      game.status = "finished";
+      game.phase = "finished";
+      game.currentTurnUid = "";
+      game.lastWinnerUids = winners;
+      game.lastMessage = winners.length > 1
+        ? `Game over. Tie with ${highScore} matches.`
+        : `Game over. ${getPublicName(players.find(p => p.uid === winners[0]))} wins with ${highScore} matches.`;
+      return game;
+    }
+
+    function startGameState(game){
+      const players = getSortedPlayers(game);
+      if (players.length < 2) throw new Error("Need at least 2 players.");
+
+      const deck = buildShoe(Number(game.deckCount || 1));
+      const startingCards = Number(game.startingCards || 7);
+      const nextPlayers = players.map(p => ({ ...p, cards:[], books:[], score:0, left:false }));
+
+      for (let c = 0; c < startingCards; c++) {
+        for (const player of nextPlayers) {
+          if (deck.length) player.cards.push(deck.pop());
+        }
+      }
+
+      for (const player of nextPlayers) {
+        player.cards = sortCards(player.cards);
+        removeAllAutoPairs(player);
+      }
+
+      game.players = nextPlayers;
+      game.deck = deck;
+      game.discard = [];
+      game.status = "active";
+      game.phase = "playing";
+      game.currentTurnUid = nextPlayers[0]?.uid || "";
+      game.lastAsk = null;
+      game.lastWinnerUids = [];
+      game.roundNumber = Number(game.roundNumber || 0) + 1;
+      game.lastMessage = `${getPublicName(nextPlayers[0])} goes first.`;
+      return checkGameOver(game);
+    }
+
+    function askForRankState(game, askerUid, targetUid, rank){
+      if (game.status !== "active") throw new Error("Game is not active.");
+      if (game.currentTurnUid !== askerUid) throw new Error("Not your turn.");
+      if (!targetUid || !rank) throw new Error("Choose a player and card first.");
+
+      const players = getSortedPlayers(game);
+      const asker = players.find(p => p.uid === askerUid);
+      const target = players.find(p => p.uid === targetUid);
+      if (!asker || !target || asker.uid === target.uid) throw new Error("Invalid player.");
+      if (!asker.cards.some(c => getRank(c) === rank)) throw new Error("You can only ask for a rank in your hand.");
+
+      const targetCards = Array.isArray(target.cards) ? target.cards : [];
+      const matches = targetCards.filter(c => getRank(c) === rank);
+
+      game.lastAsk = { askerUid, targetUid, rank, at:new Date().toISOString(), hit:matches.length > 0 };
+
+      if (matches.length > 0) {
+        target.cards = targetCards.filter(c => getRank(c) !== rank);
+        asker.cards = sortCards([...(asker.cards || []), ...matches]);
+        const made = removePairsForRank(asker, rank);
+        game.currentTurnUid = asker.uid;
+        game.lastMessage = `${getPublicName(target)} had ${matches.length} ${RANK_LABELS[rank]} card${matches.length === 1 ? "" : "s"}. ${getPublicName(asker)} made ${made} match${made === 1 ? "" : "es"} and goes again.`;
+      } else {
+        if (game.deck.length) {
+          const drawn = game.deck.pop();
+          asker.cards = sortCards([...(asker.cards || []), drawn]);
+          const drewAskedRank = getRank(drawn) === rank;
+          let made = 0;
+          if (drewAskedRank) made = removePairsForRank(asker, rank);
+
+          if (drewAskedRank) {
+            game.currentTurnUid = asker.uid;
+            game.lastMessage = `${getPublicName(target)} said Go Fish. ${getPublicName(asker)} drew a ${RANK_LABELS[rank]}, made ${made} match${made === 1 ? "" : "es"}, and goes again.`;
+          } else {
+            game.currentTurnUid = nextTurnUid(game, asker.uid);
+            game.lastMessage = `${getPublicName(target)} said Go Fish. ${getPublicName(asker)} drew a card.`;
+          }
+        } else {
+          game.currentTurnUid = nextTurnUid(game, asker.uid);
+          game.lastMessage = `${getPublicName(target)} said Go Fish, but the deck is empty.`;
+        }
+      }
+
+      game.players = players.map(p => ({ ...p, cards:sortCards(p.cards || []) }));
+      return checkGameOver(game);
+    }
+
+    function drawCardState(game, uid){
+      if (game.status !== "active") throw new Error("Game is not active.");
+      if (game.currentTurnUid !== uid) throw new Error("Not your turn.");
+      if (!game.deck.length) throw new Error("Deck is empty.");
+      const players = getSortedPlayers(game);
+      const player = players.find(p => p.uid === uid);
+      if (!player) throw new Error("Player not found.");
+
+      const drawn = game.deck.pop();
+      player.cards = sortCards([...(player.cards || []), drawn]);
+      const made = removePairsForRank(player, getRank(drawn));
+      game.currentTurnUid = nextTurnUid(game, uid);
+      game.players = players;
+      game.lastAsk = { askerUid:uid, targetUid:"", rank:getRank(drawn), at:new Date().toISOString(), drawOnly:true };
+      game.lastMessage = `${getPublicName(player)} picked up a card${made ? ` and made ${made} match${made === 1 ? "" : "es"}` : ""}.`;
+      return checkGameOver(game);
+    }
+
+    async function runGameTransaction(mutator){
+      if (actionBusy || !currentUser || !gameId) return;
+      actionBusy = true;
+      try {
+        const gameRef = doc(db, "goFishGames", gameId);
+        await runTransaction(db, async transaction => {
+          const snap = await transaction.get(gameRef);
+          if (!snap.exists()) throw new Error("Game not found.");
+          const game = normalizeGame({ id:snap.id, ...snap.data() });
+          const updated = mutator(game);
+          transaction.update(gameRef, { ...updated, updatedAt:serverTimestamp() });
+        });
+      } catch (error) {
+        console.error(error);
+        statusLine.textContent = error.message || "Action failed.";
+      } finally {
+        actionBusy = false;
+      }
+    }
+
+    function renderPlayers(game){
+      const players = getSortedPlayers(game);
+      const winners = Array.isArray(game.lastWinnerUids) ? game.lastWinnerUids : [];
+      if (!players.length) {
+        playersList.innerHTML = `<div class="player"><div class="player-main"><div class="player-name">No players</div></div></div>`;
+        return;
+      }
+
+      playersList.innerHTML = players.map(player => {
+        const me = currentUser && player.uid === currentUser.uid;
+        const turn = game.currentTurnUid === player.uid;
+        const rightText = [me ? "You" : "", turn ? "Turn" : "", winners.includes(player.uid) ? "Winner" : ""].filter(Boolean).join(" • ");
+        return `<div class="player ${me ? "me" : ""} ${turn ? "current-turn" : ""} ${winners.includes(player.uid) ? "winner" : ""}">
+          <div class="player-main">
+            <div class="player-name">${escapeHtml(getPublicName(player))}</div>
+            <div class="player-sub">
+              <span>Cards ${(player.cards || []).length}</span>
+              <span>Matches ${Number(player.score || 0)}</span>
+              <span>Seat ${Number(player.seat || 0)}</span>
+            </div>
+          </div>
+          <div class="player-sub">${rightText ? `<span>${escapeHtml(rightText)}</span>` : ""}</div>
+        </div>`;
+      }).join("");
+    }
+
+    function renderControls(game){
+      const me = findMe(game);
+      const isMyTurn = !!me && game.status === "active" && game.currentTurnUid === me.uid;
+      const players = getSortedPlayers(game).filter(p => p.uid !== me?.uid && !p.left);
+      const myRanks = uniqueRanks(me?.cards || []);
+
+      if (!players.some(p => p.uid === selectedTargetUid)) selectedTargetUid = players[0]?.uid || "";
+      if (!myRanks.includes(selectedRank)) selectedRank = myRanks[0] || "";
+
+      targetList.innerHTML = players.length
+        ? players.map(p => `<button type="button" class="target-btn ${p.uid === selectedTargetUid ? "selected" : ""}" data-target="${escapeHtml(p.uid)}" ${!isMyTurn ? "disabled" : ""}>${escapeHtml(getPublicName(p))}</button>`).join("")
+        : `<div class="tiny">No other players.</div>`;
+
+      rankList.innerHTML = myRanks.length
+        ? myRanks.map(rank => `<button type="button" class="card-btn ${rank === selectedRank ? "selected" : ""}" data-rank="${escapeHtml(rank)}" ${!isMyTurn ? "disabled" : ""}>${escapeHtml(RANK_LABELS[rank] || rank)}</button>`).join("")
+        : `<div class="tiny">No cards in your hand.</div>`;
+
+      askBtn.disabled = !isMyTurn || !selectedTargetUid || !selectedRank;
+      drawBtn.disabled = !isMyTurn || !game.deck.length;
+    }
+
+    function renderGame(game){
+      currentGame = normalizeGame(game);
+      const me = findMe(currentGame);
+      const players = getSortedPlayers(currentGame);
+      const turnPlayer = players.find(p => p.uid === currentGame.currentTurnUid);
+
+      headerTitle.textContent = currentGame.name ? `${currentGame.name} • Go Fish` : "Go Fish";
+      deckValue.textContent = String((currentGame.deck || []).length);
+      matchesValue.textContent = String(totalMatches(currentGame));
+      turnValue.textContent = turnPlayer ? getPublicName(turnPlayer).slice(0, 12) : "-";
+      lastAskText.textContent = currentGame.lastMessage || "Waiting...";
+      statusLine.textContent = currentGame.status === "waiting" ? "Waiting for host to start." : currentGame.status === "finished" ? currentGame.lastMessage : (currentGame.currentTurnUid === currentUser?.uid ? "Your turn. Choose a player, choose a rank, then ask." : "Waiting for your turn.");
+      renderPlayers(currentGame);
+      myCards.innerHTML = me?.cards?.length ? sortCards(me.cards).map(renderCard).join("") : `<div class="card-slot">EMPTY</div>`;
+      renderControls(currentGame);
+
+      const canStart = currentUser && isHost(currentGame, currentUser.uid) && currentGame.status !== "active" && getSortedPlayers(currentGame).length >= 2;
+      startBtn.disabled = !canStart;
+      startBtn.classList.toggle("live-start", canStart);
+      startBtn.textContent = currentGame.status === "finished" ? "Restart" : "Start";
+    }
+
+    async function leaveGame(){
+      if (!currentUser || !gameId) {
+        window.location.href = "gofish.html";
+        return;
+      }
+
+      await runGameTransaction(game => {
+        game.players = getSortedPlayers(game).map(p => p.uid === currentUser.uid ? { ...p, left:true, cards:[] } : p);
+        if (game.currentTurnUid === currentUser.uid) game.currentTurnUid = nextTurnUid(game, currentUser.uid);
+        const active = getSortedPlayers(game);
+        if (active.length < 2 && game.status === "active") {
+          game.status = "finished";
+          game.phase = "finished";
+          game.currentTurnUid = "";
+          game.lastMessage = "Game ended because there are not enough players.";
+        }
+        return game;
+      });
+
+      window.location.href = "gofish.html";
+    }
+
+    startBtn.addEventListener("click", () => {
+      runGameTransaction(game => {
+        if (!isHost(game, currentUser.uid)) throw new Error("Only the host can start.");
+        return startGameState(game);
+      });
+    });
+
+    askBtn.addEventListener("click", () => {
+      runGameTransaction(game => askForRankState(game, currentUser.uid, selectedTargetUid, selectedRank));
+    });
+
+    drawBtn.addEventListener("click", () => {
+      runGameTransaction(game => drawCardState(game, currentUser.uid));
+    });
+
+    leaveBtn.addEventListener("click", () => {
+      leaveGame().catch(error => {
+        console.error(error);
+        window.location.href = "gofish.html";
+      });
+    });
+
+    document.addEventListener("click", event => {
+      const targetBtn = event.target.closest("[data-target]");
+      const rankBtn = event.target.closest("[data-rank]");
+      if (targetBtn) {
+        selectedTargetUid = targetBtn.dataset.target || "";
+        renderControls(currentGame);
+      }
+      if (rankBtn) {
+        selectedRank = rankBtn.dataset.rank || "";
+        renderControls(currentGame);
+      }
+    });
+
+    onAuthStateChanged(auth, async user => {
+      currentUser = user;
+
+      if (!user) {
+        setGateMessage("Please sign in to play Go Fish.");
+        return;
+      }
+
+      if (!gameId) {
+        setGateMessage("No game selected. Go back to the lobby and join a game.");
+        return;
+      }
+
+      try {
+        setGateMessage("Loading game...");
+        const gameRef = doc(db, "goFishGames", gameId);
+        const firstSnap = await getDoc(gameRef);
+        if (!firstSnap.exists()) {
+          setGateMessage("Game not found.");
+          return;
+        }
+
+        const firstGame = normalizeGame({ id:firstSnap.id, ...firstSnap.data() });
+        if (!firstGame.players.some(p => p.uid === user.uid)) {
+          setGateMessage("You are not in this game. Join from the lobby first.");
+          return;
+        }
+
+        authGate.classList.add("hidden");
+
+        if (unsubscribeGame) unsubscribeGame();
+        unsubscribeGame = onSnapshot(gameRef, snap => {
+          if (!snap.exists()) {
+            setGateMessage("This game was deleted.");
+            authGate.classList.remove("hidden");
+            return;
+          }
+          renderGame({ id:snap.id, ...snap.data() });
+        }, error => {
+          console.error(error);
+          setGateMessage("Could not load game.");
+          authGate.classList.remove("hidden");
+        });
+      } catch (error) {
+        console.error(error);
+        setGateMessage("Could not load game.");
+      }
+    });
+  </script>
+</body>
+</html>
